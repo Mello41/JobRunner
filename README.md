@@ -7,10 +7,11 @@ C# проект для реализации функционала:
 4. 
 
 В решении несколько проектов:
+
 	JobRunner.Core - библиотека классов (.NET Standart 2.0)
 			модели данных, шифрование, DTO, интерфейсы
 		зависимости: 
-			System.Text.Json 
+			System.Text.Json v6.0.10
 
 	JobRunner.Jobs - библиотека классов (.NET 8.0)
 			реализация интерфейса IJobScheduler с библиотекой Quartz + регистрация в DI
@@ -18,17 +19,16 @@ C# проект для реализации функционала:
 			JobRunner.Core
 			
 			Microsoft.Extensions.DependencyInjection.Abstractions
-			Quartz
+			Quartz v3.18.0
 		
 	JobRunner.Avalonia - Avalonia .NET MVVM App
 			UI составляющая проекта JobRunner, DI настройка + MVVM
-			MVVM подход: RelativeUI
+			MVVM подход: RelativeUI v20.0.1
 		Зависимости:
 			JobRunner.Core 
 			JobRunner.Jobs 
 			
-         	Microsoft.Extensions.DependencyInjection
-			ReactiveUI
+         	Microsoft.Extensions.DependencyInjection v8.0.1
 			
 	Схема зависимостей по проекту:
 		JobRunner.Avalonia
