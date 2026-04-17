@@ -15,4 +15,9 @@
     <ProjectReference Include="..\JobRunner.Core\JobRunner.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Adapters\" />
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
 </Project>

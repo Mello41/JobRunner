@@ -7,7 +7,7 @@ namespace JobRunner.Core
     /// <summary>
     /// Создаваемая задача
     /// </summary>
-    public class Task
+    public class JobTask
     {
         public long Id { get; private set; }
         public long PID { get; set; }
@@ -54,9 +54,9 @@ namespace JobRunner.Core
         public string LastError { get; set; } = string.Empty;
 
         /// <summary>
-        /// 
+        /// ctor    
         /// </summary>
-        public Task()
+        public JobTask()
         {
             Id = DateTime.Now.Ticks; // Id (private set) --> null
                                      // DateTime.Now.Ticks - это количество 100-наносекундных интервалов с 1 января 0001 года
