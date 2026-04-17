@@ -3,7 +3,6 @@ using JobRunner.Core.Events;
 using JobRunner.Core.Interfaces;
 using Quartz;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace JobRunner.Jobs.Adapters
 {
