@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 
 namespace JobRunner.Core.Interfaces
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public interface IJobScheduler
     {
         #region Планировщик

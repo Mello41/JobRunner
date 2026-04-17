@@ -16,7 +16,6 @@ namespace JobRunner.Core
         public string Description { get; set; } = string.Empty;
 
         public string ExecutionPath { get; set; } = string.Empty;
-        public string Arguments { get; set; }
 
         #region Состояние выполнения задачи
         public DateTime StartRun { get; set; }
@@ -52,6 +51,15 @@ namespace JobRunner.Core
         /// последняя ошибка
         /// </summary>
         public string LastError { get; set; } = string.Empty;
+
+        #region Шифрование
+        public string EncryptedArguments { get; set; }
+
+        /// <summary>
+        /// Используется ли шифрование? (для чувствительных данных)
+        /// </summary>
+        public bool IsEncrypt { get; set; }
+        #endregion
 
         /// <summary>
         /// ctor    
