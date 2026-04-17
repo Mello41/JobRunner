@@ -1,22 +1,23 @@
 ﻿using JobRunner.Core;
+using JobRunner.Core.Events;
 using JobRunner.Core.Interfaces;
 using Quartz;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace JobRunner.Jobs.Adapters
 {
     /// <summary>
-    /// Логика выполнения 
+    /// Логика выполнения задачи
     /// </summary>
     public class JobAdapter : IJob
     {
-        /* UI 
         public event EventHandler<JobExecutionEventArgs>? JobExecuted;
 
         private void OnJobExecuted(JobExecutionEventArgs args)
         {
             JobExecuted?.Invoke(this, args);
-        }*/
+        }
 
         private readonly IStringEncryptor _stringEncryptor;
 
@@ -29,9 +30,10 @@ namespace JobRunner.Jobs.Adapters
         }
 
         /// <summary>
-        /// 
+        /// Выполнение полного цикла запуска задачи
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context"> контекст выполнения задачи в Quartz 
+        /// как паспорт </param>
         /// <returns></returns>
         public async Task Execute(IJobExecutionContext context)
         {
@@ -44,18 +46,44 @@ namespace JobRunner.Jobs.Adapters
                 return; // ContainsKey медленнее
 
             // 3. Если зашифровано - расшифровать аргументы
-            string arguments = string.Empty;
+            string arguments = GetTaskArguments(task);
+
+            // 4. Запуск и ожидание (через Process)
+            await StartTaskProcess(task, arguments);
+
+            // 6. JobExecuted() для UI
+            NotifyUI(task);
+        }
+
+        /// <summary>
+        /// Получить строку с аргументами из такси
+        /// </summary>
+        /// <param name="task">приходящая таска</param>
+        /// <returns></returns>
+        private string GetTaskArguments(JobTask task)
+        {
+            string args = string.Empty;
             if (task.IsEncrypt)
             {
                 if (string.IsNullOrEmpty(task.EncryptedArguments))
-                    arguments = string.Empty;
+                    args = string.Empty;
                 else
-                    arguments = _stringEncryptor.Decrypt(task.EncryptedArguments);
+                    args = _stringEncryptor.Decrypt(task.EncryptedArguments);
             }
             else
-                arguments = task.Arguments ?? string.Empty;
+                args = task.Arguments ?? string.Empty;
 
-            // 4. Запуск и ожидание (через Process)
+            return args;
+        }
+
+        /// <summary>
+        /// Запуск процесса таски через Process
+        /// </summary>
+        /// <param name="task">приходящая таска</param>
+        /// <param name="arguments">аргументы (получили ранее)</param>
+        /// <returns></returns>
+        private async Task StartTaskProcess(JobTask task, string arguments)
+        {
             try
             {
                 var process = new Process();
@@ -95,9 +123,24 @@ namespace JobRunner.Jobs.Adapters
                 task.IsCompleted = false;
                 task.IsRunning = false;
             }
+        }
 
-            // 6. JobExecuted() для UI
-
+        /// <summary>
+        /// Автоматическое уведомление UI о том, что таска создалась
+        /// </summary>
+        /// <param name="task">приходящая таска</param>
+        /// <returns></returns>
+        private void NotifyUI(JobTask task)
+        {
+            OnJobExecuted(new JobExecutionEventArgs
+            {
+                TaskId = task.Id,
+                TaskName = task.Name,
+                Success = string.IsNullOrEmpty(task.LastError),
+                ErrorMessage = task.LastError,
+                ExecutionTime = DateTime.Now,
+                Duration = task.EndRun - task.StartRun
+            });
         }
     }
 }
