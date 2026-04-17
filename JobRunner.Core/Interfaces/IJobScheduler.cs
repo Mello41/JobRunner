@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace JobRunner.Core.Interfaces
 {
     /// <summary>
-    /// 
+    /// Управление задачами
     /// </summary>
     public interface IJobScheduler
     {

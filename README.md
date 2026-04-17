@@ -18,6 +18,7 @@ C# проект для реализации функционала:
 		зависимости: 
 			JobRunner.Core
 			
+			System.Security.Cryptography.ProtectedData v8.0.0
 			Microsoft.Extensions.DependencyInjection.Abstractions
 			Quartz v3.18.0
 		

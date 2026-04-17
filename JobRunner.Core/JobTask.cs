@@ -25,6 +25,7 @@ namespace JobRunner.Core
         /// задача активна? (вкл/выкл)
         /// </summary>
         public bool IsEnabled { get; set; } = true;
+        public bool IsRunning { get; set; } 
 
         public bool IsCompleted { get; set; }
 
@@ -54,6 +55,7 @@ namespace JobRunner.Core
 
         #region Шифрование
         public string EncryptedArguments { get; set; }
+        public string Arguments { get; set; }
 
         /// <summary>
         /// Используется ли шифрование? (для чувствительных данных)
