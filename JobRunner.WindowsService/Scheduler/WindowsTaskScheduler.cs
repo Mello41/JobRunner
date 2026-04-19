@@ -1,9 +1,11 @@
 ﻿using JobRunner.Core;
 using JobRunner.Core.Events;
 using JobRunner.Core.Interfaces;
+using JobRunner.Core.Settings;
+using JobRunner.WindowsService.Converters;
 using Microsoft.Win32.TaskScheduler;
 using Task = System.Threading.Tasks.Task;
-using JobRunner.WindowsService.Converters;
+using WinTask = Microsoft.Win32.TaskScheduler.Task;
 
 namespace JobRunner.WindowsService.Scheduler
 {
@@ -75,14 +77,6 @@ namespace JobRunner.WindowsService.Scheduler
                 }
 
                 return true;
-            }
-        }
-
-        public Task<IReadOnlyList<JobTask>> GetAllTasksList()
-        {
-            lock (_tasksLock)
-            {
-                return Task.FromResult<IReadOnlyList<JobTask>>(_tasks.Values.ToList());
             }
         }
 
@@ -170,5 +164,100 @@ namespace JobRunner.WindowsService.Scheduler
         }
 
         private string GetTaskName(long taskId) => $"JobRunner_{taskId}";
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IReadOnlyList<JobTask>> GetAllTasksList()
+        {
+            var tasks = new List<JobTask>();
+
+            using (TaskService ts = new TaskService())
+            {
+                var allTasks = ts.FindAllTasks(t => t.Name.StartsWith("JobRunner_"));
+
+                foreach (var task in allTasks)
+                {
+                    var jobTask = ConvertToJobTask(task);
+                    tasks.Add(jobTask);
+                }
+            }
+
+            return tasks;
+        }
+
+        /// <summary>
+        /// Взять задачу и конвертировать в 
+        /// задачу для программы JobRunner
+        /// </summary>
+        /// <param name="task">Задача из планировщика задачи</param>
+        /// <returns></returns>
+        private JobTask ConvertToJobTask(WinTask task)
+        {
+            var jobTask = new JobTask
+            {
+                Id = ExtractIdFromTaskName(task.Name),
+                Name = task.Definition.RegistrationInfo.Description ?? task.Name,
+                ExecutionPath = task.Definition.Actions.OfType<ExecAction>().FirstOrDefault()?.Path ?? "",
+                Arguments = task.Definition.Actions.OfType<ExecAction>().FirstOrDefault()?.Arguments ?? ""
+            };
+
+            // Конвертируем триггер в ScheduleSettings (упрощённо)
+            var trigger = task.Definition.Triggers.OfType<Trigger>().FirstOrDefault();
+            if (trigger != null)
+            {
+                jobTask.ScheduleSettings = ConvertTriggerToScheduleSettings(trigger);
+            }
+
+            return jobTask;
+        }
+
+        /// <summary>
+        /// формат: "JobRunner_12345"
+        /// </summary>
+        /// <param name="taskName"></param>
+        /// <returns></returns>
+        private long ExtractIdFromTaskName(string taskName)
+        {
+            var parts = taskName.Split('_');
+            if (parts.Length == 2 && long.TryParse(parts[1], out var id))
+                return id;
+
+            return DateTime.Now.Ticks;
+        }
+
+        /// <summary>
+        /// Конвертация триггеров 
+        /// </summary>
+        /// <param name="trigger">Триггер задачи планировщика Windows</param>
+        /// <returns></returns>
+        private ScheduleSettings ConvertTriggerToScheduleSettings(Trigger trigger)
+        {
+            var settings = new ScheduleSettings();
+
+            switch (trigger)
+            {
+                case DailyTrigger daily:
+                    settings.PeriodType = PeriodType.EveryDaily;
+                    settings.Hour = daily.StartBoundary.Hour;
+                    settings.Minute = daily.StartBoundary.Minute;
+                    break;
+
+                case WeeklyTrigger weekly:
+                    settings.PeriodType = PeriodType.EveryWeekly;
+                    settings.Hour = weekly.StartBoundary.Hour;
+                    settings.Minute = weekly.StartBoundary.Minute;
+                    settings.WeeklyDay = (DayOfWeek)weekly.DaysOfWeek;
+                    break;
+
+                default:
+                    settings.PeriodType = PeriodType.Once;
+                    break;
+            }
+
+            return settings;
+        }
+
     }
 }

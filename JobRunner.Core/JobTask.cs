@@ -9,7 +9,7 @@ namespace JobRunner.Core
     /// </summary>
     public class JobTask
     {
-        public long Id { get; private set; }
+        public long Id { get; set; }
         public long PID { get; set; }
 
         public string Name { get; set; } = string.Empty;
