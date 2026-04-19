@@ -31,11 +31,14 @@
 				<MenuItem Header="Программа">
 					<MenuItem Header="Загрузить задачи из файла"
 							  IsHitTestVisible="False">
-						
+					</MenuItem>
+					<MenuItem Header="Выгрузить задачи в файл"
+						      IsHitTestVisible="False">
 					</MenuItem>
 					
 					<Separator/>
-					<MenuItem Header="О программе">
+					<MenuItem Header="О программе"
+							  Command="{Binding AboutProgramCommand}">
 						
 					</MenuItem>
 				</MenuItem>

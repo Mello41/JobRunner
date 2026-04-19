@@ -15,6 +15,9 @@ using System.Threading.Tasks;
 
 namespace JobRunner.Avalonia.ViewModels
 {
+    /// <summary>
+    /// ViewModel окна MainWindow
+    /// </summary>
     public class MainWindowVM : ViewModelBase
     {
         private readonly IJobScheduler _scheduler;
@@ -76,6 +79,8 @@ namespace JobRunner.Avalonia.ViewModels
         public ReactiveCommand<Unit, Unit> PauseTaskCommand { get; }
         public ReactiveCommand<Unit, Unit> RunTaskCommand { get; }
 
+        public ReactiveCommand<Unit, Unit> AboutProgramCommand { get; }
+
         public MainWindowVM(IJobScheduler scheduler)
         {
             _scheduler = scheduler;
@@ -87,11 +92,22 @@ namespace JobRunner.Avalonia.ViewModels
             AddCategoryTaskCommand = ReactiveCommand.CreateFromTask(AddCategoryTaskAsync);
             PauseTaskCommand = ReactiveCommand.CreateFromTask(PauseTaskAsync);
             RunTaskCommand = ReactiveCommand.CreateFromTask(RunTaskAsync);
-            
+
+            AboutProgramCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var windAbout = new AboutProgramWindow();
+                await windAbout.ShowDialog(GetMainWindow());
+            });
+
             LoadTasks();
         }
 
-
+        /// <summary>
+        /// Установка владельца окна (для метода 
+        /// реализации команды и .ShowDialog())
+        /// Компилятор автоматически попросит его
+        /// </summary>
+        /// <returns>Окно MainWindow<Window></returns>
         private Window GetMainWindow()
         {
             return (Window)(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow!;
