@@ -11,6 +11,15 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
+    <None Remove="Resources\Icons\BaseIcons\FileOpen.png" />
+    <None Remove="Resources\Icons\BaseIcons\lock_open.png" />
+    <None Remove="Resources\Icons\BaseIcons\Mail.png" />
+    <None Remove="Resources\Icons\BaseIcons\Notifications.png" />
+    <None Remove="Resources\Icons\BaseIcons\NotificationsActive.png" />
+    <None Remove="Resources\Icons\BaseIcons\Search.png" />
+    <None Remove="Resources\Icons\BaseIcons\SyncProblem.png" />
+    <None Remove="Resources\Icons\BaseIcons\Task.png" />
+    <None Remove="Resources\Icons\BaseIcons\ThreeDots.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,5 +39,36 @@
   <ItemGroup>
     <ProjectReference Include="..\JobRunner.Core\JobRunner.Core.csproj" />
     <ProjectReference Include="..\JobRunner.Jobs\JobRunner.Jobs.csproj" />
+    <ProjectReference Include="..\JobRunner.WindowsService\JobRunner.WindowsService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Resources\Icons\BaseIcons\FileOpen.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\Icons\BaseIcons\lock_open.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\Icons\BaseIcons\Mail.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\Icons\BaseIcons\Notifications.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\Icons\BaseIcons\NotificationsActive.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\Icons\BaseIcons\Search.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\Icons\BaseIcons\SyncProblem.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\Icons\BaseIcons\Task.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Resources\Icons\BaseIcons\ThreeDots.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AvaloniaResource>
   </ItemGroup>
 </Project>

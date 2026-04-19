@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using JobRunner.Avalonia.ViewModels;
 using System;
@@ -7,7 +7,6 @@ namespace JobRunner.Avalonia
 {
     public class ViewLocator : IDataTemplate
     {
-
         public Control? Build(object? param)
         {
             if (param is null)

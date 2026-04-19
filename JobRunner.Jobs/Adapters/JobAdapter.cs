@@ -8,6 +8,9 @@ namespace JobRunner.Jobs.Adapters
 {
     /// <summary>
     /// Логика выполнения задачи
+    /// адаптер, который Quartz вызывает для запуска задачи
+    /// (запуск .exe/.bat, расшифровка аргументов, 
+    /// запись результата)
     /// </summary>
     public class JobAdapter : IJob
     {
