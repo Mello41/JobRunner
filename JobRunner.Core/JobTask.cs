@@ -1,6 +1,7 @@
 ﻿using JobRunner.Core.Notify;
 using JobRunner.Core.Settings;
 using System;
+using System.Collections.Concurrent;
 
 namespace JobRunner.Core
 {
@@ -74,5 +75,10 @@ namespace JobRunner.Core
             ScheduleSettings = new ScheduleSettings();
             NotifySettings = new NotifySettings();
         }
+
+        /// <summary>
+        /// Метки 
+        /// </summary>
+        public ConcurrentDictionary<string, byte> Tags { get; set; } = new ConcurrentDictionary<string, byte>();
     }
 }

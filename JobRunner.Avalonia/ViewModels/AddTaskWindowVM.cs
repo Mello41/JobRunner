@@ -1,14 +1,13 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using JobRunner.Core;
 using JobRunner.Core.Settings;
 using ReactiveUI;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using JobRunner.WindowsService.Extensions;
 
 namespace JobRunner.Avalonia.ViewModels
 {
@@ -16,6 +15,7 @@ namespace JobRunner.Avalonia.ViewModels
     {
         private Window _currentWindow;
 
+        #region Простые свойства задачи
         private string _taskName = string.Empty;
         public string TaskName
         {
@@ -43,6 +43,7 @@ namespace JobRunner.Avalonia.ViewModels
             get => _isEncrypt;
             set => this.RaiseAndSetIfChanged(ref _isEncrypt, value);
         }
+        #endregion
 
         #region Расписание
 
@@ -115,7 +116,7 @@ namespace JobRunner.Avalonia.ViewModels
         public ReactiveCommand<Unit, Unit> SaveCommand { get; }
         public ReactiveCommand<Unit, Unit> CancelCommand { get; }
 
-        public Core.JobTask? ResultTask { get; private set; }
+        public JobTask? ResultTask { get; private set; }
 
         public AddTaskWindowVM()
         {

@@ -7,8 +7,8 @@
         x:Class="JobRunner.Avalonia.AddTaskWindow"
         Title="Создание задачи"
         x:DataType="vm:AddTaskWindowVM"
-        Width="500" Height="500"
-        MinHeight="500" MinWidth="500"
+        Width="600" Height="700"
+        MinHeight="700" MinWidth="600"
 		CanResize="True"
         WindowStartupLocation="CenterOwner">
 
@@ -42,7 +42,7 @@
 
 			<ComboBox ItemsSource="{Binding PeriodTypeList}"
 					  SelectedItem="{Binding SelectedPeriodTypeItem}"
-					  Width="150">
+					  Width="200">
 				<ComboBox.ItemTemplate>
 					<DataTemplate>
 						<TextBlock Text="{Binding Value}"/>

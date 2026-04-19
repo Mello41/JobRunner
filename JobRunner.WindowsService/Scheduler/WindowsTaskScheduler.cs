@@ -23,6 +23,7 @@ namespace JobRunner.WindowsService.Scheduler
         /// </summary>
         public event EventHandler<JobExecutionEventArgs>? JobExecuted;
 
+        #region
         public Task StartProgramAsync()
         {
             return Task.CompletedTask;
@@ -32,7 +33,9 @@ namespace JobRunner.WindowsService.Scheduler
         {
             return Task.CompletedTask;
         }
+        #endregion
 
+        #region Задачи
         public async Task<string> CreateTaskAsync(JobTask task)
         {
             using (TaskService ts = new TaskService())
@@ -149,6 +152,13 @@ namespace JobRunner.WindowsService.Scheduler
             return false;
         }
 
+        /// <summary>
+        /// Принудительный немедленный запуск задачи вне
+        /// зависимости от настроенного расписания
+        /// (реализация WindowsService)
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <returns></returns>
         public async Task<bool> TriggerNowAsync(long taskId)
         {
             using (TaskService ts = new TaskService())
@@ -203,8 +213,9 @@ namespace JobRunner.WindowsService.Scheduler
                 Arguments = task.Definition.Actions.OfType<ExecAction>().FirstOrDefault()?.Arguments ?? ""
             };
 
-            // Конвертируем триггер в ScheduleSettings (упрощённо)
-            var trigger = task.Definition.Triggers.OfType<Trigger>().FirstOrDefault();
+            // Конвертация триггера в ScheduleSettings (упрощённо)
+            var trigger = task.Definition.Triggers
+                .OfType<Trigger>().FirstOrDefault();
             if (trigger != null)
             {
                 jobTask.ScheduleSettings = ConvertTriggerToScheduleSettings(trigger);
@@ -214,7 +225,9 @@ namespace JobRunner.WindowsService.Scheduler
         }
 
         /// <summary>
-        /// формат: "JobRunner_12345"
+        /// Извлечение числового идентификатора задачи 
+        /// из имени задачи в планировщике задач
+        /// формат: "JobRunner_12345" - (чтобы было удобнее находить)
         /// </summary>
         /// <param name="taskName"></param>
         /// <returns></returns>
@@ -258,6 +271,6 @@ namespace JobRunner.WindowsService.Scheduler
 
             return settings;
         }
-
+        #endregion
     }
 }

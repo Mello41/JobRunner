@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using JobRunner.Core;
 using JobRunner.Core.Interfaces;
+using MessageBox.Avalonia;
+using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -16,6 +18,13 @@ namespace JobRunner.Avalonia.ViewModels
     public class MainWindowVM : ViewModelBase
     {
         private readonly IJobScheduler _scheduler;
+
+        private JobTask selectedJobTask;
+        public JobTask SelectedJobTask 
+        { 
+            get => selectedJobTask; 
+            set => selectedJobTask = value; 
+        }
 
         private readonly object _tasksLock = new();  // Для потокобезопасности
         private List<JobTask> _allTasks = new();
@@ -55,23 +64,57 @@ namespace JobRunner.Avalonia.ViewModels
             set => this.RaiseAndSetIfChanged(ref _isEncrypt, value);
         }
 
+        /// <summary>
+        /// Unit — это "пустое значение" в ReactiveUI
+        /// Аналог void, но для типизированных систем.
+        /// </summary>
         public ReactiveCommand<Unit, Unit> AddTaskCommand { get; }
         public ReactiveCommand<Unit, Unit> EditTaskCommand { get; }
         public ReactiveCommand<Unit, Unit> DeleteTaskCommand { get; }
         public ReactiveCommand<Unit, Unit> CopyTaskCommand { get; }
         public ReactiveCommand<Unit, Unit> AddCategoryTaskCommand { get; }
+        public ReactiveCommand<Unit, Unit> PauseTaskCommand { get; }
+        public ReactiveCommand<Unit, Unit> RunTaskCommand { get; }
 
         public MainWindowVM(IJobScheduler scheduler)
         {
             _scheduler = scheduler;
 
             AddTaskCommand = ReactiveCommand.CreateFromTask(OpenAddTaskAsync);
-
+            EditTaskCommand = ReactiveCommand.CreateFromTask(EditTaskAsync);
+            DeleteTaskCommand = ReactiveCommand.CreateFromTask(DeleteTaskAsync);
+            CopyTaskCommand = ReactiveCommand.CreateFromTask(CopyTaskAsync);
+            AddCategoryTaskCommand = ReactiveCommand.CreateFromTask(AddCategoryTaskAsync);
+            PauseTaskCommand = ReactiveCommand.CreateFromTask(PauseTaskAsync);
+            RunTaskCommand = ReactiveCommand.CreateFromTask(RunTaskAsync);
+            
             LoadTasks();
         }
 
+
+        private Window GetMainWindow()
+        {
+            return (Window)(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow!;
+        }
+
         /// <summary>
-        /// Добавление таски
+        /// Загрузка тасок
+        /// </summary>
+        private async void LoadTasks()
+        {
+            var tasks = await _scheduler.GetAllTasksList();
+            
+            lock (_tasksLock)
+            {
+                _allTasks = tasks.ToList();
+            }
+            
+            ApplyTaskNameFilter();
+        }
+
+        #region CRUD команды (реализация всех команд)
+        /// <summary>
+        /// Добавление таски (через новое окно)
         /// </summary>
         /// <returns></returns>
         private async Task OpenAddTaskAsync()
@@ -95,25 +138,112 @@ namespace JobRunner.Avalonia.ViewModels
             }
         }
 
-        private Window GetMainWindow()
+        /// <summary>
+        /// Изменение выбранной задачи
+        /// </summary>
+        /// <returns></returns>
+        private async Task EditTaskAsync()
         {
-            return (Window)(Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow!;
+            if (SelectedJobTask == null) return;
+
+            var window = new AddTaskWindow();
+            var viewModel = new AddTaskWindowVM();
+            viewModel.SetCurrentWindow(window);
+
+            viewModel.TaskName = SelectedJobTask.Name;
+            viewModel.ExecutionPath = SelectedJobTask.ExecutionPath;
+            viewModel.Arguments = SelectedJobTask.Arguments;
+            viewModel.IsEncrypt = SelectedJobTask.IsEncrypt;
+
+            if (SelectedJobTask.ScheduleSettings != null)
+            {
+                viewModel.SelectedPeriodType = SelectedJobTask.ScheduleSettings.PeriodType;
+                viewModel.Hour = SelectedJobTask.ScheduleSettings.Hour.ToString();
+                viewModel.Minute = SelectedJobTask.ScheduleSettings.Minute.ToString();
+                viewModel.IntervalMinutes = SelectedJobTask.ScheduleSettings.IntervalMinutes.ToString();
+            }
+
+            window.DataContext = viewModel;
+            await window.ShowDialog<object?>(GetMainWindow());
+
+            if (viewModel.ResultTask != null)
+            {
+                viewModel.ResultTask.Id = SelectedJobTask.Id;
+                await _scheduler.UpdateTaskAsync(viewModel.ResultTask);
+
+                lock (_tasksLock)
+                {
+                    var index = _allTasks.FindIndex(t => t.Id == SelectedJobTask.Id);
+                    if (index != -1)
+                        _allTasks[index] = viewModel.ResultTask;
+                }
+                ApplyTaskNameFilter();
+            }
         }
 
         /// <summary>
-        /// Загрузка тасок
+        /// Удаление задачи из списка (навсегда)
         /// </summary>
-        private async void LoadTasks()
+        /// <param name="taskId"></param>
+        /// <returns></returns>
+        private async Task DeleteTaskAsync()
         {
-            var tasks = await _scheduler.GetAllTasksList();
-            
-            lock (_tasksLock)
+            if (SelectedJobTask == null) return;  
+
+            var messageBox = MessageBoxManager.GetMessageBoxStandardWindow(
+                "Подтверждение",
+                $"Удалить задачу \"{SelectedJobTask.Name}\"?",  
+                ButtonEnum.YesNo);
+
+            var result = await messageBox.ShowDialog(GetMainWindow());
+
+            if (result == ButtonResult.Yes)
             {
-                _allTasks = tasks.ToList();
+                await _scheduler.DeleteTaskAsync(SelectedJobTask.Id);
+                lock (_tasksLock)
+                {
+                    var task = _allTasks.FirstOrDefault(t => t.Id == SelectedJobTask.Id);
+                    if (task != null) _allTasks.Remove(task);
+                }
+                ApplyTaskNameFilter();
             }
-            
-            ApplyTaskNameFilter();
         }
+
+        /// <summary>
+        /// Запуск выбранной задани сейчас
+        /// </summary>
+        /// <returns></returns>
+        private async Task RunTaskAsync()
+        {
+            if (SelectedJobTask == null) return;
+            await _scheduler.TriggerNowAsync(SelectedJobTask.Id);
+        }
+
+        /// <summary>
+        /// Остановить выбранную задачу
+        /// </summary>
+        /// <returns></returns>
+        private async Task PauseTaskAsync()
+        {
+            if (SelectedJobTask == null) return;
+            await _scheduler.StopTaskAsync(SelectedJobTask.Id);
+        }
+
+        /// <summary>
+        /// Добавить метку (категорию) к выбранной задаче
+        /// </summary>
+        /// <returns></returns>
+        private async Task AddCategoryTaskAsync()
+        {
+            if (SelectedJobTask == null) return;
+            //todo
+        }
+
+        private async Task CopyTaskAsync()
+        {
+            
+        }
+        #endregion
 
         #region Фильтрация задач
 

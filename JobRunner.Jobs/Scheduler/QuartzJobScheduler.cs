@@ -204,5 +204,17 @@ namespace JobRunner.Jobs.Scheduler
                 _ => string.Empty
             };
         }
+
+        public async Task<bool> TriggerNowAsync(long taskId)
+        {
+            await _scheduler.TriggerJob(new JobKey(taskId.ToString()));
+            return true;
+        }
+
+        public async Task<bool> ResumeTaskAsync(long taskId)
+        {
+            await _scheduler.ResumeJob(new JobKey(taskId.ToString()));
+            return true;
+        }
     }
 }
