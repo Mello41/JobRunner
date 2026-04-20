@@ -1,5 +1,8 @@
 ﻿namespace JobRunner.Core.Notify
 {
+    /// <summary>
+    /// Настройки уведомления задачи JobTask
+    /// </summary>
     public class NotifySettings
     {
         /// <summary>
@@ -25,6 +28,7 @@
         /// <summary>
         /// Способ уведомления
         /// </summary>
-        public NotificationType NotifyType { get; set; } = NotificationType.Popup;
+        public NotificationType NotifyType { get; set; } 
+            = NotificationType.Popup;
     }
 }

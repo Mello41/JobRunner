@@ -12,6 +12,7 @@ C# + Quartz + WindowsTaskScheduler приложение для реализац�
 			модели данных, шифрование, DTO, интерфейсы
 		Зависимости: 
 			System.Text.Json v6.0.10
+			System.ComponentModel.DataAnnotations v5.0.0
 
 	JobRunner.Jobs - библиотека классов (.NET 8.0)
 			реализация интерфейса IJobScheduler с библиотекой Quartz + регистрация в DI
