@@ -7,10 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobRunner.Core", "JobRunner
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobRunner.Jobs", "JobRunner.Jobs\JobRunner.Jobs.csproj", "{2202EA2A-5A95-4E67-8DD2-08E12ABA7EBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobRunner.Avalonia", "JobRunner.Avalonia\JobRunner.Avalonia.csproj", "{3112CDE3-5CB6-44F4-A428-20ACAE5B8198}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JobRunner.WindowsService", "JobRunner.WindowsService\JobRunner.WindowsService.csproj", "{7502A7C1-F43F-4B06-806A-BD4AA4D84681}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,14 +21,6 @@ Global
 		{2202EA2A-5A95-4E67-8DD2-08E12ABA7EBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2202EA2A-5A95-4E67-8DD2-08E12ABA7EBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2202EA2A-5A95-4E67-8DD2-08E12ABA7EBA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3112CDE3-5CB6-44F4-A428-20ACAE5B8198}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3112CDE3-5CB6-44F4-A428-20ACAE5B8198}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3112CDE3-5CB6-44F4-A428-20ACAE5B8198}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3112CDE3-5CB6-44F4-A428-20ACAE5B8198}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7502A7C1-F43F-4B06-806A-BD4AA4D84681}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7502A7C1-F43F-4B06-806A-BD4AA4D84681}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7502A7C1-F43F-4B06-806A-BD4AA4D84681}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7502A7C1-F43F-4B06-806A-BD4AA4D84681}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
