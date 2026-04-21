@@ -1,4 +1,6 @@
-﻿namespace JobRunner.Core.Notify
+﻿using System;
+
+namespace JobRunner.Core.Notify
 {
     /// <summary>
     /// Настройки уведомления задачи JobTask
@@ -18,7 +20,7 @@
         /// <summary>
         /// За сколько времени до выполнения уведомить (в минутах)
         /// </summary>
-        public int NotifyBeforeMinutes { get; set; }
+        public TimeSpan NotifyBeforeMinutes { get; set; }
 
         /// <summary>
         /// Текст уведомления
