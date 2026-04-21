@@ -1,0 +1,170 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:JobRunner.Avalonia.ViewModels"
+        xmlns:converters="using:JobRunner.Avalonia.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" 
+        x:Class="JobRunner.Avalonia.Views.MainWindow"
+        x:DataType="vm:MainWindowVM"
+		
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Планировщик заданий"
+		
+		d:DesignWidth="800" d:DesignHeight="450"
+		WindowStartupLocation="CenterScreen"
+		Width="1200" Height="800"
+		MinHeight="800" MinWidth="1200"
+		CornerRadius="10"
+		CanResize="True">
+
+	<Grid RowDefinitions="70,*">
+
+		<Grid ColumnDefinitions="Auto,Auto,*,Auto"
+			  Margin="10,5,10,15">
+			<Menu Background="LightGray"
+				  CornerRadius="5"
+				  FontSize="16"
+				  HorizontalAlignment="Left"
+				  VerticalAlignment="Top"
+				  Margin="0,2,0,0">
+				<MenuItem Header="Программа">
+					<MenuItem Header="Загрузить задачи из файла"
+							  IsHitTestVisible="False">
+					</MenuItem>
+					<MenuItem Header="Выгрузить задачи в файл"
+						      IsHitTestVisible="False">
+					</MenuItem>
+					
+					<Separator/>
+					<MenuItem Header="О программе"
+							  Command="{Binding AboutProgramCommand}">
+						
+					</MenuItem>
+				</MenuItem>
+			</Menu>
+			
+			<Button Grid.Column="1"
+				Content="Добавить задачу"
+				CornerRadius="10"
+				Command="{Binding AddTaskCommand}"
+				Width="225" Height="45"
+				FontSize="24"
+				FontWeight="Bold"
+				Foreground="Black"
+				Margin="15,10,15,5"/>
+			
+			<Border Classes="search-container"
+					Grid.Column="3">
+				<DockPanel>
+					<TextBox Classes="search-input"
+							 Text="{Binding SearchTaskByNameText}"
+							 FontSize="24"
+							 Watermark="Поиск по названию"
+							 Height="45" MinWidth="250"/>
+					<Image Classes="search-icon"
+						   DockPanel.Dock="Right"
+						   Source="avares://JobRunner.Avalonia/Resources/Icons/BaseIcons/Search.png"/>
+				</DockPanel>
+			</Border>
+		</Grid>
+		
+		<Grid Grid.Row="1"
+			  ColumnDefinitions="*, 50">
+
+			<ListBox ItemsSource="{Binding Tasks}"
+					 SelectedItem="{Binding SelectedJobTask}"
+					 Grid.Row="1"
+					 Margin="10"
+					 Background="Transparent">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Border Margin="5" Padding="10" CornerRadius="5">
+							<Grid ColumnDefinitions="*, 150">
+								<StackPanel Spacing="4">
+
+									<TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="18"/>
+
+									<TextBlock FontSize="11" Foreground="#666">
+										<TextBlock.Text>
+											<Binding Path="Arguments"
+													 Converter="{x:Static converters:NullOrEmptyConverter.Instance}"
+													 ConverterParameter="Без аргументов,Аргументы есть"/>
+										</TextBlock.Text>
+									</TextBlock>
+
+									<StackPanel Orientation="Horizontal">
+										<TextBlock Text="Путь:"
+												   FontSize="11" Foreground="#888"/>
+										<TextBlock Text="{Binding ExecutionPath}" 
+												   FontSize="11" Foreground="#888"
+												   Margin="2,0,0,0"/>
+									</StackPanel>
+
+									<TextBlock FontSize="11" Foreground="#666">
+										<TextBlock.Text>
+											<Binding Path="LastRun" StringFormat="Последний запуск: {0:dd.MM.yyyy HH:mm:ss}">
+												<Binding.Converter>
+													<converters:NullToTextConverter DefaultText="никогда"/>
+												</Binding.Converter>
+											</Binding>
+										</TextBlock.Text>
+									</TextBlock>
+
+								</StackPanel>
+
+								<StackPanel Grid.Column="1" HorizontalAlignment="Right"
+											Margin="10">
+
+									<TextBlock FontSize="12" FontWeight="Bold"
+												   Margin="0,2,0,0">
+										<TextBlock.Text>
+											<Binding Path="IsRunning" StringFormat="{} {0}">
+												<Binding.Converter>
+													<converters:BooleanToTextConverter True="Запущена" False="Остановлена"/>
+												</Binding.Converter>
+											</Binding>
+										</TextBlock.Text>
+									</TextBlock>
+								
+									<TextBlock FontSize="12" Foreground="Red">
+										<TextBlock.Text>
+											<Binding Path="LastError"
+													 StringFormat=" {0}"
+													 Converter="{x:Static converters:NullOrEmptyConverter.Instance}"
+													 ConverterParameter=" ,ошибка"/>
+										</TextBlock.Text>
+									</TextBlock>
+								</StackPanel>
+							</Grid>
+						</Border>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+
+				<ListBox.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Добавить новую задачу"
+								  Command="{Binding AddTaskCommand}"/>
+						
+						<MenuItem Header="Редактировать"
+								  Command="{Binding EditTaskCommand}"/>
+
+						<MenuItem Header="Создать такую же (с новым именем)"
+								  Command="{Binding CopyTaskCommand}"
+								  IsEnabled="False"/>
+
+						<MenuItem Header="Удалить"
+								  Command="{Binding DeleteTaskCommand}"/>
+
+						<MenuItem Header="Запустить сейчас"
+								  Command="{Binding RunTaskCommand}"/>
+
+						<MenuItem Header="Пауза"
+								  Command="{Binding PauseTaskCommand}"/>
+					</ContextMenu>
+				</ListBox.ContextMenu>
+			</ListBox>
+
+		</Grid>
+	</Grid>
+</Window>
