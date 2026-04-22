@@ -1,11 +1,13 @@
-﻿using System;
+﻿using JobRunner.Core.Entities;
+using JobRunner.Core.Settings;
+using System;
 
-namespace JobRunner.Core.Settings
+namespace JobRunner.Core.DefaultImplementations
 {
     /// <summary>
-    /// Периодичность задачи (когда выполнять)
+    /// Периодичность задачи (когда выполнять) - пример реализации
     /// </summary>
-    public class ScheduleSettings
+    public class ScheduleSettings : IScheduleSettings
     {
         /// <summary>
         /// Тип периодичности 

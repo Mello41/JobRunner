@@ -1,4 +1,4 @@
-﻿using JobRunner.Core;
+﻿using JobRunner.Core.DefaultImplementations;
 using JobRunner.Core.Interfaces;
 using JobRunner.Core.Settings;
 using JobRunner.Jobs.Adapters;

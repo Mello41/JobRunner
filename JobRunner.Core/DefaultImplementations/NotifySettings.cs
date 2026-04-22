@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JobRunner.Core.Notify
+namespace JobRunner.Core.DefaultImplementations
 {
     /// <summary>
     /// Настройки уведомления задачи JobTask
@@ -27,10 +27,5 @@ namespace JobRunner.Core.Notify
         /// </summary>
         public string NotificationMessage { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Способ уведомления
-        /// </summary>
-        public NotificationType NotifyType { get; set; } 
-            = NotificationType.Popup;
     }
 }

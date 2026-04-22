@@ -1,4 +1,4 @@
-﻿using JobRunner.Core;
+﻿using JobRunner.Core.DefaultImplementations;
 using JobRunner.Core.Events;
 using JobRunner.Core.Interfaces;
 using Quartz;

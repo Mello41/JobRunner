@@ -1,19 +1,17 @@
-﻿using JobRunner.Core.Notify;
-using JobRunner.Core.Settings;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 
-namespace JobRunner.Core
+namespace JobRunner.Core.DefaultImplementations
 {
     /// <summary>
-    /// Создаваемая задача (в рамках программы JobRunner)
+    /// Создаваемая задача (в рамках программы JobRunner) - пример реализации
     /// </summary>
     public class JobTask
     {
         /// <summary>
         /// ID задачи
         /// </summary>
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Process ID задачи 
@@ -125,16 +123,21 @@ namespace JobRunner.Core
         public ScheduleArguments ScheduleArguments { get; set; }
 
         /// <summary>
-        /// ctor    
+        /// ctor
         /// </summary>
         public JobTask()
         {
-            Id = DateTime.Now.Ticks; // Id (private set) --> null
-                                     // DateTime.Now.Ticks - это количество 100-наносекундных интервалов с 1 января 0001 года
-
+            Id = Guid.NewGuid(); 
+                                     
             ScheduleSettings = new ScheduleSettings();
             NotifySettings = new NotifySettings();
             ScheduleArguments = new ScheduleArguments();
+
+            #region Метки (по умолчанию)
+            Tags = new ConcurrentDictionary<string, byte>();
+            Tags.TryAdd("Thumbnails", 0);
+            Tags.TryAdd("БД (индексация)", 0);
+            #endregion
         }
 
         /// <summary>

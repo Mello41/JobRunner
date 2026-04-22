@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using JobRunner.Core.DTO;
+using JobRunner.Core.Entities;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace JobRunner.Core.Settings
+namespace JobRunner.Core.DefaultImplementations
 {
     /// <summary>
     /// Расширяемый набор аргументов задачи
     /// </summary>
-    public class ScheduleArguments
+    public class ScheduleArguments : IScheduleArguments
     {
         /// <summary>
         /// Список аргументов задачи
