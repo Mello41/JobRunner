@@ -50,7 +50,7 @@ namespace JobRunner.Core.Interfaces
         /// 2. Сбрасывает состояние задачи (LastError, IsRunning)
         /// 3. Запускает задачу заново
         /// </remarks>
-        Task<bool> RestartAsync(Guid taskId);
+        Task<bool> RestartAsync(Guid taskId, int delay = 100);
 
         /// <summary>
         /// Приостановка выполнения задачи по расписанию

@@ -1,0 +1,30 @@
+﻿using Quartz;
+
+namespace JobRunner.Quartz.Adapters
+{
+    /// <summary>
+    /// Адаптер для выполнения задачи через Quartz
+    /// </summary>
+    public class JobAdapter : IJob
+    {
+        /// <summary>
+        /// Выполнение задачи при срабатывании триггера Quartz
+        /// </summary>
+        /// <param name="context">это контекст выполнения задачи в Quartz</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Quartz передаёт его в метод Execute, 
+        /// чтобы ты можно было получить информацию о текущем запуске
+        /// </remarks>
+        public async Task Execute(IJobExecutionContext context)
+        {
+            var taskIdStr = context.MergedJobDataMap.GetString("TaskId");
+            var taskId = Guid.Parse(taskIdStr);
+
+            // TODO: Получить задачу из ITaskStorage и
+                // выполнить (уже на сервере реализация)
+
+            await Task.CompletedTask;
+        }
+    }
+}

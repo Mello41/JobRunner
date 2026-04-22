@@ -15,11 +15,4 @@
     <ProjectReference Include="..\JobRunner.Core\JobRunner.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Scheduler\" />
-    <Folder Include="Adapters\" />
-    <Folder Include="Converters\" />
-    <Folder Include="Extensions\" />
-  </ItemGroup>
-
 </Project>
