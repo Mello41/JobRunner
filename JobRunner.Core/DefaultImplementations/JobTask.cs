@@ -25,13 +25,8 @@ namespace JobRunner.Core.DefaultImplementations
         public DateTime? NextRun { get; set; }
         #endregion
 
-        #region Уведомления
         public INotifySettings NotifySettings { get; set; } = new NotifySettings();
-        public TimeSpan TimeNotifyBeforeEnd { get; set; }
-        public TimeSpan TimeNotifyAfterEnd { get; set; }
-        public bool IsNotifyBeforeEnd { get; set; }
-        public bool IsNotifyAfterEnd { get; set; }
-        #endregion
+
 
         public bool IsAsyncExecution { get; set; }
         public IScheduleSettings ScheduleSettings { get; set; } = new ScheduleSettings();

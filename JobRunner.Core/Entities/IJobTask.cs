@@ -74,26 +74,6 @@ namespace JobRunner.Core.Entities
         INotifySettings NotifySettings { get; set; }
 
         /// <summary>
-        /// Время для уведомления перед выполнением
-        /// </summary>
-        TimeSpan TimeNotifyBeforeEnd { get; set; }
-
-        /// <summary>
-        /// Время для уведомления после выполнения
-        /// </summary>
-        TimeSpan TimeNotifyAfterEnd { get; set; }
-
-        /// <summary>
-        /// Уведомить перед завершением?
-        /// </summary>
-        bool IsNotifyBeforeEnd { get; set; }
-
-        /// <summary>
-        /// Уведомить после завершения?
-        /// </summary>
-        bool IsNotifyAfterEnd { get; set; }
-
-        /// <summary>
         /// Параллельное выполнение?
         /// </summary>
         bool IsAsyncExecution { get; set; }
