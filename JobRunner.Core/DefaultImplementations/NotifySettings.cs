@@ -1,11 +1,12 @@
-﻿using System;
+﻿using JobRunner.Core.Entities;
+using System;
 
 namespace JobRunner.Core.DefaultImplementations
 {
     /// <summary>
     /// Настройки уведомления задачи JobTask
     /// </summary>
-    public class NotifySettings
+    public class NotifySettings : INotifySettings
     {
         /// <summary>
         /// Уведомлять до выполнения (за сколько минут)

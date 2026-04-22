@@ -1,4 +1,7 @@
-﻿using Quartz;
+﻿using JobRunner.Core.DefaultImplementations;
+using JobRunner.Core.Entities;
+using JobRunner.Core.Interfaces;
+using Quartz;
 
 namespace JobRunner.Quartz.Adapters
 {
@@ -7,6 +10,16 @@ namespace JobRunner.Quartz.Adapters
     /// </summary>
     public class JobAdapter : IJob
     {
+        private readonly ITaskStorage<JobTask> _storage;
+        private readonly IEncryptionService _encryption; 
+
+        public JobAdapter(ITaskStorage<JobTask> storage, 
+            IEncryptionService encryption)
+        {
+            _storage = storage;
+            _encryption = encryption; 
+        }
+
         /// <summary>
         /// Выполнение задачи при срабатывании триггера Quartz
         /// </summary>

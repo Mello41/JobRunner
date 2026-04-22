@@ -116,6 +116,6 @@ namespace JobRunner.Core.Entities
         /// <summary>
         /// Метки (задаются пользователем)
         /// </summary>
-        ConcurrentDictionary<string, byte> Tags { get; set; }
+        ConcurrentDictionary<Guid, ITag> Tags { get; set; }
     }
 }
