@@ -17,7 +17,7 @@ namespace JobRunner.Core.DTO
         /// Значение аргумента
         /// </summary>
         [Display(Name = "Значение", Description = "Значение аргумента")]
-        public string Value { get; set; } = string.Empty;
+        public object Value { get; set; } = string.Empty;
 
         /// <summary>
         /// Зашифровать значение аргумента
