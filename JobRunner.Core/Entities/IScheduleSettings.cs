@@ -5,6 +5,8 @@ namespace JobRunner.Core.Entities
 {
     /// <summary>
     /// Интерфейс настроек периодичности задачи
+    /// Формально, этот формат не привязан к CRON 
+    /// (можно использовать для чего-нибудь другого)
     /// </summary>
     public interface IScheduleSettings 
     {
