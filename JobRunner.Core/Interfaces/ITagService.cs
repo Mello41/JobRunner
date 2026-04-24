@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace JobRunner.Core.Interfaces
 {
-    public interface ITagService
+    public interface ITagStorage<T> where T : ITag
     {
         Task<IReadOnlyList<ITag>> GetAllTagsAsync();
         Task<ITag?> GetTagByIdAsync(Guid id);
