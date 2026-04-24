@@ -23,11 +23,6 @@ namespace JobRunner.Core.Entities
         string Color { get; set; }
 
         /// <summary>
-        /// Количество задач, использующих эту метку
-        /// </summary>
-        int UsageCount { get; set; }
-
-        /// <summary>
         /// Можно ли группировать
         /// </summary>
         bool CanGrooping {  get; set; }

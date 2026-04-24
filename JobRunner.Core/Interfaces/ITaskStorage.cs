@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 namespace JobRunner.Core.Interfaces
 {
     /// <summary>
-    /// Набор методов для работы с задачей --> ханилище задач (операции с БД)
+    /// Набор методов для работы с задачей --> БД
+    /// (операции только с БД)
     /// </summary>
     /// <typeparam name="T">Тип задачи, реализующий IJobTask</typeparam>
     public interface ITaskStorage<T> where T : IJobTask

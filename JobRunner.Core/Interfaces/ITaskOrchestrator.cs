@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace JobRunner.Core.Interfaces
 {
     /// <summary>
-    /// Оркестратор задач (объединяет хранилище и планировщик)
+    /// Оркестратор задач (координация хранилища и планировщик)
     /// </summary>
     public interface ITaskOrchestrator<T> where T : IJobTask
     {
