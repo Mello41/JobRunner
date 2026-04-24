@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JobRunner.Core.DefaultImplementations;
+using System;
 using System.Collections.Concurrent;
 
 namespace JobRunner.Core.Entities
@@ -96,6 +97,6 @@ namespace JobRunner.Core.Entities
         /// <summary>
         /// Метки (задаются пользователем)
         /// </summary>
-        ConcurrentDictionary<Guid, ITag> Tags { get; set; }
+        ConcurrentDictionary<Guid, Tag> Tags { get; set; }
     }
 }

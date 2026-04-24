@@ -25,8 +25,10 @@ namespace JobRunner.Core.DefaultImplementations
         public DateTime? NextRun { get; set; }
         #endregion
 
+        /// <summary>
+        /// 
+        /// </summary>
         public INotifySettings NotifySettings { get; set; } = new NotifySettings();
-
 
         public bool IsAsyncExecution { get; set; }
         public IScheduleSettings ScheduleSettings { get; set; } = new ScheduleSettings();
@@ -36,12 +38,13 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Метки (задаются пользователем)
         /// </summary>
-        public ConcurrentDictionary<Guid, ITag> Tags { get; set; } = new();
+        public ConcurrentDictionary<Guid, Tag> Tags { get; set; } = new();
 
         public JobTask()
         {
             Id = Guid.NewGuid();
 
+            #region Базовые теги (метки)
             var tagDB = new Tag
             {
                 Id = Guid.NewGuid(),
@@ -61,6 +64,7 @@ namespace JobRunner.Core.DefaultImplementations
 
             Tags.TryAdd(tagDB.Id, tagDB);
             Tags.TryAdd(tagEmail.Id, tagEmail);
+            #endregion
         }
     }
 }
