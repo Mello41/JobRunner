@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace JobRunner.Core.Entities
+namespace JobRunner.Core.Entities.ValueObjects
 {
     /// <summary>
     /// Интерфейс расширяемого набора аргументов задачи

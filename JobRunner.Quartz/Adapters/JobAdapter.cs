@@ -1,6 +1,7 @@
 ﻿using JobRunner.Core.DefaultImplementations;
 using JobRunner.Core.Entities;
-using JobRunner.Core.Interfaces;
+using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.EntityServices;
 using Quartz;
 
 namespace JobRunner.Quartz.Adapters
@@ -10,10 +11,10 @@ namespace JobRunner.Quartz.Adapters
     /// </summary>
     public class JobAdapter : IJob
     {
-        private readonly ITaskStorage<JobTask> _storage;
+        private readonly ITaskService<JobTask> _storage;
         private readonly IEncryptionService _encryption; 
 
-        public JobAdapter(ITaskStorage<JobTask> storage, 
+        public JobAdapter(ITaskService<JobTask> storage, 
             IEncryptionService encryption)
         {
             _storage = storage;

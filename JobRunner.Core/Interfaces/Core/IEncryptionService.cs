@@ -1,8 +1,8 @@
 ﻿using JobRunner.Core.DTO;
-using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
 using System.Threading.Tasks;
 
-namespace JobRunner.Core.Interfaces
+namespace JobRunner.Core.Interfaces.Core
 {
     /// <summary>
     /// Сервис для шифрования чувствительных данных

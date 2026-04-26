@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace JobRunner.Core.Settings
+namespace JobRunner.Core.Entities.Enums
 {
     /// <summary>
     /// Список для периодичности задачи Jobtask

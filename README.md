@@ -23,6 +23,8 @@ C# + Quartz (библиотеки классов)
 			
 			Microsoft.Extensions.DependencyInjection.Abstractions v10.0.7
 			Quartz v3.18.0
+			Quartz.Extensions.Hosting v3.18.0
+			Quartz.Extensions.DependencyInjection v3.18.0
 		
 # Планируемый функционал:
 	1. Автоматизация процессов выполнения задачи (CRUD)
@@ -52,3 +54,7 @@ C# + Quartz (библиотеки классов)
 5. 
 6. 
 7. 
+
+# Ссылки на Nuget
+	https://www.nuget.org/packages/JobRunner.Core/1.0.0
+	https://www.nuget.org/packages/JobRunner.Quartz/1.0.0

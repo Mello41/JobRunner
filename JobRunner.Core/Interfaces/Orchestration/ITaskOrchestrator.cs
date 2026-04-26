@@ -3,10 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace JobRunner.Core.Interfaces
+namespace JobRunner.Core.Interfaces.Orchestration
 {
     /// <summary>
-    /// Оркестратор задач (координация хранилища и планировщик)
+    /// Оркестратор задач (координация хранилища и планировщика)
     /// </summary>
     public interface ITaskOrchestrator<T> where T : IJobTask
     {

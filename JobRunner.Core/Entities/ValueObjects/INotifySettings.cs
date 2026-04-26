@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JobRunner.Core.Entities
+namespace JobRunner.Core.Entities.ValueObjects
 {
     /// <summary>
     /// Интерфейс настроек уведомления задачи

@@ -13,18 +13,23 @@ namespace JobRunner.Core.Entities
         Guid Id { get; set; }
 
         /// <summary>
-        /// Название метки (например, "Работа", "Срочно")
+        /// Название метки 
         /// </summary>
         string Name { get; set; }
 
         /// <summary>
-        /// Цвет метки в формате HEX (например, "#4CAF50")
+        /// Описание метки
+        /// </summary>
+        string Description { get; set; }
+
+        /// <summary>
+        /// Цвет метки в формате HEX ("#4CAF50")
         /// </summary>
         string Color { get; set; }
 
         /// <summary>
-        /// Можно ли группировать
+        /// Можно ли группировать по этой метке
         /// </summary>
-        bool CanGrooping {  get; set; }
+        bool CanGrouping {  get; set; }
     }
 }

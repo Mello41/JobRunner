@@ -1,19 +1,30 @@
-﻿using JobRunner.Core.Interfaces;
+﻿using JobRunner.Core.Converters;
+using JobRunner.Core.Interfaces.Scheduler;
+using JobRunner.Quartz.Converters;
 using JobRunner.Quartz.Scheduler;
 using Microsoft.Extensions.DependencyInjection;
+using Quartz;
 
 namespace JobRunner.Quartz.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        /// <summary>
-        /// Регистрация DI Quartz (метод расширения для DI регистрации)
-        /// </summary>
-        /// <param name="services">IServiceCollection - коллекция сервисов для цепочки вызовов</param>
-        /// <returns></returns>
         public static IServiceCollection AddQuartzScheduler(this IServiceCollection services)
         {
-            services.AddSingleton(typeof(IJobScheduler<>), typeof(QuartzScheduler<>));
+            services.AddQuartz(q =>
+            {
+                q.UseMicrosoftDependencyInjectionJobFactory();
+                q.UseInMemoryStore();
+            });
+
+            services.AddQuartzHostedService(options =>
+            {
+                options.WaitForJobsToComplete = true;
+            });
+
+            services.AddSingleton<ICronConverter, CronConverter>();
+            services.AddSingleton<IJobScheduler, QuartzScheduler>();
+
             return services;
         }
     }

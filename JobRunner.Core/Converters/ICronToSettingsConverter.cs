@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Entities;
+﻿using JobRunner.Core.Entities.ValueObjects;
 
 namespace JobRunner.Core.Converters
 {

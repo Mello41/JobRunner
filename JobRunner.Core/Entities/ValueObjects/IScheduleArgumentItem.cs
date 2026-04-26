@@ -1,4 +1,4 @@
-﻿namespace JobRunner.Core.Entities
+﻿namespace JobRunner.Core.Entities.ValueObjects
 {
     /// <summary>
     /// На всякий случай 

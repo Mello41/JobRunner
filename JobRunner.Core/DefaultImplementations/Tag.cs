@@ -3,12 +3,15 @@ using System;
 
 namespace JobRunner.Core.DefaultImplementations
 {
+    /// <summary>
+    /// Пример реализации ITag
+    /// </summary>
     public class Tag : ITag
     {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public string Color { get; set; }
-        public int UsageCount { get; set; }
-        public bool CanGrooping { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Name { get; set; } = string.Empty;
+        public string Color { get; set; } = "#888888";
+        public bool CanGrouping { get; set; }
+        public string Description { get; set; }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using JobRunner.Core.DefaultImplementations;
+using JobRunner.Core.Entities.ValueObjects;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace JobRunner.Core.Entities
 {
@@ -13,11 +15,6 @@ namespace JobRunner.Core.Entities
         /// ID задачи
         /// </summary>
         Guid Id { get; set; }
-
-        /// <summary>
-        /// Process ID задачи (существует только тогда, когда задача запущена)
-        /// </summary>
-        long? PID { get; set; }
 
         /// <summary>
         /// Наименование задачи
@@ -49,25 +46,6 @@ namespace JobRunner.Core.Entities
         /// </summary>
         bool IsEnabled { get; set; }
 
-        /// <summary>
-        /// Задача запущена сейчас?
-        /// </summary>
-        bool IsRunning { get; set; }
-
-        /// <summary>
-        /// Задача завершена?
-        /// </summary>
-        bool IsCompleted { get; set; }
-
-        /// <summary>
-        /// Дата последнего запуска
-        /// </summary>
-        DateTime? LastRun { get; set; }
-
-        /// <summary>
-        /// Дата следующего запуска
-        /// </summary>
-        DateTime? NextRun { get; set; }
 
         /// <summary>
         /// Настройки уведомлений задачи
@@ -85,18 +63,15 @@ namespace JobRunner.Core.Entities
         IScheduleSettings ScheduleSettings { get; set; }
 
         /// <summary>
-        /// Последняя ошибка
-        /// </summary>
-        string LastError { get; set; }
-
-        /// <summary>
         /// Аргументы задачи (с возможностью шифрования)
         /// </summary>
         IScheduleArguments ScheduleArguments { get; set; }
 
+        IJobTaskMetadata JobTaskMetadata { get; set; }
+
         /// <summary>
         /// Метки (задаются пользователем)
         /// </summary>
-        ConcurrentDictionary<Guid, Tag> Tags { get; set; }
+        IReadOnlyList<Guid> Tags { get; set; }
     }
 }

@@ -1,35 +1,38 @@
-﻿using JobRunner.Core.Entities;
+﻿using JobRunner.Core.Entities.ValueObjects;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace JobRunner.Core.Interfaces
+namespace JobRunner.Core.Interfaces.Scheduler
 {
     /// <summary>
-    /// Сборник методов планировщика заданий (операции с памятью и выполнением)
+    /// Сборник методов планировщика заданий (Сейчас библиотека Quartz) (операции с памятью и выполнением)
     /// </summary>
     /// <typeparam name="T">Тип задачи, реализующий IJobTask</typeparam>
-    public interface IJobScheduler<T> where T : IJobTask
+    public interface IJobScheduler
     {
         #region Планировщик (жизненный цикл)
         /// <summary>
         /// Запуск программы
         /// </summary>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <remarks>
         /// Инициализирует внутренний планировщик (Quartz), загружает сохранённые задачи
         /// и начинает отслеживание расписаний. Должен быть вызван перед любыми другими операциями.
         /// </remarks>
-        Task StartProgramAsync();
+        Task StartProgramAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Остановка программы
         /// </summary>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <remarks>
         /// Останавливает все активные задачи, завершает работу внутреннего планировщика.
         /// Состояние задач сохраняется для последующего восстановления.
         /// </remarks>
-        Task StopProgramAsync();
+        Task StopProgramAsync(CancellationToken cancellationToken = default);
         #endregion
 
         #region Задача - Управление выполнением
@@ -38,7 +41,7 @@ namespace JobRunner.Core.Interfaces
         /// </summary>
         /// <param name="taskId"></param>
         /// <returns></returns>
-        Task<bool> RunNowAsync(Guid taskId);
+        Task<bool> RunNowAsync(Guid taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Перезапуск задачи (остановить и запустить заново)
@@ -50,7 +53,7 @@ namespace JobRunner.Core.Interfaces
         /// 2. Сбрасывает состояние задачи (LastError, IsRunning)
         /// 3. Запускает задачу заново
         /// </remarks>
-        Task<bool> RestartAsync(Guid taskId, int delay = 100);
+        Task<bool> RestartAsync(Guid taskId, int delay = 100, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Приостановка выполнения задачи по расписанию
@@ -61,7 +64,7 @@ namespace JobRunner.Core.Interfaces
         /// Задача остаётся в системе, но не будет запускаться по расписанию.
         /// Может быть возобновлена методом ResumeAsync.
         /// </remarks>
-        Task<bool> PauseAsync(Guid taskId);
+        Task<bool> PauseAsync(Guid taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Остановка выполняющейся задачи (принудительное завершение)
@@ -72,7 +75,7 @@ namespace JobRunner.Core.Interfaces
         /// Принудительно завершает процесс, связанный с задачей.
         /// Состояние задачи обновляется, ошибка фиксируется в LastError.
         /// </remarks>
-        Task<bool> StopAsync(Guid taskId);
+        Task<bool> StopAsync(Guid taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Возобновление выполнения задачи по расписанию
@@ -83,7 +86,12 @@ namespace JobRunner.Core.Interfaces
         /// Восстанавливает выполнение ранее приостановленной задачи.
         /// Расписание сохраняется и начинает отсчитываться заново.
         /// </remarks>
-        Task<bool> ResumeAsync(Guid taskId);
+        Task<bool> ResumeAsync(Guid taskId, CancellationToken cancellationToken = default);
+        #endregion
+
+        #region 
+        Task ScheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default);
+        Task UnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default);
         #endregion
     }
 }

@@ -1,5 +1,5 @@
 ﻿using JobRunner.Core.DTO;
-using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 

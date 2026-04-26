@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Entities;
+﻿using JobRunner.Core.Entities.ValueObjects;
 
 namespace JobRunner.Core.Converters
 {
@@ -9,6 +9,7 @@ namespace JobRunner.Core.Converters
     /// </summary>
     public interface ICronConverter
     {
+
         /// <summary>
         /// Принимает объект с настройками расписания и 
         /// возвращает валидную cron-строку (например, 
