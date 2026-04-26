@@ -89,9 +89,21 @@ namespace JobRunner.Core.Interfaces.Scheduler
         Task<bool> ResumeAsync(Guid taskId, CancellationToken cancellationToken = default);
         #endregion
 
-        #region 
-        Task ScheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default);
+        #region Управление расписанием
+        /// <summary>
+        /// Зарегистрировать задачу в планировщике
+        /// </summary>
+        Task ScheduleAsync(Guid taskId, string cronExpression, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Удалить задачу из планировщика
+        /// </summary>
         Task UnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновить расписание задачи
+        /// </summary>
+        Task RescheduleAsync(Guid taskId, string cronExpression, CancellationToken cancellationToken = default);
         #endregion
     }
 }

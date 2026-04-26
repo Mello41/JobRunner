@@ -125,12 +125,56 @@ namespace JobRunner.Quartz.Scheduler
             await _scheduler.ScheduleJob(job, trigger, cancellationToken);
         }
 
+        #region Управление состояниями задачи через Quartz
+
         /// <summary>
-        /// Удаление задачи из планировщика (вызывается оркестратором)
+        /// 
         /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="cronExpression"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task ScheduleAsync(Guid taskId, string cronExpression, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(cronExpression)) return;
+
+            var job = JobBuilder.Create<JobAdapter>()
+                .WithIdentity(taskId.ToString())
+                .UsingJobData("TaskId", taskId.ToString())
+                .Build();
+
+            var trigger = TriggerBuilder.Create()
+                .WithIdentity($"{taskId}-trigger")
+                .WithCronSchedule(cronExpression)
+                .Build();
+
+            await _scheduler.ScheduleJob(job, trigger, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task UnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default)
         {
             await _scheduler.DeleteJob(new JobKey(taskId.ToString()), cancellationToken);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="cronExpression"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task RescheduleAsync(Guid taskId, string cronExpression, CancellationToken cancellationToken = default)
+        {
+            await UnscheduleAsync(taskId, cancellationToken);
+            await ScheduleAsync(taskId, cronExpression, cancellationToken);
+        }
+
+        #endregion
     }
 }

@@ -11,12 +11,14 @@ namespace JobRunner.Core.Interfaces.EntityServices
     /// <typeparam name="T"></typeparam>
     public interface ITagService<T> : ICrudService<T, Guid> where T : class, ITag
     {
+
         /// <summary>
         /// Установить цвет метки
         /// </summary>
         /// <param name="id">id метки</param>
+        /// <param name="color">Цвет метки (#hex)</param>
         /// <returns></returns>
-        Task<ITag> SetTagColor(Guid id);
+        Task<ITag> SetTagColor(Guid id, string color);
 
         /// <summary>
         /// Посчитать количество задач, у которых есть данная метка
