@@ -68,6 +68,11 @@ namespace JobRunner.Core.Entities.ValueObjects
         bool IsRunning { get; set; }
 
         /// <summary>
+        /// Задача завершена (для однократных задач)
+        /// </summary>
+        bool IsCompleted { get; set; }
+
+        /// <summary>
         /// Сбросить статистику (на всякий случай)
         /// </summary>
         void ResetStats();

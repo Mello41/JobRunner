@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Converters;
+﻿using JobRunner.Core.Interfaces.Converters;
 using JobRunner.Core.Interfaces.Scheduler;
 using JobRunner.Quartz.Converters;
 using JobRunner.Quartz.Scheduler;
@@ -22,7 +22,7 @@ namespace JobRunner.Quartz.Extensions
                 options.WaitForJobsToComplete = true;
             });
 
-            services.AddSingleton<ICronConverter, CronConverter>();
+            services.AddSingleton<IScheduleConverter, CronConverter>();
             services.AddSingleton<IJobScheduler, QuartzScheduler>();
 
             return services;

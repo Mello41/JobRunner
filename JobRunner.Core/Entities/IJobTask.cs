@@ -1,7 +1,5 @@
-﻿using JobRunner.Core.DefaultImplementations;
-using JobRunner.Core.Entities.ValueObjects;
+﻿using JobRunner.Core.Entities.ValueObjects;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace JobRunner.Core.Entities
@@ -46,7 +44,6 @@ namespace JobRunner.Core.Entities
         /// </summary>
         bool IsEnabled { get; set; }
 
-
         /// <summary>
         /// Настройки уведомлений задачи
         /// </summary>
@@ -54,8 +51,17 @@ namespace JobRunner.Core.Entities
 
         /// <summary>
         /// Параллельное выполнение?
+        /// IsAsyncExecution = true -->	Не ждать завершения процесса
+        /// IsAsyncExecution = false --> Ждать завершения процесса
         /// </summary>
         bool IsAsyncExecution { get; set; }
+
+        /// <summary>
+        /// Разрешить параллельное выполнение (несколько экземпляров одновременно)
+        /// AllowConcurrentExecution = true -->	Разрешить несколько экземпляров задачи одновременно
+        /// AllowConcurrentExecution = false --> Запретить несколько экземпляров
+        /// </summary>
+        bool AllowConcurrentExecution { get; set; }
 
         /// <summary>
         /// Настройки периодичности

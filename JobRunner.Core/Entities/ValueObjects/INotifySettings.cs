@@ -1,4 +1,6 @@
-﻿using System;
+﻿using JobRunner.Core.Entities.Enums;
+using System;
+using System.Collections.Generic;
 
 namespace JobRunner.Core.Entities.ValueObjects
 {
@@ -26,5 +28,25 @@ namespace JobRunner.Core.Entities.ValueObjects
         /// Текст уведомления
         /// </summary>
         string NotificationMessage { get; set; }
+
+        /// <summary>
+        /// Способы уведомления (можно несколько)
+        /// </summary>
+        List<NotificationType> NotificationMethods { get; set; }
+
+        /// <summary>
+        /// Email для уведомлений (если выбран Email)
+        /// </summary>
+        string? NotificationEmail { get; set; }
+
+        /// <summary>
+        /// Telegram chat ID (если выбран Telegram)
+        /// </summary>
+        string? TelegramChatId { get; set; }
+
+        /// <summary>
+        /// Webhook URL (если выбран Webhook)
+        /// </summary>
+        string? WebhookUrl { get; set; }
     }
 }

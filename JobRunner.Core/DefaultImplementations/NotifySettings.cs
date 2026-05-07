@@ -1,5 +1,7 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
+﻿using JobRunner.Core.Entities.Enums;
+using JobRunner.Core.Entities.ValueObjects;
 using System;
+using System.Collections.Generic;
 
 namespace JobRunner.Core.DefaultImplementations
 {
@@ -28,5 +30,9 @@ namespace JobRunner.Core.DefaultImplementations
         /// </summary>
         public string NotificationMessage { get; set; } = string.Empty;
 
+        public List<NotificationType> NotificationMethods { get; set; } = new();
+        public string? NotificationEmail { get; set; } 
+        public string? TelegramChatId { get; set; } 
+        public string? WebhookUrl { get; set; } 
     }
 }

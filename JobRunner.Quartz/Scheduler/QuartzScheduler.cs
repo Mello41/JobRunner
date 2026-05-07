@@ -1,7 +1,7 @@
 ﻿using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Interfaces.Converters;
 using JobRunner.Core.Interfaces.Scheduler;
 using JobRunner.Quartz.Adapters;
-using JobRunner.Quartz.Converters;
 using Quartz;
 using Quartz.Impl;
 
@@ -13,7 +13,12 @@ namespace JobRunner.Quartz.Scheduler
     public class QuartzScheduler : IJobScheduler
     {
         private IScheduler _scheduler;
-        private readonly CronConverter _cronConverter = new();
+        private readonly IScheduleConverter _converter;
+
+        public QuartzScheduler(IScheduleConverter converter)
+        {
+            _converter = converter;
+        }
 
         /// <summary>
         /// Запускает планировщик Quartz.NET
@@ -107,7 +112,7 @@ namespace JobRunner.Quartz.Scheduler
         /// <exception cref="InvalidOperationException"></exception>
         public async Task ScheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default)
         {
-            var cronExpression = _cronConverter.Convert(schedule);
+            var cronExpression = _converter.Convert(schedule);
             if (string.IsNullOrEmpty(cronExpression))
                 throw new InvalidOperationException("Cron expression is empty or invalid");
 

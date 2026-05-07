@@ -23,16 +23,15 @@ namespace JobRunner.Core.DefaultImplementations
         public bool IsEnabled { get; set; } = true;
         #endregion
 
-        /// <summary>
-        /// 
-        /// </summary>
         public INotifySettings NotifySettings { get; set; } = new NotifySettings();
         public IScheduleSettings ScheduleSettings { get; set; } = new CronSchedule();
         public IScheduleArguments ScheduleArguments { get; set; } = new ScheduleArguments();
         public IJobTaskMetadata JobTaskMetadata { get; set; } // = new JobTaskMetadata();
 
         public bool IsAsyncExecution { get; set; }
-        
+        public bool AllowConcurrentExecution { get; set; }
+
+
         /// <summary>
         /// Метки (задаются пользователем)
         /// </summary>
