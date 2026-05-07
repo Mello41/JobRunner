@@ -2,6 +2,7 @@
 {
     /// <summary>
     /// Маркерный интерфейс для всех типов расписаний
+    /// только данные и методы, не зависящие от планировщика
     /// </summary>
     /// <remarks>
     /// Реализации: OnceSchedule, IntervalSchedule, DailySchedule, WeeklySchedule, CronSchedule
@@ -10,13 +11,6 @@
     /// </remarks>
     public interface IScheduleSettings
     {
-        /// <summary>
-        /// Преобразует расписание в Cron-выражение для Quartz
-        /// </summary>
-        /// <returns>Cron-выражение (формат: секунды минуты часы день 
-        /// месяц день_недели год)</returns>
-        string ToCronExpression();
-
         /// <summary>
         /// Возвращает человекочитаемое описание расписания
         /// </summary>

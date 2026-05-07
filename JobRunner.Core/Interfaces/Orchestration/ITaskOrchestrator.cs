@@ -1,6 +1,7 @@
 ﻿using JobRunner.Core.Entities;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JobRunner.Core.Interfaces.Orchestration
@@ -15,7 +16,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// </summary>
         /// <param name="task">Задача для создания (Id может пусто быть)</param>
         /// <returns>T - созданная задача с присвоенным значением Id</returns>
-        Task<T> CreateAndScheduleAsync(T task);
+        Task<T> CreateAndScheduleAsync(T task, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Обновление задачи и перерегистрация в планировщике
@@ -23,7 +24,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// <param name="task">Задача с обновлёнными данными</param>
         /// <returns>true — обновление успешно, 
         /// false — задача не найдена</returns>
-        Task<bool> UpdateAndRescheduleAsync(T task);
+        Task<bool> UpdateAndRescheduleAsync(T task, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Удаление задачи и её удаление из планировщика
@@ -31,21 +32,21 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// <param name="taskId">Уникальный идентификатор задачи</param>
         /// <returns> true — удаление успешно,
         /// false — задача не найдена </returns>
-        Task<bool> DeleteAndUnscheduleAsync(Guid taskId);
+        Task<bool> DeleteAndUnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Получение задачи по идентификатору
         /// </summary>
         /// <param name="taskId">Уникальный идентификатор задачи</param>
         /// <returns>Задача или null, если не найдена</returns>
-        Task<T?> GetTaskAsync(Guid taskId);
+        Task<T?> GetTaskAsync(Guid taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Получение всех задач
         /// </summary>
         /// <returns>Коллекция всех задач, отсортированных по Id</returns>
         /// <remarks>Данные читаются из БД (ITaskStorage.GetAllAsync)</remarks>
-        Task<IReadOnlyList<T>> GetAllTasksAsync();
+        Task<IReadOnlyList<T>> GetAllTasksAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Принудительный немедленный запуск задачи
@@ -54,7 +55,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// <returns>true — задача запущена, 
         /// false — задача не найдена</returns>
         /// <remarks>Вызывает IJobScheduler.RunNowAsync</remarks>
-        Task<bool> RunNowAsync(Guid taskId);
+        Task<bool> RunNowAsync(Guid taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Приостановка выполнения задачи по расписанию
@@ -64,7 +65,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// false — задача не найдена</returns>
         /// <remarks>Вызывает IJobScheduler.PauseAsync. 
         /// Может быть возобновлена через ResumeAsync</remarks>
-        Task<bool> PauseAsync(Guid taskId);
+        Task<bool> PauseAsync(Guid taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Возобновление выполнения задачи по расписанию
@@ -73,7 +74,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// <returns>true — задача возобновлена, 
         /// false — задача не найдена</returns>
         /// <remarks>Вызывает IJobScheduler.ResumeAsync</remarks>
-        Task<bool> ResumeAsync(Guid taskId);
+        Task<bool> ResumeAsync(Guid taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Принудительная остановка выполняющейся задачи
@@ -83,6 +84,6 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// false — задача не найдена или не выполняется</returns>
         /// <remarks>Вызывает IJobScheduler.StopAsync. 
         /// Завершает процесс задачи.</remarks>
-        Task<bool> StopAsync(Guid taskId);
+        Task<bool> StopAsync(Guid taskId, CancellationToken cancellationToken = default);
     }
 }

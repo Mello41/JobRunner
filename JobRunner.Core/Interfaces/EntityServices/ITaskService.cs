@@ -1,6 +1,7 @@
 ﻿using JobRunner.Core.Entities;
 using JobRunner.Core.Interfaces.Core;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JobRunner.Core.Interfaces.EntityServices
@@ -18,7 +19,7 @@ namespace JobRunner.Core.Interfaces.EntityServices
         /// <param name="pid">Идентификатор процесса (PID)</param>
         /// <returns>Задача или null, если не найдена</returns>
         /// <remarks>Важный ньюанс - PID существует только когда задача выполняется</remarks>
-        Task<T?> GetByPIDAsync(long pid);
+        Task<T?> GetByPIDAsync(long pid, CancellationToken cancellationToken = default);
 
     }
 }

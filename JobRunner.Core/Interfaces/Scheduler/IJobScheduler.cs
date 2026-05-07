@@ -1,12 +1,11 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace JobRunner.Core.Interfaces.Scheduler
 {
     /// <summary>
-    /// Сборник методов планировщика заданий (Сейчас библиотека Quartz) (операции с памятью и выполнением)
+    /// Сборник методов планировщика заданий (операции с памятью и выполнением)
     /// </summary>
     /// <typeparam name="T">Тип задачи, реализующий IJobTask</typeparam>
     public interface IJobScheduler

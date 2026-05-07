@@ -1,7 +1,7 @@
 ﻿using JobRunner.Core.Entities.ValueObjects;
 using System;
 
-namespace JobRunner.Core.Converters
+namespace JobRunner.Core.Interfaces.Converters
 {
     /// <summary>
     /// Интерфейс конвертера интервала для других вариантов библиотек
