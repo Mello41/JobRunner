@@ -24,20 +24,14 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
         /// </summary>
         public HashSet<DayOfWeek> DaysOfWeek { get; set; } = new();
 
-        public string ToCronExpression()
-        {
-            if (DaysOfWeek.Count == 0) return string.Empty;
-            var days = string.Join(",", DaysOfWeek.Select(d => (int)d + 1));
-            return $"0 {Minute} {Hour} ? * {days}";
-        }
-
         public string GetDescription()
         {
             var days = string.Join(", ", DaysOfWeek.Select(GetShortDayName));
             return $"Еженедельно в {Hour:D2}:{Minute:D2} ({days})";
         }
 
-        public bool IsValid() => DaysOfWeek.Count > 0 && Minute >= 0 && Minute <= 59 && Hour >= 0 && Hour <= 23;
+        public bool IsValid() => 
+            DaysOfWeek.Count > 0 && Minute >= 0 && Minute <= 59 && Hour >= 0 && Hour <= 23;
 
         private static string GetShortDayName(DayOfWeek day) => day switch
         {

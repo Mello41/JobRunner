@@ -17,21 +17,8 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
         /// </summary>
         public DateTime? StartAt { get; set; }
 
-        public string ToCronExpression()
-        {
-            var minutes = (int)IntervalMinutes;
-            minutes = Clamp(minutes, 1, 59);
-            return $"0 */{minutes} * * * ?";
-        }
-
         public string GetDescription() => $"Каждые {(int)IntervalMinutes} минут";
 
         public bool IsValid() => IntervalMinutes >= 1 && IntervalMinutes <= 59;
-
-        private static int Clamp(int value, int min, int max)
-        {
-            return value < min ? min : (value > max ? max : value);
-        }
-
     }
 }
