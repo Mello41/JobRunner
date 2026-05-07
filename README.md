@@ -13,7 +13,7 @@ C# + Quartz (библиотеки классов)
 	JobRunner.Core - библиотека классов (.NET Standart 2.0 с версией языка C# 9.0)
 			доменная модель, DTO, интерфейсы
 		Зависимости: 
-			System.Text.Json v6.0.10
+			System.Text.Json v6.0.11
 			System.ComponentModel.DataAnnotations v5.0.0
 
 	JobRunner.Quartz - библиотека классов (.NET 10.0)

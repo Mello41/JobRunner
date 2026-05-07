@@ -1,4 +1,6 @@
-﻿namespace JobRunner.Core.Entities.ValueObjects
+﻿using JobRunner.Core.Entities.ValueObjects.Settings;
+
+namespace JobRunner.Core.Entities.ValueObjects
 {
     /// <summary>
     /// Маркерный интерфейс для всех типов расписаний

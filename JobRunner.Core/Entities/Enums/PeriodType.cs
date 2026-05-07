@@ -13,7 +13,7 @@ namespace JobRunner.Core.Entities.Enums
         [Display(Name = "Каждую минуту")]
         EveryMinutes,
 
-        [Display(Name = "Кадый час")]
+        [Display(Name = "Каждый час")]
         EveryHourly,
 
         [Display(Name = "Каждый день")]
