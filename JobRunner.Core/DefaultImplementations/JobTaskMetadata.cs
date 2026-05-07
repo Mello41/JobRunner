@@ -17,6 +17,7 @@ namespace JobRunner.Core.DefaultImplementations
         public string? LastError { get; set; }
         public DateTime? LastErrorTime { get; set; }
         public bool IsRunning { get; set; }
+        public bool IsCompleted { get; set; }
 
         public void ResetStats()
         {
