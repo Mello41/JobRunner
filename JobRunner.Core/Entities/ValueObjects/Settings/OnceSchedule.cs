@@ -7,7 +7,7 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
     /// </summary>
     public sealed record OnceSchedule : IScheduleSettings
     {
-        public DateTime StartTime { get; init; }
+        public DateTime StartTime { get; set; }
 
         /// <summary>
         /// dd.MM.yyyy HH:mm:ss

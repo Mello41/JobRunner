@@ -1,4 +1,5 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
+﻿using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
 using JobRunner.Core.Interfaces.Converters;
 using JobRunner.Core.Interfaces.Scheduler;
 using JobRunner.Quartz.Adapters;
@@ -181,5 +182,25 @@ namespace JobRunner.Quartz.Scheduler
         }
 
         #endregion
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tasks"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        public async Task RestoreSchedulesAsync(IEnumerable<IJobTask> tasks, CancellationToken ct = default)
+        {
+            foreach (var task in tasks)
+            {
+                if (!task.IsEnabled) continue;
+
+                var cronExpression = _converter.Convert(task.ScheduleSettings);
+                if (!string.IsNullOrEmpty(cronExpression))
+                {
+                    await ScheduleAsync(task.Id, cronExpression, ct);
+                }
+            }
+        }
     }
 }

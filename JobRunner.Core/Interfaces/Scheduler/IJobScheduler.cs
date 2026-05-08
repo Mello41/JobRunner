@@ -1,4 +1,6 @@
-﻿using System;
+﻿using JobRunner.Core.Entities;
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -103,6 +105,14 @@ namespace JobRunner.Core.Interfaces.Scheduler
         /// Обновить расписание задачи
         /// </summary>
         Task RescheduleAsync(Guid taskId, string cronExpression, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Перерегистрировать все задачи из БД в Quartz (восстановление после перезапуска)
+        /// </summary>
+        /// <param name="tasks"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task RestoreSchedulesAsync(IEnumerable<IJobTask> tasks, CancellationToken ct = default);
         #endregion
     }
 }

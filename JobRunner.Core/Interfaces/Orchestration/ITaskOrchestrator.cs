@@ -35,6 +35,13 @@ namespace JobRunner.Core.Interfaces.Orchestration
         Task<bool> DeleteAndUnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Загрузить все задачи из БД и восстановить их в планировщике
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task RestoreAllTasksAsync(CancellationToken ct = default);
+
+        /// <summary>
         /// Получение задачи по идентификатору
         /// </summary>
         /// <param name="taskId">Уникальный идентификатор задачи</param>
