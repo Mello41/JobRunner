@@ -1,6 +1,5 @@
 ﻿using JobRunner.Core.Entities;
 using JobRunner.Core.Entities.ValueObjects;
-using JobRunner.Core.Entities.ValueObjects.Settings;
 using System;
 using System.Collections.Generic;
 
@@ -24,13 +23,12 @@ namespace JobRunner.Core.DefaultImplementations
         #endregion
 
         public INotifySettings NotifySettings { get; set; } = new NotifySettings();
-        public IScheduleSettings ScheduleSettings { get; set; } = new CronSchedule();
+        public IScheduleSettings ScheduleSettings { get; set; } // = new CronSchedule();
         public IScheduleArguments ScheduleArguments { get; set; } = new ScheduleArguments();
-        public IJobTaskMetadata JobTaskMetadata { get; set; } // = new JobTaskMetadata();
+        public IJobTaskMetadata JobTaskMetadata { get; set; } = new JobTaskMetadata();
 
         public bool IsAsyncExecution { get; set; }
         public bool AllowConcurrentExecution { get; set; }
-
 
         /// <summary>
         /// Метки (задаются пользователем)
