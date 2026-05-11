@@ -45,6 +45,12 @@ namespace JobRunner.Core.Entities
         bool IsEnabled { get; set; }
 
         /// <summary>
+        /// Таймаут выполнения в секундах (null = без таймаута)
+        /// Если задача выполняется дольше указанного времени, она принудительно завершается
+        /// </summary>
+        int? TimeoutSeconds { get; set; }
+
+        /// <summary>
         /// Настройки уведомлений задачи
         /// </summary>
         INotifySettings NotifySettings { get; set; }

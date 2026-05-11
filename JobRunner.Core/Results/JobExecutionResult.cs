@@ -38,6 +38,11 @@ namespace JobRunner.Core.Results
         public long? DurationMs { get; set; }
 
         /// <summary>
+        /// Был ли превышен таймаут выполнения
+        /// </summary>
+        public bool IsTimeout { get; set; }
+
+        /// <summary>
         /// Выходной код процесса (если есть)
         /// </summary>
         public int? ExitCode { get; set; }
@@ -79,6 +84,21 @@ namespace JobRunner.Core.Results
                 StartTime = startTime,
                 EndTime = DateTime.UtcNow,
                 ExitCode = exitCode
+            };
+        }
+
+        /// <summary>
+        /// Создать результат с таймаутом
+        /// </summary>
+        public static JobExecutionResult CreateTimeout(int timeoutSeconds, DateTime startTime)
+        {
+            return new JobExecutionResult
+            {
+                Success = false,
+                ErrorMessage = $"Task exceeded timeout of {timeoutSeconds} seconds",
+                StartTime = startTime,
+                EndTime = DateTime.UtcNow,
+                IsTimeout = true
             };
         }
     }

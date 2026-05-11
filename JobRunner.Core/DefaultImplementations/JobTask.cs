@@ -20,6 +20,8 @@ namespace JobRunner.Core.DefaultImplementations
         public DateTime StartRun { get; set; }
         public DateTime EndRun { get; set; }
         public bool IsEnabled { get; set; } = true;
+
+        public int? TimeoutSeconds { get; set; }
         #endregion
 
         public INotifySettings NotifySettings { get; set; } = new NotifySettings();
