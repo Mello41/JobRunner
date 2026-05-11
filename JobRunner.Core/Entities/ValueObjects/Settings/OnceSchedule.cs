@@ -9,12 +9,19 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
     {
         public DateTime StartTime { get; set; }
 
-        /// <summary>
-        /// dd.MM.yyyy HH:mm:ss
-        /// </summary>
-        /// <returns></returns>
-        public string GetDescription() => $"Однократно {StartTime:dd.MM.yyyy HH:mm:ss}";
+        public string GetDescription() =>
+            $"Однократно {StartTime:dd.MM.yyyy HH:mm:ss}";
 
-        public bool IsValid() => StartTime > DateTime.Now;
+        public bool IsValid() => StartTime != default;
+
+        /// <summary>
+        /// Проверяет, нужно ли выполнять задачу
+        /// </summary>
+        /// <param name="isCompleted">Флаг из IJobTaskMetadata.IsCompleted</param>
+        public bool ShouldExecute(bool isCompleted)
+        {
+            if (isCompleted) return false;
+            return StartTime <= DateTime.Now;
+        }
     }
 }

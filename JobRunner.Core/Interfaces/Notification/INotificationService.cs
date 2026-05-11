@@ -30,5 +30,7 @@ namespace JobRunner.Core.Interfaces.Notification
         /// Отправить уведомление до выполнения задачи (по данным из события)
         /// </summary>
         Task NotifyBeforeAsync(Guid taskId, string taskName, INotifySettings? settings, CancellationToken ct = default);
+    
+        
     }
 }
