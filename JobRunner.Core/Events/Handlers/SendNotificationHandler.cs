@@ -10,9 +10,13 @@ namespace JobRunner.Core.Events.Handlers
     /// <summary>
     /// Обработчик событий задачи для отправки уведомлений
     /// (Email, Telegram, Webhook, Popup и т.д.)
-    /// Этот обработчик только маршрутизирует уведомления.
-    /// Реальная отправка делегируется INotificationSender.
+    /// Этот обработчик только маршрутизирует уведомления на основе настроек из события.
+    /// Реальная отправка делегируется INotificationService.
     /// </summary>
+    /// <remarks>
+    /// Настройки уведомлений приходят прямо в событии (через INotifiableEvent),
+    /// поэтому не нужно загружать задачу из БД.
+    /// </remarks>
     public class SendNotificationHandler :
         IDomainEventHandler<ITaskStartedEvent>,
         IDomainEventHandler<ITaskCompletedEvent>
@@ -35,24 +39,23 @@ namespace JobRunner.Core.Events.Handlers
         {
             try
             {
-                // Здесь нужен полный объект задачи, а не только событие
-                // Проблема: ITaskStartedEvent не содержит INotifySettings
-                // 
-                // Варианты решения:
-                // 1. Расширить ITaskStartedEvent, добавив TaskId и загружать задачу из БД
-                // 2. Передавать IJobTask в событии
-                // 3. Использовать отдельный механизм для уведомлений до выполнения
+                if (@event.NotifySettings?.NotifyBefore != true)
+                {
+                    _logger.LogDebug(
+                        "Before-notification skipped for task {TaskId} (NotifyBefore=false or null)",
+                        @event.TaskId);
+                    return;
+                }
 
                 _logger.LogInformation(
-                    "Task {TaskId} started, checking if before-notification needed",
-                    @event.TaskId);
+                    "Sending before-notification for task {TaskName} (Id: {TaskId})",
+                    @event.TaskName, @event.TaskId);
 
-                // TODO: Получить задачу из БД через ITaskService
-                // var task = await _taskService.GetByIdAsync(@event.TaskId, cancellationToken);
-                // if (task?.NotifySettings.NotifyBefore == true)
-                // {
-                //     await _notificationService.NotifyBeforeAsync(task, cancellationToken);
-                // }
+                await _notificationService.NotifyBeforeAsync(
+                    @event.TaskId,
+                    @event.TaskName,
+                    @event.NotifySettings,
+                    cancellationToken);
             }
             catch (Exception ex)
             {
@@ -67,16 +70,26 @@ namespace JobRunner.Core.Events.Handlers
         {
             try
             {
-                _logger.LogInformation(
-                    "Task {TaskId} completed (Success: {Success}), checking if after-notification needed",
-                    @event.TaskId, @event.Success);
+                if (@event.NotifySettings?.NotifyAfter != true)
+                {
+                    _logger.LogDebug(
+                        "After-notification skipped for task {TaskId} (NotifyAfter=false or null)",
+                        @event.TaskId);
+                    return;
+                }
 
-                // TODO: Получить задачу из БД через ITaskService
-                // var task = await _taskService.GetByIdAsync(@event.TaskId, cancellationToken);
-                // if (task?.NotifySettings.NotifyAfter == true)
-                // {
-                //     await _notificationService.NotifyAsync(task, @event.Success, @event.ErrorMessage, cancellationToken);
-                // }
+                var status = @event.Success ? "successfully" : "with error";
+                _logger.LogInformation(
+                    "Sending after-notification for task {TaskName} (Id: {TaskId}) completed {Status}",
+                    @event.TaskName, @event.TaskId, status);
+
+                await _notificationService.NotifyAsync(
+                    @event.TaskId,
+                    @event.TaskName,
+                    @event.Success,
+                    @event.ErrorMessage,
+                    @event.NotifySettings,
+                    cancellationToken);
             }
             catch (Exception ex)
             {

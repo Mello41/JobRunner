@@ -1,6 +1,6 @@
 ﻿using JobRunner.Core.DTO;
 using JobRunner.Core.Entities.Enums;
-using JobRunner.Core.Interfaces.Events;
+using JobRunner.Core.Interfaces.Events.TaskCrud;
 using JobRunner.Core.Interfaces.Events.TaskStatus;
 using JobRunner.Core.Interfaces.Notification.UI;
 using Microsoft.Extensions.Logging;

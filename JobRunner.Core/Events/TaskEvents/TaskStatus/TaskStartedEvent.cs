@@ -1,4 +1,5 @@
-﻿using JobRunner.Core.Interfaces.Events.TaskStatus;
+﻿using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Interfaces.Events.TaskStatus;
 using System;
 
 namespace JobRunner.Core.Events.TaskEvents.TaskStatus
@@ -13,5 +14,6 @@ namespace JobRunner.Core.Events.TaskEvents.TaskStatus
         public DateTime StartTime { get; set; }
         public long? ProcessId { get; set; }
         public string? ExecutionPath { get; set; }
+        public INotifySettings NotifySettings { get; set; }
     }
 }

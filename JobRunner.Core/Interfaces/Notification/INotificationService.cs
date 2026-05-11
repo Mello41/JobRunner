@@ -1,4 +1,6 @@
 ﻿using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,17 +12,23 @@ namespace JobRunner.Core.Interfaces.Notification
     public interface INotificationService
     {
         /// <summary>
-        /// Отправить уведомление о выполнении задачи
+        /// Отправить уведомление о выполнении задачи (с полным объектом)
         /// </summary>
-        /// <param name="task">Задача</param>
-        /// <param name="isSuccess">Успешно ли выполнена</param>
-        /// <param name="errorMessage">Сообщение об ошибке (если есть)</param>
-        Task NotifyAsync(IJobTask task, bool isSuccess, string? 
-                            errorMessage = null, CancellationToken cancellationToken = default);
+        Task NotifyAsync(IJobTask task, bool isSuccess, string? errorMessage = null, CancellationToken ct = default);
 
         /// <summary>
-        /// Отправить уведомление до выполнения задачи
+        /// Отправить уведомление о выполнении задачи (по данным из события)
         /// </summary>
-        Task NotifyBeforeAsync(IJobTask task, CancellationToken cancellationToken = default);
+        Task NotifyAsync(Guid taskId, string taskName, bool isSuccess, string? errorMessage, INotifySettings? settings, CancellationToken ct = default);
+
+        /// <summary>
+        /// Отправить уведомление до выполнения задачи (с полным объектом)
+        /// </summary>
+        Task NotifyBeforeAsync(IJobTask task, CancellationToken ct = default);
+
+        /// <summary>
+        /// Отправить уведомление до выполнения задачи (по данным из события)
+        /// </summary>
+        Task NotifyBeforeAsync(Guid taskId, string taskName, INotifySettings? settings, CancellationToken ct = default);
     }
 }

@@ -1,7 +1,7 @@
-﻿using JobRunner.Core.Interfaces.Events;
+﻿using JobRunner.Core.Interfaces.Events.TaskCrud;
 using System;
 
-namespace JobRunner.Core.Events.TaskEvents
+namespace JobRunner.Core.Events.TaskEvents.TaskCrudEvents
 {
     /// <summary>
     /// Событие: создана задача

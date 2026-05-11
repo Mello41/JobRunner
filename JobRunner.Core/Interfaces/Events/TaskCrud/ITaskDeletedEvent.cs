@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JobRunner.Core.Interfaces.Events
+namespace JobRunner.Core.Interfaces.Events.TaskCrud
 {
     /// <summary>
     /// Событие: задача удалена
