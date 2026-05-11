@@ -3,6 +3,9 @@ using System;
 
 namespace JobRunner.Core.Events.TaskEvents
 {
+    /// <summary>
+    /// Событие: создана задача
+    /// </summary>
     public class TaskCreatedEvent : ITaskCreatedEvent
     {
         public Guid TaskId { get; set; }
