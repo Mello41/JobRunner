@@ -1,7 +1,7 @@
-﻿using JobRunner.Core.Interfaces.Events;
+﻿using JobRunner.Core.Interfaces.Events.TaskStatus;
 using System;
 
-namespace JobRunner.Core.Events.TaskEvents
+namespace JobRunner.Core.Events.TaskEvents.TaskStatus
 {
     /// <summary>
     /// Событие: задача завершила выполнение

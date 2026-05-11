@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using JobRunner.Core.Events.TaskEvents;
+using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using Microsoft.Extensions.Logging;
 
 namespace JobRunner.Core.Events.Handlers
