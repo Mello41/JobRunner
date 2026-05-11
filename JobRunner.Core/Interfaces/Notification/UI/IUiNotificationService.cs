@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace JobRunner.Core.Interfaces
+namespace JobRunner.Core.Interfaces.Notification.UI
 {
     /// <summary>
     /// Сервис для отправки уведомлений в UI (абстракция)
