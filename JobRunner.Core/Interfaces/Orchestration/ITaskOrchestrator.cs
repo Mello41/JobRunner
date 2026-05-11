@@ -1,4 +1,5 @@
 ﻿using JobRunner.Core.Entities;
+using JobRunner.Core.Results;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -92,5 +93,19 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// <remarks>Вызывает IJobScheduler.StopAsync. 
         /// Завершает процесс задачи.</remarks>
         Task<bool> StopAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Выполнить задачу 
+        /// </summary>
+        Task<JobExecutionResult> ExecuteTaskAsync(Guid taskId, CancellationToken ct = default);
+
+        /// <summary>
+        /// Инициализация оркестратора при старте приложения
+        /// </summary>
+        /// <remarks>
+        /// Сбрасывает флаг IsRunning у всех задач (т.к. процессы уже не актуальны)
+        /// и восстанавливает расписания.
+        /// </remarks>
+        Task InitializeAsync(CancellationToken ct = default);
     }
 }

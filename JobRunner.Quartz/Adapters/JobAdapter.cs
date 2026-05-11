@@ -11,7 +11,7 @@ using System.Collections.Concurrent;
 namespace JobRunner.Quartz.Adapters
 {
     /// <summary>
-    /// паттерн Adapter, который соединяет 
+    /// паттерн Adapter, который соединяет (адаптирует)
     /// доменную модель с внешним планировщиком Quartz.NET
     /// </summary>
     public class JobAdapter : IJob
