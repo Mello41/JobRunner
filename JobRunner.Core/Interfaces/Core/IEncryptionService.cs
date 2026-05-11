@@ -29,5 +29,13 @@ namespace JobRunner.Core.Interfaces.Core
         /// Расшифровать все чувствительные аргументы задачи
         /// </summary>
         Task DecryptSensitiveArgumentsAsync(IScheduleArguments arguments, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Вернуть аргументы в исходное (зашифрованное) состояние
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task ReencryptSensitiveArgumentsAsync(IScheduleArguments arguments, CancellationToken ct = default);
     }
 }
