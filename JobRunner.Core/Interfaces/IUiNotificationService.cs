@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using JobRunner.Core.DTO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JobRunner.Core.Interfaces
