@@ -1,11 +1,12 @@
-﻿using System;
+﻿using JobRunner.Core.Interfaces.Events;
+using System;
 
-namespace JobRunner.Core.Events
+namespace JobRunner.Core.Events.TaskEvents
 {
     /// <summary>
     /// Событие: задача завершила выполнение
     /// </summary>
-    public class TaskCompletedEvent
+    public class TaskCompletedEvent : ITaskCompletedEvent
     {
         public Guid TaskId { get; set; }
         public string TaskName { get; set; } = string.Empty;
