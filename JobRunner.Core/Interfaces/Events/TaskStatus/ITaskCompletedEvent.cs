@@ -11,6 +11,6 @@ namespace JobRunner.Core.Interfaces.Events.TaskStatus
         bool Success { get; set; }
         string? ErrorMessage { get; set; }
         DateTime CompletionTime { get; set; }
-        long DurationMs { get; set; }
+        long? DurationMs { get; set; }
     }
 }

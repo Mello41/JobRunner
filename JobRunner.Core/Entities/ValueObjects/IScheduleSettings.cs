@@ -1,5 +1,4 @@
-﻿using JobRunner.Core.Entities.ValueObjects.Settings;
-
+﻿
 namespace JobRunner.Core.Entities.ValueObjects
 {
     /// <summary>
