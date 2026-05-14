@@ -3,7 +3,7 @@
 namespace JobRunner.Core.Entities.ValueObjects.Settings
 {
     /// <summary>
-    /// Ежемесячное расписание
+    /// Расписание для ежемесячного выполнения
     /// </summary>
     public class MonthlySchedule : IScheduleSettings
     {

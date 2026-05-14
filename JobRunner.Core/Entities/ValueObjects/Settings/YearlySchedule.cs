@@ -3,7 +3,7 @@
 namespace JobRunner.Core.Entities.ValueObjects.Settings
 {
     /// <summary>
-    /// Ежегодное расписание (раз в год в указанную дату)
+    /// Расписание для ежегодного выполнения
     /// </summary>
     public sealed record YearlySchedule : IScheduleSettings
     {

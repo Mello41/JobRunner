@@ -17,8 +17,16 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
         /// </summary>
         public DateTime? StartAt { get; set; }
 
+        /// <summary>
+        /// Возвращает человекочитаемое описание расписания
+        /// </summary>
+        /// <returns>
         public string GetDescription() => $"Каждые {(int)IntervalMinutes} минут";
 
+        /// <summary>
+        /// Проверяет, корректны ли параметры расписания
+        /// </summary>
+        /// <returns></returns>
         public bool IsValid() => IntervalMinutes >= 1 && IntervalMinutes <= 59;
     }
 }

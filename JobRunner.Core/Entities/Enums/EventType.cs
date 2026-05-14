@@ -1,63 +1,43 @@
-﻿namespace JobRunner.Core.Entities.Enums
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace JobRunner.Core.Entities.Enums
 {
     /// <summary>
     /// Типы событий задач
     /// </summary>
     public enum EventType
     {
-        /// <summary>
-        /// Задача создана
-        /// </summary>
+        [Display(Name = "Задача создана")]
         TaskCreated,
 
-        /// <summary>
-        /// Задача обновлена
-        /// </summary>
+        [Display(Name = "Задача обновлена")]
         TaskUpdated,
 
-        /// <summary>
-        /// Задача удалена
-        /// </summary>
+        [Display(Name = "Задача удалена")]
         TaskDeleted,
 
-        /// <summary>
-        /// Задача запущена
-        /// </summary>
+        [Display(Name = "Задача запущена")]
         TaskStarted,
 
-        /// <summary>
-        /// Задача завершена (успешно или с ошибкой)
-        /// </summary>
+        [Display(Name = "Задача завершена (успешно или с ошибкой)")]
         TaskCompleted,
 
-        /// <summary>
-        /// Задача приостановлена
-        /// </summary>
+        [Display(Name = "Задача приостановлена")]
         TaskPaused,
 
-        /// <summary>
-        /// Задача возобновлена
-        /// </summary>
+        [Display(Name = "Задача возобновлена")]
         TaskResumed,
 
-        /// <summary>
-        /// Задача остановлена принудительно
-        /// </summary>
+        [Display(Name = "Задача остановлена принудительно")]
         TaskStopped,
 
-        /// <summary>
-        /// Задача пропущена (например, из-за блокировки)
-        /// </summary>
+        [Display(Name = "Задача пропущена (например, из-за блокировки)")]
         TaskSkipped,
 
-        /// <summary>
-        /// Ошибка выполнения задачи
-        /// </summary>
+        [Display(Name = "Ошибка выполнения задачи")]
         TaskFailed,
 
-        /// <summary>
-        /// Задача истекла по таймауту
-        /// </summary>
+        [Display(Name = "Задача истекла по таймауту")]
         TaskTimedOut
     }
 }
