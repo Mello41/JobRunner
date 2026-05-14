@@ -21,4 +21,8 @@
     <PackageReference Include="System.Text.Json" Version="6.0.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Attributes\Controllers\" />
+  </ItemGroup>
+
 </Project>
