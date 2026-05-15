@@ -1,5 +1,6 @@
 ﻿using JobRunner.Core.Entities;
 using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Results;
 using System;
 using System.Collections.Generic;
 
@@ -36,5 +37,10 @@ namespace JobRunner.Core.DefaultImplementations
         /// Метки (задаются пользователем)
         /// </summary>
         public IReadOnlyList<Guid> Tags { get; set; } = new List<Guid>();
+
+        public DomainValidationResult Validate()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

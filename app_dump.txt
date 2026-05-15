@@ -373,6 +373,7 @@ namespace JobRunner.Core.DTO
 }
 ===== B:\repos\2026\Work\JobRunner\JobRunner\JobRunner.Core\Entities\IJobTask.cs =====
 using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Results;
 using System;
 using System.Collections.Generic;
 
@@ -459,6 +460,12 @@ namespace JobRunner.Core.Entities
         /// Метки (задаются пользователем)
         /// </summary>
         IReadOnlyList<Guid> Tags { get; set; }
+
+        /// <summary>
+        /// Проверяет бизнес-инварианты модели (не зависит от пользовательского ввода)
+        /// </summary>
+        /// <returns>Коллекция ошибок или null, если всё корректно</returns>
+        DomainValidationResult Validate();
     }
 }
 ===== B:\repos\2026\Work\JobRunner\JobRunner\JobRunner.Core\Entities\ITag.cs =====
@@ -915,7 +922,7 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
     /// <summary>
     /// Расписание для ежемесячного выполнения
     /// </summary>
-    public class MonthlySchedule : IScheduleSettings
+    public sealed record MonthlySchedule : IScheduleSettings
     {
         /// <summary>
         /// День месяца (1-31)
@@ -1513,6 +1520,81 @@ namespace JobRunner.Core.Events.TaskEvents.TaskStatus
         public long? ProcessId { get; set; }
         public string? ExecutionPath { get; set; }
         public INotifySettings NotifySettings { get; set; }
+    }
+}
+===== B:\repos\2026\Work\JobRunner\JobRunner\JobRunner.Core\Interfaces\IExecutionScope.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Events;
+using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.EntityServices;
+using JobRunner.Core.Results;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces
+{
+    /// <summary>
+    /// В процессе выполнения задачи (управление жизненным циклом) нужно, 
+    /// чтобы состояние выполнения задачи инкапсулировалось
+    /// Инкапсулирует состояние выполнения задачи и предоставляет методы для управления жизненным циклом.
+    /// </summary>
+    /// Этот интерфейс гарантирует правильную последовательность операций:
+    /// расшифровка → выполнение → шифрование.
+    /// Реализация должна обеспечивать атомарность и защиту от утечек данных.
+    /// </remarks>
+    public interface IExecutionScope 
+    {
+
+        /// <summary>
+        /// Задача, которая выполняется
+        /// </summary>
+        IJobTask Task { get; }
+
+        /// <summary>
+        /// Время старта выполнения (UTC)
+        /// </summary>
+        DateTime StartTime { get; }
+
+        /// <summary>
+        /// Расшифровывает чувствительные аргументы задачи
+        /// </summary>
+        Task DecryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Публикует событие старта задачи
+        /// </summary>
+        Task PublishStartedEventAsync(IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновляет метаданные перед выполнением
+        /// </summary>
+        Task UpdateBeforeExecutionAsync(ITaskService<IJobTask> storage, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновляет метаданные после выполнения
+        /// </summary>
+        Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<IJobTask> storage, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Публикует событие завершения задачи
+        /// </summary>
+        Task PublishCompletedEventAsync(JobExecutionResult result, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обрабатывает отмену выполнения
+        /// </summary>
+        Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<IJobTask> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обрабатывает ошибку выполнения
+        /// </summary>
+        Task HandleFailureAsync(Exception ex, ITaskService<IJobTask> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Повторно шифрует аргументы (вызывается автоматически при Dispose)
+        /// </summary>
+        Task ReencryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default);
     }
 }
 ===== B:\repos\2026\Work\JobRunner\JobRunner\JobRunner.Core\Interfaces\Converters\IIntervalConverter.cs =====
@@ -2260,6 +2342,35 @@ namespace JobRunner.Core.Interfaces.Scheduler
         #endregion
     }
 }
+===== B:\repos\2026\Work\JobRunner\JobRunner\JobRunner.Core\Results\DomainValidationResult.cs =====
+using System.Collections.Generic;
+using System.ComponentModel;
+
+namespace JobRunner.Core.Results
+{
+    public class DomainValidationResult
+    {
+        [DisplayName("IsValid")]
+        public bool IsValid { get; set; }
+
+        [DisplayName("Errors")]
+        public List<string> Errors { get; set; } = new();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static DomainValidationResult Success() => new() { IsValid = true };
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public static DomainValidationResult Fail(string error) => new() { IsValid = false, Errors = { error } };
+    }
+
+}
 ===== B:\repos\2026\Work\JobRunner\JobRunner\JobRunner.Core\Results\JobExecutionResult.cs =====
 using System;
 
@@ -2366,10 +2477,249 @@ namespace JobRunner.Core.Results
         }
     }
 }
+===== B:\repos\2026\Work\JobRunner\JobRunner\JobRunner.Quartz\ExecutionScope.cs =====
+using JobRunner.Core.DefaultImplementations;
+using JobRunner.Core.Entities;
+using JobRunner.Core.Events;
+using JobRunner.Core.Events.TaskEvents.TaskStatus;
+using JobRunner.Core.Interfaces;
+using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.EntityServices;
+using JobRunner.Core.Results;
+using Microsoft.Extensions.Logging;
+
+namespace JobRunner.Quartz
+{
+    /// <summary>
+    /// Реализация IExecutionScope для Quartz с поддержкой любого типа, реализующего IJobTask.
+    /// Инкапсулирует состояние выполнения задачи и управляет жизненным циклом: расшифровка аргументов,
+    /// публикация событий, обновление метаданных, повторное шифрование.
+    /// </summary>
+    internal class ExecutionScope : IExecutionScope
+    {
+        private readonly ILogger _logger;
+
+
+        /// <summary>
+        /// Возвращает задачу, которая выполняется в текущем scope.
+        /// </summary>
+        public IJobTask Task => _task;
+        private readonly IJobTask _task;
+
+        private bool _decrypted = false;
+
+        /// <summary>
+        /// Время старта выполнения задачи в формате UTC.
+        /// </summary>
+        public DateTime StartTime { get; private set; }
+
+        public ExecutionScope(IJobTask task, ILogger logger)
+        {
+            _task = task ?? throw new ArgumentNullException(nameof(task));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        /// <summary>
+        /// Расшифровывает чувствительные аргументы задачи через сервис шифрования.
+        /// Устанавливает внутренний флаг _decrypted для отслеживания состояния.
+        /// Должен вызываться до начала выполнения задачи.
+        /// </summary>
+        public async Task DecryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default)
+        {
+            await encryption.DecryptSensitiveArgumentsAsync(_task.ScheduleArguments, cancellationToken);
+            _decrypted = true;
+            _logger.LogDebug("Sensitive arguments decrypted for task {TaskName}", _task.Name);
+        }
+
+        /// <summary>
+        /// Публикует событие TaskStartedEvent через диспетчер доменных событий.
+        /// Устанавливает StartTime в текущее время UTC. Вызывается после расшифровки аргументов.
+        /// Событие используется для уведомлений, логирования и аудита.
+        /// </summary>
+        public async Task PublishStartedEventAsync(IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
+        {
+            StartTime = DateTime.UtcNow;
+
+            await dispatcher.PublishAsync(new TaskStartedEvent
+            {
+                TaskId = _task.Id,
+                TaskName = _task.Name,
+                StartTime = StartTime,
+                ExecutionPath = _task.ExecutionPath,
+                NotifySettings = _task.NotifySettings
+            }, cancellationToken);
+
+            _logger.LogInformation("Task {TaskName} started at {StartTime}", _task.Name, StartTime);
+        }
+
+        /// <summary>
+        /// Обновляет метаданные задачи перед выполнением: устанавливает IsRunning = true,
+        /// LastRun и StartRun равными StartTime. Сохраняет изменения через сервис хранения.
+        /// Вызывается после публикации события старта.
+        /// </summary>
+        public async Task UpdateBeforeExecutionAsync(ITaskService<IJobTask> storage, CancellationToken cancellationToken = default)
+        {
+            _task.JobTaskMetadata.IsRunning = true;
+            _task.JobTaskMetadata.LastRun = StartTime;
+            _task.StartRun = StartTime;
+
+            await storage.UpdateAsync(_task, cancellationToken);
+            _logger.LogDebug("Task metadata updated before execution");
+        }
+
+        /// <summary>
+        /// Обновляет метаданные задачи после выполнения: TotalRunCount, SuccessCount/FailureCount,
+        /// длительность выполнения, PID процесса, сбрасывает IsRunning = false.
+        /// При успехе обнуляет ConsecutiveFailures, при ошибке увеличивает счётчик и сохраняет ошибку.
+        /// Сохраняет изменения через сервис хранения.
+        /// </summary>
+        public async Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<IJobTask> storage, CancellationToken cancellationToken = default)
+        {
+            var endTime = result.EndTime ?? DateTime.UtcNow;
+            var durationMs = result.DurationMs ?? (long)(endTime - StartTime).TotalMilliseconds;
+
+            _task.JobTaskMetadata.LastRun = result.StartTime;
+            _task.JobTaskMetadata.LastDurationMs = durationMs;
+            _task.JobTaskMetadata.TotalRunCount++;
+
+            if (result.Success)
+            {
+                _task.JobTaskMetadata.SuccessCount++;
+                _task.JobTaskMetadata.ConsecutiveFailures = 0;
+                _logger.LogInformation("Task {TaskName} completed successfully in {DurationMs}ms", _task.Name, durationMs);
+            }
+            else
+            {
+                _task.JobTaskMetadata.FailureCount++;
+                _task.JobTaskMetadata.ConsecutiveFailures++;
+                _task.JobTaskMetadata.LastError = result.ErrorMessage;
+                _task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
+                _logger.LogError(result.ErrorMessage, "Task {TaskName} failed", _task.Name);
+            }
+
+            _task.JobTaskMetadata.IsRunning = false;
+
+            if (result.ProcessId.HasValue)
+            {
+                _task.JobTaskMetadata.TaskPID = result.ProcessId.Value;
+            }
+
+            _task.EndRun = endTime;
+            await storage.UpdateAsync(_task, cancellationToken);
+        }
+
+        /// <summary>
+        /// Публикует событие TaskCompletedEvent через диспетчер доменных событий.
+        /// Содержит информацию об успешности выполнения, ошибке и длительности.
+        /// Вызывается после обновления метаданных задачи.
+        /// </summary>
+        public async Task PublishCompletedEventAsync(JobExecutionResult result, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
+        {
+            var endTime = result.EndTime ?? DateTime.UtcNow;
+            var durationMs = result.DurationMs ?? (long)(endTime - StartTime).TotalMilliseconds;
+
+            await dispatcher.PublishAsync(new TaskCompletedEvent
+            {
+                TaskId = _task.Id,
+                TaskName = _task.Name,
+                Success = result.Success,
+                ErrorMessage = result.ErrorMessage,
+                CompletionTime = endTime,
+                DurationMs = durationMs,
+                NotifySettings = _task.NotifySettings
+            }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Обрабатывает отмену выполнения задачи (OperationCanceledException).
+        /// Обновляет метаданные: сбрасывает IsRunning, увеличивает FailureCount и ConsecutiveFailures,
+        /// сохраняет сообщение об отмене. Публикует событие TaskCompletedEvent с флагом Success = false.
+        /// Вызывается при явной отмене через CancellationToken.
+        /// </summary>
+        public async Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<IJobTask> storage,
+            IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
+        {
+            _logger.LogWarning(ex, "Task {TaskName} execution was cancelled", _task.Name);
+
+            _task.JobTaskMetadata.IsRunning = false;
+            _task.JobTaskMetadata.FailureCount++;
+            _task.JobTaskMetadata.ConsecutiveFailures++;
+            _task.JobTaskMetadata.LastError = "Execution was cancelled";
+            _task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
+
+            await storage.UpdateAsync(_task, cancellationToken);
+
+            await dispatcher.PublishAsync(new TaskCompletedEvent
+            {
+                TaskId = _task.Id,
+                TaskName = _task.Name,
+                Success = false,
+                ErrorMessage = "Execution was cancelled",
+                CompletionTime = DateTime.UtcNow,
+                DurationMs = 0,
+                NotifySettings = _task.NotifySettings
+            }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Обрабатывает непредвиденную ошибку выполнения задачи (любое исключение кроме OperationCanceledException).
+        /// Обновляет метаданные: сбрасывает IsRunning, увеличивает FailureCount и ConsecutiveFailures,
+        /// сохраняет сообщение об ошибке. Публикует событие TaskCompletedEvent с флагом Success = false.
+        /// Вызывается при любом исключении в процессе выполнения.
+        /// </summary>
+        public async Task HandleFailureAsync(Exception ex, ITaskService<IJobTask> storage,
+            IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
+        {
+            _logger.LogError(ex, "Unexpected error executing task {TaskName}", _task.Name);
+
+            _task.JobTaskMetadata.IsRunning = false;
+            _task.JobTaskMetadata.FailureCount++;
+            _task.JobTaskMetadata.ConsecutiveFailures++;
+            _task.JobTaskMetadata.LastError = ex.Message;
+            _task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
+
+            await storage.UpdateAsync(_task, cancellationToken);
+
+            await dispatcher.PublishAsync(new TaskCompletedEvent
+            {
+                TaskId = _task.Id,
+                TaskName = _task.Name,
+                Success = false,
+                ErrorMessage = ex.Message,
+                CompletionTime = DateTime.UtcNow,
+                DurationMs = 0,
+                NotifySettings = _task.NotifySettings
+            }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Повторно шифрует чувствительные аргументы задачи через сервис шифрования.
+        /// Выполняется только если ранее была вызвана расшифровка (флаг _decrypted = true).
+        /// ВЫЗЫВАЕТСЯ ВСЕГДА в блоке finally для защиты от утечек данных.
+        /// При ошибке шифрования логирует CRITICAL, но не пробрасывает исключение,
+        /// чтобы не потерять основную ошибку выполнения. Данные могут остаться незашифрованными.
+        /// </summary>
+        public async Task ReencryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default)
+        {
+            if (!_decrypted) return;
+
+            try
+            {
+                await encryption.ReencryptSensitiveArgumentsAsync(_task.ScheduleArguments, cancellationToken);
+                _decrypted = false;
+                _logger.LogDebug("Sensitive arguments re-encrypted for task {TaskName}", _task.Name);
+            }
+            catch (Exception encryptionEx)
+            {
+                _logger.LogCritical(encryptionEx, "CRITICAL: Failed to re-encrypt arguments for task {TaskName}", _task.Name);
+            }
+        }
+
+    }
+}
 ===== B:\repos\2026\Work\JobRunner\JobRunner\JobRunner.Quartz\Adapters\JobAdapter.cs =====
 using JobRunner.Core.DefaultImplementations;
 using JobRunner.Core.Events;
-using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces.Core;
 using JobRunner.Core.Interfaces.EntityServices;
 using JobRunner.Core.Interfaces.Execution;
@@ -2410,6 +2760,11 @@ namespace JobRunner.Quartz.Adapters
             _logger = logger;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public async Task Execute(IJobExecutionContext context)
         {
             var taskIdStr = context.MergedJobDataMap.GetString("TaskId");
@@ -2417,7 +2772,18 @@ namespace JobRunner.Quartz.Adapters
 
             var semaphore = _locks.GetOrAdd(taskId, new SemaphoreSlim(1, 1));
 
-            await semaphore.WaitAsync(context.CancellationToken);
+            if (!semaphore.Wait(0))
+            {
+                _logger.LogWarning(
+                    "Task {TaskId} is already running, skipping this trigger. " +
+                    "Consider increasing interval or enabling AllowConcurrentExecution",
+                    taskId);
+
+                if (semaphore.CurrentCount == 1)
+                    _locks.TryRemove(taskId, out _);
+
+                return;
+            }
 
             try
             {
@@ -2431,106 +2797,91 @@ namespace JobRunner.Quartz.Adapters
             }
         }
 
+        /// <summary>
+        /// Выполняет внутреннюю логику запуска задачи.
+        /// </summary>
+        /// <param name="taskId">Идентификатор задачи</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
+        /// <returns>Task, представляющий асинхронную операцию</returns>
+        /// <remarks>
+        /// Метод координирует полный жизненный цикл выполнения задачи:
+        /// загрузка, валидация, расшифровка аргументов, публикация событий,
+        /// выполнение, обновление статистики, повторное шифрование.
+        /// В случае ошибки обновляет метаданные и публикует событие об ошибке.
+        /// </remarks>
         private async Task ExecuteInternal(Guid taskId, CancellationToken cancellationToken)
         {
-            var task = await _storage.GetByIdAsync(taskId);
+            var task = await LoadAndValidateTaskAsync(taskId, cancellationToken);
+            if (task == null) return;
+
+            var executionScope = new ExecutionScope(task, _logger);
+
+            try
+            {
+                await executionScope.DecryptArgumentsAsync(_encryption, cancellationToken);
+                await executionScope.PublishStartedEventAsync(_dispatcher, cancellationToken);
+                await executionScope.UpdateBeforeExecutionAsync(_storage, cancellationToken);
+
+                var result = await _executor.ExecuteAsync(task, cancellationToken);
+
+                await executionScope.UpdateAfterExecutionAsync(result, _storage, cancellationToken);
+                await executionScope.PublishCompletedEventAsync(result, _dispatcher, cancellationToken);
+            }
+            catch (OperationCanceledException ex)
+            {
+                await executionScope.HandleCancellationAsync(ex, taskId, _storage, _dispatcher, cancellationToken);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                await executionScope.HandleFailureAsync(ex, _storage, _dispatcher, cancellationToken);
+                throw;
+            }
+            finally
+            {
+                await executionScope.ReencryptArgumentsAsync(_encryption, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Загружает задачу из хранилища и проверяет возможность выполнения.
+        /// </summary>
+        /// <param name="taskId">Идентификатор задачи</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
+        /// <returns>Задача или null, если выполнение невозможно</returns>
+        /// <remarks>
+        /// Проверяет: существование задачи, активность (IsEnabled),
+        /// возможность параллельного выполнения (AllowConcurrentExecution).
+        /// При недоступности задачи логирует причину пропуска.
+        /// </remarks>
+        private async Task<JobTask?> LoadAndValidateTaskAsync(Guid taskId, CancellationToken cancellationToken)
+        {
+            var task = await _storage.GetByIdAsync(taskId, cancellationToken);
+
             if (task == null)
             {
-                _logger.LogWarning("Task {TaskId} not found", taskId);
-                return;
+                _logger.LogWarning("Task {TaskId} not found in storage. Skipping execution.", taskId);
+                return null;
+            }
+
+            if (!task.IsEnabled)
+            {
+                _logger.LogInformation(
+                    "Task {TaskName} (Id: {TaskId}) is disabled. Skipping scheduled execution.",
+                    task.Name, task.Id);
+                return null;
             }
 
             if (!task.AllowConcurrentExecution && task.JobTaskMetadata.IsRunning)
             {
                 _logger.LogWarning(
-                    "Task {TaskName} (Id: {TaskId}) is already running and concurrent execution is disabled",
+                    "Task {TaskName} (Id: {TaskId}) is already running and concurrent execution is disabled. " +
+                    "Skipping this trigger. Consider increasing execution interval or enabling AllowConcurrentExecution.",
                     task.Name, task.Id);
-                return;
+                return null;
             }
 
-            await _encryption.DecryptSensitiveArgumentsAsync(task.ScheduleArguments, cancellationToken);
-
-            try
-            {
-                await _dispatcher.PublishAsync(new TaskStartedEvent
-                {
-                    TaskId = task.Id,
-                    TaskName = task.Name,
-                    StartTime = DateTime.UtcNow,
-                    ExecutionPath = task.ExecutionPath,
-                    NotifySettings = task.NotifySettings 
-                }, cancellationToken);
-
-                task.JobTaskMetadata.IsRunning = true;
-                task.JobTaskMetadata.LastRun = DateTime.UtcNow;
-                task.StartRun = DateTime.UtcNow;
-                await _storage.UpdateAsync(task);
-
-                var result = await _executor.ExecuteAsync(task, cancellationToken);
-
-                task.JobTaskMetadata.LastRun = result.StartTime;
-                task.JobTaskMetadata.LastDurationMs = result.DurationMs;
-                task.JobTaskMetadata.TotalRunCount++;
-
-                if (result.Success)
-                {
-                    task.JobTaskMetadata.SuccessCount++;
-                    task.JobTaskMetadata.ConsecutiveFailures = 0;  
-                }
-                else
-                {
-                    task.JobTaskMetadata.FailureCount++;
-                    task.JobTaskMetadata.ConsecutiveFailures++;    
-                    task.JobTaskMetadata.LastError = result.ErrorMessage;
-                    task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
-                }
-
-                task.JobTaskMetadata.IsRunning = false;
-                task.JobTaskMetadata.TaskPID = result.ProcessId;
-                task.EndRun = result.EndTime ?? DateTime.UtcNow;
-
-                await _storage.UpdateAsync(task);
-
-                await _dispatcher.PublishAsync(new TaskCompletedEvent
-                {
-                    TaskId = task.Id,
-                    TaskName = task.Name,
-                    Success = result.Success,
-                    ErrorMessage = result.ErrorMessage,
-                    CompletionTime = result.EndTime ?? DateTime.UtcNow,
-                    DurationMs = result.DurationMs ?? 0,
-                    NotifySettings = task.NotifySettings 
-                }, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing task {TaskId}", task.Id);
-
-                task.JobTaskMetadata.IsRunning = false;
-                task.JobTaskMetadata.FailureCount++;
-                task.JobTaskMetadata.ConsecutiveFailures++;
-                task.JobTaskMetadata.LastError = ex.Message;
-                task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
-                task.JobTaskMetadata.IsCompleted = false;
-
-                await _storage.UpdateAsync(task);
-
-                await _dispatcher.PublishAsync(new TaskCompletedEvent
-                {
-                    TaskId = task.Id,
-                    TaskName = task.Name,
-                    Success = false,
-                    ErrorMessage = ex.Message,
-                    CompletionTime = DateTime.UtcNow,
-                    DurationMs = 0,
-                    NotifySettings = task.NotifySettings
-                }, cancellationToken);
-            }
-            finally
-            {
-                await _encryption.ReencryptSensitiveArgumentsAsync(task.ScheduleArguments, cancellationToken);
-                await _storage.UpdateAsync(task);
-            }
+            return task;
         }
     }
 }

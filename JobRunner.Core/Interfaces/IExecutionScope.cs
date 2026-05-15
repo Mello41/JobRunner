@@ -1,0 +1,74 @@
+﻿using JobRunner.Core.Entities;
+using JobRunner.Core.Events;
+using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.EntityServices;
+using JobRunner.Core.Results;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces
+{
+    /// <summary>
+    /// В процессе выполнения задачи (управление жизненным циклом) нужно, 
+    /// чтобы состояние выполнения задачи инкапсулировалось
+    /// Инкапсулирует состояние выполнения задачи и предоставляет методы для управления жизненным циклом.
+    /// </summary>
+    /// Этот интерфейс гарантирует правильную последовательность операций:
+    /// расшифровка → выполнение → шифрование.
+    /// Реализация должна обеспечивать атомарность и защиту от утечек данных.
+    /// </remarks>
+    public interface IExecutionScope 
+    {
+
+        /// <summary>
+        /// Задача, которая выполняется
+        /// </summary>
+        IJobTask Task { get; }
+
+        /// <summary>
+        /// Время старта выполнения (UTC)
+        /// </summary>
+        DateTime StartTime { get; }
+
+        /// <summary>
+        /// Расшифровывает чувствительные аргументы задачи
+        /// </summary>
+        Task DecryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Публикует событие старта задачи
+        /// </summary>
+        Task PublishStartedEventAsync(IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновляет метаданные перед выполнением
+        /// </summary>
+        Task UpdateBeforeExecutionAsync(ITaskService<IJobTask> storage, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновляет метаданные после выполнения
+        /// </summary>
+        Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<IJobTask> storage, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Публикует событие завершения задачи
+        /// </summary>
+        Task PublishCompletedEventAsync(JobExecutionResult result, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обрабатывает отмену выполнения
+        /// </summary>
+        Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<IJobTask> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обрабатывает ошибку выполнения
+        /// </summary>
+        Task HandleFailureAsync(Exception ex, ITaskService<IJobTask> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Повторно шифрует аргументы (вызывается автоматически при Dispose)
+        /// </summary>
+        Task ReencryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default);
+    }
+}

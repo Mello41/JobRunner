@@ -1,6 +1,6 @@
 ﻿using JobRunner.Core.DefaultImplementations;
+using JobRunner.Core.Entities;
 using JobRunner.Core.Events;
-using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces.Core;
 using JobRunner.Core.Interfaces.EntityServices;
 using JobRunner.Core.Interfaces.Execution;
@@ -16,7 +16,7 @@ namespace JobRunner.Quartz.Adapters
     /// </summary>
     public class JobAdapter : IJob
     {
-        private readonly ITaskService<JobTask> _storage;
+        private readonly ITaskService<IJobTask> _storage;
         private readonly IJobExecutor _executor;
         private readonly IDomainEventDispatcher _dispatcher;
         private readonly IEncryptionService _encryption;
@@ -28,7 +28,7 @@ namespace JobRunner.Quartz.Adapters
         private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _locks = new();
 
         public JobAdapter(
-            ITaskService<JobTask> storage,
+            ITaskService<IJobTask> storage,
             IJobExecutor executor,
             IDomainEventDispatcher dispatcher,
             IEncryptionService encryption,
@@ -41,6 +41,11 @@ namespace JobRunner.Quartz.Adapters
             _logger = logger;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public async Task Execute(IJobExecutionContext context)
         {
             var taskIdStr = context.MergedJobDataMap.GetString("TaskId");
@@ -48,7 +53,18 @@ namespace JobRunner.Quartz.Adapters
 
             var semaphore = _locks.GetOrAdd(taskId, new SemaphoreSlim(1, 1));
 
-            await semaphore.WaitAsync(context.CancellationToken);
+            if (!semaphore.Wait(0))
+            {
+                _logger.LogWarning(
+                    "Task {TaskId} is already running, skipping this trigger. " +
+                    "Consider increasing interval or enabling AllowConcurrentExecution",
+                    taskId);
+
+                if (semaphore.CurrentCount == 1)
+                    _locks.TryRemove(taskId, out _);
+
+                return;
+            }
 
             try
             {
@@ -62,106 +78,91 @@ namespace JobRunner.Quartz.Adapters
             }
         }
 
+        /// <summary>
+        /// Выполняет внутреннюю логику запуска задачи.
+        /// </summary>
+        /// <param name="taskId">Идентификатор задачи</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
+        /// <returns>Task, представляющий асинхронную операцию</returns>
+        /// <remarks>
+        /// Метод координирует полный жизненный цикл выполнения задачи:
+        /// загрузка, валидация, расшифровка аргументов, публикация событий,
+        /// выполнение, обновление статистики, повторное шифрование.
+        /// В случае ошибки обновляет метаданные и публикует событие об ошибке.
+        /// </remarks>
         private async Task ExecuteInternal(Guid taskId, CancellationToken cancellationToken)
         {
-            var task = await _storage.GetByIdAsync(taskId);
+            var task = await LoadAndValidateTaskAsync(taskId, cancellationToken);
+            if (task == null) return;
+
+            var executionScope = new ExecutionScope(task, _logger);
+
+            try
+            {
+                await executionScope.DecryptArgumentsAsync(_encryption, cancellationToken);
+                await executionScope.PublishStartedEventAsync(_dispatcher, cancellationToken);
+                await executionScope.UpdateBeforeExecutionAsync(_storage, cancellationToken);
+
+                var result = await _executor.ExecuteAsync(task, cancellationToken);
+
+                await executionScope.UpdateAfterExecutionAsync(result, _storage, cancellationToken);
+                await executionScope.PublishCompletedEventAsync(result, _dispatcher, cancellationToken);
+            }
+            catch (OperationCanceledException ex)
+            {
+                await executionScope.HandleCancellationAsync(ex, _storage, _dispatcher, cancellationToken);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                await executionScope.HandleFailureAsync(ex, _storage, _dispatcher, cancellationToken);
+                throw;
+            }
+            finally
+            {
+                await executionScope.ReencryptArgumentsAsync(_encryption, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Загружает задачу из хранилища и проверяет возможность выполнения.
+        /// </summary>
+        /// <param name="taskId">Идентификатор задачи</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
+        /// <returns>Задача или null, если выполнение невозможно</returns>
+        /// <remarks>
+        /// Проверяет: существование задачи, активность (IsEnabled),
+        /// возможность параллельного выполнения (AllowConcurrentExecution).
+        /// При недоступности задачи логирует причину пропуска.
+        /// </remarks>
+        private async Task<IJobTask?> LoadAndValidateTaskAsync(Guid taskId, CancellationToken cancellationToken)
+        {
+            var task = await _storage.GetByIdAsync(taskId, cancellationToken);
+
             if (task == null)
             {
-                _logger.LogWarning("Task {TaskId} not found", taskId);
-                return;
+                _logger.LogWarning("Task {TaskId} not found in storage. Skipping execution.", taskId);
+                return null;
+            }
+
+            if (!task.IsEnabled)
+            {
+                _logger.LogInformation(
+                    "Task {TaskName} (Id: {TaskId}) is disabled. Skipping scheduled execution.",
+                    task.Name, task.Id);
+                return null;
             }
 
             if (!task.AllowConcurrentExecution && task.JobTaskMetadata.IsRunning)
             {
                 _logger.LogWarning(
-                    "Task {TaskName} (Id: {TaskId}) is already running and concurrent execution is disabled",
+                    "Task {TaskName} (Id: {TaskId}) is already running and concurrent execution is disabled. " +
+                    "Skipping this trigger. Consider increasing execution interval or enabling AllowConcurrentExecution.",
                     task.Name, task.Id);
-                return;
+                return null;
             }
 
-            await _encryption.DecryptSensitiveArgumentsAsync(task.ScheduleArguments, cancellationToken);
-
-            try
-            {
-                await _dispatcher.PublishAsync(new TaskStartedEvent
-                {
-                    TaskId = task.Id,
-                    TaskName = task.Name,
-                    StartTime = DateTime.UtcNow,
-                    ExecutionPath = task.ExecutionPath,
-                    NotifySettings = task.NotifySettings 
-                }, cancellationToken);
-
-                task.JobTaskMetadata.IsRunning = true;
-                task.JobTaskMetadata.LastRun = DateTime.UtcNow;
-                task.StartRun = DateTime.UtcNow;
-                await _storage.UpdateAsync(task);
-
-                var result = await _executor.ExecuteAsync(task, cancellationToken);
-
-                task.JobTaskMetadata.LastRun = result.StartTime;
-                task.JobTaskMetadata.LastDurationMs = result.DurationMs;
-                task.JobTaskMetadata.TotalRunCount++;
-
-                if (result.Success)
-                {
-                    task.JobTaskMetadata.SuccessCount++;
-                    task.JobTaskMetadata.ConsecutiveFailures = 0;  
-                }
-                else
-                {
-                    task.JobTaskMetadata.FailureCount++;
-                    task.JobTaskMetadata.ConsecutiveFailures++;    
-                    task.JobTaskMetadata.LastError = result.ErrorMessage;
-                    task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
-                }
-
-                task.JobTaskMetadata.IsRunning = false;
-                task.JobTaskMetadata.TaskPID = result.ProcessId;
-                task.EndRun = result.EndTime ?? DateTime.UtcNow;
-
-                await _storage.UpdateAsync(task);
-
-                await _dispatcher.PublishAsync(new TaskCompletedEvent
-                {
-                    TaskId = task.Id,
-                    TaskName = task.Name,
-                    Success = result.Success,
-                    ErrorMessage = result.ErrorMessage,
-                    CompletionTime = result.EndTime ?? DateTime.UtcNow,
-                    DurationMs = result.DurationMs ?? 0,
-                    NotifySettings = task.NotifySettings 
-                }, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error executing task {TaskId}", task.Id);
-
-                task.JobTaskMetadata.IsRunning = false;
-                task.JobTaskMetadata.FailureCount++;
-                task.JobTaskMetadata.ConsecutiveFailures++;
-                task.JobTaskMetadata.LastError = ex.Message;
-                task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
-                task.JobTaskMetadata.IsCompleted = false;
-
-                await _storage.UpdateAsync(task);
-
-                await _dispatcher.PublishAsync(new TaskCompletedEvent
-                {
-                    TaskId = task.Id,
-                    TaskName = task.Name,
-                    Success = false,
-                    ErrorMessage = ex.Message,
-                    CompletionTime = DateTime.UtcNow,
-                    DurationMs = 0,
-                    NotifySettings = task.NotifySettings
-                }, cancellationToken);
-            }
-            finally
-            {
-                await _encryption.ReencryptSensitiveArgumentsAsync(task.ScheduleArguments, cancellationToken);
-                await _storage.UpdateAsync(task);
-            }
+            return task;
         }
     }
 }
