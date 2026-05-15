@@ -1,4 +1,5 @@
 ﻿using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -94,7 +95,7 @@ namespace JobRunner.Core.Interfaces.Scheduler
         /// <summary>
         /// Зарегистрировать задачу в планировщике
         /// </summary>
-        Task ScheduleAsync(Guid taskId, string cronExpression, CancellationToken cancellationToken = default);
+        Task ScheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Удалить задачу из планировщика
@@ -104,7 +105,7 @@ namespace JobRunner.Core.Interfaces.Scheduler
         /// <summary>
         /// Обновить расписание задачи
         /// </summary>
-        Task RescheduleAsync(Guid taskId, string cronExpression, CancellationToken cancellationToken = default);
+        Task RescheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Перерегистрировать все задачи из БД в Quartz (восстановление после перезапуска)
