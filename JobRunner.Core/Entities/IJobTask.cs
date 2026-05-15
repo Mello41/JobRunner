@@ -2,6 +2,7 @@
 using JobRunner.Core.Results;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace JobRunner.Core.Entities
 {
@@ -85,7 +86,7 @@ namespace JobRunner.Core.Entities
         /// <summary>
         /// Метки (задаются пользователем)
         /// </summary>
-        IReadOnlyList<Guid> Tags { get; set; }
+        ImmutableHashSet<Guid> Tags { get; set; }
 
         /// <summary>
         /// Проверяет бизнес-инварианты модели (не зависит от пользовательского ввода)

@@ -3,6 +3,7 @@ using JobRunner.Core.Entities.ValueObjects;
 using JobRunner.Core.Results;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace JobRunner.Core.DefaultImplementations
 {
@@ -36,7 +37,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Метки (задаются пользователем)
         /// </summary>
-        public IReadOnlyList<Guid> Tags { get; set; } = new List<Guid>();
+        public ImmutableHashSet<Guid> Tags { get; set; } = new Guid[0].ToImmutableHashSet<Guid>();
 
         public DomainValidationResult Validate()
         {
