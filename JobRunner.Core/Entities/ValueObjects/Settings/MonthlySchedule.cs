@@ -5,7 +5,7 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
     /// <summary>
     /// Расписание для ежемесячного выполнения
     /// </summary>
-    public class MonthlySchedule : IScheduleSettings
+    public sealed record MonthlySchedule : IScheduleSettings
     {
         /// <summary>
         /// День месяца (1-31)

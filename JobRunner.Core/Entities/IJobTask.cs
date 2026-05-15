@@ -1,4 +1,5 @@
 ﻿using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Results;
 using System;
 using System.Collections.Generic;
 
@@ -85,5 +86,11 @@ namespace JobRunner.Core.Entities
         /// Метки (задаются пользователем)
         /// </summary>
         IReadOnlyList<Guid> Tags { get; set; }
+
+        /// <summary>
+        /// Проверяет бизнес-инварианты модели (не зависит от пользовательского ввода)
+        /// </summary>
+        /// <returns>Коллекция ошибок или null, если всё корректно</returns>
+        DomainValidationResult Validate();
     }
 }
