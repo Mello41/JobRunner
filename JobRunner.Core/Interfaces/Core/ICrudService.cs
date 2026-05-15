@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Attributes;
+﻿using JobRunner.Core.DTO.Pages;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -18,16 +18,18 @@ namespace JobRunner.Core.Interfaces.Core
         /// </summary>
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [RequiresPermission("read")]
+        /// <remarks>
+        /// <b>Требуемое разрешение:</b> <c>read</c>
+        /// </remarks>
         Task<T?> GetByIdAsync(TKey id, CancellationToken cancellationToken = default);
-        
+
         /// <summary>
         /// Получить все сущности
         /// </summary>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [RequiresPermission("read")]
+        /// <remarks>
+        /// <b>Требуемое разрешение:</b> <c>read</c>
+        /// </remarks>
         Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -35,8 +37,9 @@ namespace JobRunner.Core.Interfaces.Core
         /// </summary>
         /// <param name="entity"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [RequiresAdmin]
+        /// <remarks>
+        /// <b>Требуемое разрешение:</b> <c>admin</c>
+        /// </remarks>
         Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -45,7 +48,6 @@ namespace JobRunner.Core.Interfaces.Core
         /// <param name="entity"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [RequiresAdmin]
         Task<bool> UpdateAsync(T entity, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -54,21 +56,22 @@ namespace JobRunner.Core.Interfaces.Core
         /// <param name="id"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        [RequiresAdmin]
+        /// <remarks>
+        /// <b>Требуемое разрешение:</b> <c>admin</c>
+        /// </remarks>
         Task<bool> DeleteAsync(TKey id, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Получить общее количество сущностей
         /// </summary>
-        [RequiresPermission("read")]
         Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Получить количество сущностей по условию
+        /// Получить страницу с фильтрацией через безопасные DTO
         /// </summary>
-        /// <param name="filter">Фильтр (опционально)</param>
-        [RequiresPermission("read")]
-        Task<int> GetTotalCountAsync(System.Linq.Expressions.Expression<Func<T, bool>>? filter = null,
-                                    CancellationToken cancellationToken = default);
+        /// <remarks>
+        /// <b>Требуемое разрешение:</b> <c>read</c>
+        /// </remarks>
+        Task<PagedResult<T>> GetPagedAsync(PagedRequest request, CancellationToken cancellationToken = default);
     }
 }
