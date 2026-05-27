@@ -15,7 +15,7 @@ namespace JobRunner.Quartz
     /// Инкапсулирует состояние выполнения задачи и управляет жизненным циклом: расшифровка аргументов,
     /// публикация событий, обновление метаданных, повторное шифрование.
     /// </summary>
-    internal class ExecutionScope : IExecutionScope
+    public class ExecutionScope : IExecutionScope
     {
         private readonly ILogger _logger;
 

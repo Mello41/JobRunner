@@ -16,8 +16,9 @@ namespace JobRunner.Quartz.Scheduler
         private IScheduler _scheduler;
         private readonly IScheduleConverter _converter;
 
-        public QuartzScheduler(IScheduleConverter converter)
+        public QuartzScheduler(IScheduler scheduler, IScheduleConverter converter)
         {
+            _scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
             _converter = converter;
         }
 
@@ -175,10 +176,10 @@ namespace JobRunner.Quartz.Scheduler
         /// <param name="cronExpression"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task RescheduleAsync(Guid taskId, string cronExpression, CancellationToken cancellationToken = default)
+        public async Task RescheduleAsync(Guid taskId, IScheduleSettings settings, CancellationToken cancellationToken = default)
         {
             await UnscheduleAsync(taskId, cancellationToken);
-            await ScheduleAsync(taskId, cronExpression, cancellationToken);
+            await ScheduleAsync(taskId, settings, cancellationToken);
         }
 
         #endregion
