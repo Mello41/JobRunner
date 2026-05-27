@@ -4,7 +4,6 @@ using JobRunner.Core.Interfaces.Converters;
 using JobRunner.Core.Interfaces.Scheduler;
 using JobRunner.Quartz.Adapters;
 using Quartz;
-using Quartz.Impl;
 
 namespace JobRunner.Quartz.Scheduler
 {
@@ -13,7 +12,7 @@ namespace JobRunner.Quartz.Scheduler
     /// </summary>
     public class QuartzScheduler : IJobScheduler
     {
-        private IScheduler _scheduler;
+        private readonly IScheduler _scheduler;
         private readonly IScheduleConverter _converter;
 
         public QuartzScheduler(IScheduler scheduler, IScheduleConverter converter)
@@ -28,9 +27,8 @@ namespace JobRunner.Quartz.Scheduler
         /// <returns></returns>
         public async Task StartProgramAsync(CancellationToken cancellationToken = default)
         {
-            var factory = new StdSchedulerFactory();
-            _scheduler = await factory.GetScheduler();
-            await _scheduler.Start(cancellationToken);
+            if (!_scheduler.IsStarted)
+                await _scheduler.Start(cancellationToken);
         }
 
         /// <summary>
@@ -39,7 +37,7 @@ namespace JobRunner.Quartz.Scheduler
         /// <returns></returns>
         public async Task StopProgramAsync(CancellationToken cancellationToken = default)
         {
-            if (_scheduler != null && !_scheduler.IsShutdown)
+            if (!_scheduler.IsShutdown)
                 await _scheduler.Shutdown(cancellationToken);
         }
 
@@ -104,6 +102,7 @@ namespace JobRunner.Quartz.Scheduler
             return await RunNowAsync(taskId, cancellationToken);
         }
 
+        #region Управление состояниями задачи через Quartz
         /// <summary>
         /// Регистрация задачи в планировщике (вызывается оркестратором)
         /// </summary>
@@ -132,34 +131,8 @@ namespace JobRunner.Quartz.Scheduler
             await _scheduler.ScheduleJob(job, trigger, cancellationToken);
         }
 
-        #region Управление состояниями задачи через Quartz
-
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="taskId"></param>
-        /// <param name="cronExpression"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public async Task ScheduleAsync(Guid taskId, string cronExpression, CancellationToken cancellationToken = default)
-        {
-            if (string.IsNullOrEmpty(cronExpression)) return;
-
-            var job = JobBuilder.Create<JobAdapter>()
-                .WithIdentity(taskId.ToString())
-                .UsingJobData("TaskId", taskId.ToString())
-                .Build();
-
-            var trigger = TriggerBuilder.Create()
-                .WithIdentity($"{taskId}-trigger")
-                .WithCronSchedule(cronExpression)
-                .Build();
-
-            await _scheduler.ScheduleJob(job, trigger, cancellationToken);
-        }
-
-        /// <summary>
-        /// 
+        /// Удалить задачу из планировщика
         /// </summary>
         /// <param name="taskId"></param>
         /// <param name="cancellationToken"></param>
@@ -170,10 +143,9 @@ namespace JobRunner.Quartz.Scheduler
         }
 
         /// <summary>
-        /// 
+        /// Обновить расписание задачи
         /// </summary>
         /// <param name="taskId"></param>
-        /// <param name="cronExpression"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task RescheduleAsync(Guid taskId, IScheduleSettings settings, CancellationToken cancellationToken = default)
@@ -185,7 +157,7 @@ namespace JobRunner.Quartz.Scheduler
         #endregion
 
         /// <summary>
-        /// 
+        /// Перерегистрировать все задачи из БД (восстановление после перезапуска)
         /// </summary>
         /// <param name="tasks"></param>
         /// <param name="ct"></param>
@@ -196,11 +168,7 @@ namespace JobRunner.Quartz.Scheduler
             {
                 if (!task.IsEnabled) continue;
 
-                var cronExpression = _converter.Convert(task.ScheduleSettings);
-                if (!string.IsNullOrEmpty(cronExpression))
-                {
-                    await ScheduleAsync(task.Id, cronExpression, ct);
-                }
+                await ScheduleAsync(task.Id, task.ScheduleSettings, ct);
             }
         }
     }
