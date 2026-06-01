@@ -1,5 +1,4 @@
-﻿using JobRunner.Core.DefaultImplementations;
-using JobRunner.Core.Entities;
+﻿using JobRunner.Core.Entities;
 using JobRunner.Core.Events;
 using JobRunner.Core.Interfaces.Core;
 using JobRunner.Core.Interfaces.EntityServices;
@@ -95,7 +94,7 @@ namespace JobRunner.Quartz.Adapters
             var task = await LoadAndValidateTaskAsync(taskId, cancellationToken);
             if (task == null) return;
 
-            var executionScope = new ExecutionScope(task, _logger);
+            var executionScope = new ExecutionScope(task, _logger, _dispatcher);
 
             try
             {

@@ -1,6 +1,6 @@
-﻿using JobRunner.Core.DefaultImplementations;
-using JobRunner.Core.Entities;
+﻿using JobRunner.Core.Entities;
 using JobRunner.Core.Events;
+using JobRunner.Core.Events.TaskEvents.TaskHistory;
 using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces;
 using JobRunner.Core.Interfaces.Core;
@@ -18,7 +18,7 @@ namespace JobRunner.Quartz
     public class ExecutionScope : IExecutionScope
     {
         private readonly ILogger _logger;
-
+        private readonly IDomainEventDispatcher _dispatcher;  // ✅ ДОБАВИТЬ
 
         /// <summary>
         /// Возвращает задачу, которая выполняется в текущем scope.
@@ -33,10 +33,11 @@ namespace JobRunner.Quartz
         /// </summary>
         public DateTime StartTime { get; private set; }
 
-        public ExecutionScope(IJobTask task, ILogger logger)
+        public ExecutionScope(IJobTask task, ILogger logger, IDomainEventDispatcher dispatcher)  // ✅ ДОБАВИТЬ dispatcher в конструктор
         {
             _task = task ?? throw new ArgumentNullException(nameof(task));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         }
 
         /// <summary>
@@ -126,6 +127,9 @@ namespace JobRunner.Quartz
 
             _task.EndRun = endTime;
             await storage.UpdateAsync(_task, cancellationToken);
+
+            // ✅ Публикуем событие истории
+            await PublishHistoryEventAsync(result, result.Success ? "completed" : "failed", cancellationToken);
         }
 
         /// <summary>
@@ -179,6 +183,10 @@ namespace JobRunner.Quartz
                 DurationMs = 0,
                 NotifySettings = _task.NotifySettings
             }, cancellationToken);
+
+            // ✅ Публикуем событие истории
+            var emptyResult = new JobExecutionResult { Success = false, ErrorMessage = "Execution was cancelled" };
+            await PublishHistoryEventAsync(emptyResult, "cancelled", cancellationToken);
         }
 
         /// <summary>
@@ -210,6 +218,10 @@ namespace JobRunner.Quartz
                 DurationMs = 0,
                 NotifySettings = _task.NotifySettings
             }, cancellationToken);
+
+            // ✅ Публикуем событие истории
+            var emptyResult = new JobExecutionResult { Success = false, ErrorMessage = ex.Message };
+            await PublishHistoryEventAsync(emptyResult, "failed", cancellationToken);
         }
 
         /// <summary>
@@ -235,5 +247,29 @@ namespace JobRunner.Quartz
             }
         }
 
+        /// <summary>
+        /// Публикует событие истории выполнения задачи.
+        /// Содержит полную информацию о запуске и результате для аудита и анализа.
+        /// </summary>
+        /// <param name="result">Результат выполнения задачи</param>
+        /// <param name="status">Статус выполнения (completed, failed, cancelled, timeout)</param>
+        /// <param name="ct">Токен отмены</param>
+        private async Task PublishHistoryEventAsync(JobExecutionResult result, string status, CancellationToken ct)
+        {
+            await _dispatcher.PublishAsync(new TaskHistoryEvent
+            {
+                TaskId = _task.Id,
+                TaskName = _task.Name,
+                StartTime = StartTime,
+                EndTime = result.EndTime ?? DateTime.UtcNow,
+                DurationMs = result.DurationMs,
+                Success = result.Success,
+                Status = status,
+                ErrorMessage = result.ErrorMessage,
+                ProcessId = result.ProcessId,
+                ExitCode = result.ExitCode,
+                TriggeredBy = "schedule"
+            }, ct);
+        }
     }
 }

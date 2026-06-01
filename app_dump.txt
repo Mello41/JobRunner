@@ -1,0 +1,4049 @@
+﻿===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\DefaultImplementations\JobTask.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Results;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
+namespace JobRunner.Core.DefaultImplementations
+{
+    /// <summary>
+    /// Создаваемая задача (в рамках программы JobRunner) 
+    /// (пример реализации)
+    /// </summary>
+    public class JobTask : IJobTask
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string ExecutionPath { get; set; } = string.Empty;
+
+        #region Состояние выполнения задачи
+        public DateTime StartRun { get; set; }
+        public DateTime EndRun { get; set; }
+        public bool IsEnabled { get; set; } = true;
+
+        public int? TimeoutSeconds { get; set; }
+        #endregion
+
+        public INotifySettings NotifySettings { get; set; } = new NotifySettings();
+        public IScheduleSettings ScheduleSettings { get; set; } // = new CronSchedule();
+        public IScheduleArguments ScheduleArguments { get; set; } = new ScheduleArguments();
+        public IJobTaskMetadata JobTaskMetadata { get; set; } = new JobTaskMetadata();
+
+        public bool IsAsyncExecution { get; set; }
+        public bool AllowConcurrentExecution { get; set; }
+
+        /// <summary>
+        /// Метки (задаются пользователем)
+        /// </summary>
+        public ImmutableHashSet<Guid> Tags { get; set; } = new Guid[0].ToImmutableHashSet<Guid>();
+
+        public DomainValidationResult Validate()
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\DefaultImplementations\JobTaskMetadata.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+using System;
+
+namespace JobRunner.Core.DefaultImplementations
+{
+    public class JobTaskMetadata : IJobTaskMetadata
+    {
+        public long? TaskPID { get; set; }
+        public DateTime? LastRun { get; set; }
+        public DateTime? NextRun { get; set; }
+        public long? LastDurationMs { get; set; }
+        public string Version { get; set; }
+        public int TotalRunCount { get; set; }
+        public int SuccessCount { get; set; }
+        public int FailureCount { get; set; }
+        public int ConsecutiveFailures { get; set; }
+        public string? LastError { get; set; }
+        public DateTime? LastErrorTime { get; set; }
+        public bool IsRunning { get; set; }
+        public bool IsCompleted { get; set; }
+
+        public void ResetStats()
+        {
+            TotalRunCount = 0;
+            SuccessCount = 0;
+            FailureCount = 0;
+            ConsecutiveFailures = 0;
+            LastError = null;
+            LastErrorTime = null;
+            LastRun = null;
+            LastDurationMs = null;
+            IsRunning = false;
+            TaskPID = null;
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\DefaultImplementations\NotifySettings.cs =====
+using JobRunner.Core.Entities.Enums;
+using JobRunner.Core.Entities.ValueObjects;
+using System;
+using System.Collections.Generic;
+
+namespace JobRunner.Core.DefaultImplementations
+{
+    /// <summary>
+    /// Настройки уведомления задачи JobTask
+    /// </summary>
+    public class NotifySettings : INotifySettings
+    {
+        /// <summary>
+        /// Уведомлять до выполнения (за сколько минут)
+        /// </summary>
+        public bool NotifyBefore { get; set; }
+
+        /// <summary>
+        /// Уведомлять после выполнения
+        /// </summary>
+        public bool NotifyAfter { get; set; }
+
+        /// <summary>
+        /// За сколько времени до выполнения уведомить (в минутах)
+        /// </summary>
+        public TimeSpan NotifyBeforeMinutes { get; set; }
+
+        /// <summary>
+        /// Текст уведомления
+        /// </summary>
+        public string NotificationMessage { get; set; } = string.Empty;
+
+        public List<NotificationType> NotificationMethods { get; set; } = new();
+        public string? NotificationEmail { get; set; } 
+        public string? TelegramChatId { get; set; } 
+        public string? WebhookUrl { get; set; } 
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\DefaultImplementations\ScheduleArguments.cs =====
+using JobRunner.Core.DTO;
+using JobRunner.Core.Entities.ValueObjects;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace JobRunner.Core.DefaultImplementations
+{
+    /// <summary>
+    /// Расширяемый набор аргументов задачи
+    /// </summary>
+    public class ScheduleArguments : IScheduleArguments
+    {
+        /// <summary>
+        /// Список аргументов задачи
+        /// </summary>
+        [Display(Name = "Аргументы задачи JobTask", Description = "Список аргументов командной строки")]
+        public List<ScheduleArgumentItem> Items { get; set; } = new List<ScheduleArgumentItem>();
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\DefaultImplementations\Tag.cs =====
+using JobRunner.Core.Entities;
+using System;
+
+namespace JobRunner.Core.DefaultImplementations
+{
+    /// <summary>
+    /// Пример реализации ITag
+    /// </summary>
+    public class Tag : ITag
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Name { get; set; } = string.Empty;
+        public string Color { get; set; } = "#888888";
+        public bool CanGrouping { get; set; }
+        public string Description { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\DTO\ScheduleArgumentItem.cs =====
+using System.ComponentModel.DataAnnotations;
+
+namespace JobRunner.Core.DTO
+{
+    /// <summary>
+    /// Отдельный аргумент задачи --> List<ScheduleArgumentItem> --> ScheduleArguments
+    /// </summary>
+    public class ScheduleArgumentItem
+    {
+        /// <summary>
+        /// Ключ аргумента (например, --user, -p, --config)
+        /// </summary>
+        [Display(Name = "Ключ", Description = "Имя аргумента (--user, -p, --config)")]
+        public string Key { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Значение аргумента
+        /// </summary>
+        [Display(Name = "Значение", Description = "Значение аргумента")]
+        public object Value { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Зашифровать значение аргумента
+        /// </summary>
+        [Display(Name = "Шифровать", Description = "Шифровать значение аргумента")]
+        public bool IsEncryptedArgument { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\DTO\UiNotification.cs =====
+using JobRunner.Core.Entities.Enums;
+using System;
+
+namespace JobRunner.Core.DTO
+{
+    /// <summary>
+    /// DTO для уведомления UI
+    /// </summary>
+    public class UiNotification
+    {
+        /// <summary>
+        /// Тип события (используйте EventType enum)
+        /// </summary>
+        public EventType TypeNotification { get; set; }
+
+        /// <summary>
+        /// ID задачи
+        /// </summary>
+        public Guid TaskId { get; set; }
+
+        /// <summary>
+        /// Название задачи
+        /// </summary>
+        public string TaskName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Человекочитаемое сообщение
+        /// </summary>
+        public string Message { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Время события (UTC)
+        /// </summary>
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Дополнительные данные (статус, ошибка, PID и т.д.)
+        /// </summary>
+        public object? Data { get; set; }
+
+        /// <summary>
+        /// Уровень важности для UI (опционально)
+        /// </summary>
+        public NotificationSeverity Severity { get; set; } = NotificationSeverity.Info;
+
+        /// <summary>
+        /// Создать уведомление с сообщением по умолчанию
+        /// </summary>
+        public static UiNotification FromEvent(EventType eventType, Guid taskId, string taskName, object? data = null)
+        {
+            var message = GetDefaultMessage(eventType, taskName);
+            var severity = GetSeverity(eventType);
+
+            return new UiNotification
+            {
+                TypeNotification = eventType,
+                TaskId = taskId,
+                TaskName = taskName,
+                Message = message,
+                Data = data,
+                Severity = severity,
+                Timestamp = DateTime.UtcNow
+            };
+        }
+
+        private static string GetDefaultMessage(EventType eventType, string taskName)
+        {
+            return eventType switch
+            {
+                EventType.TaskCreated => $"Задача '{taskName}' создана",
+                EventType.TaskUpdated => $"Задача '{taskName}' обновлена",
+                EventType.TaskDeleted => $"Задача '{taskName}' удалена",
+                EventType.TaskStarted => $"Задача '{taskName}' запущена",
+                EventType.TaskCompleted => $"Задача '{taskName}' завершена",
+                EventType.TaskPaused => $"Задача '{taskName}' приостановлена",
+                EventType.TaskResumed => $"Задача '{taskName}' возобновлена",
+                EventType.TaskStopped => $"Задача '{taskName}' остановлена",
+                EventType.TaskSkipped => $"Задача '{taskName}' пропущена",
+                EventType.TaskFailed => $"Задача '{taskName}' завершилась с ошибкой",
+                EventType.TaskTimedOut => $"Задача '{taskName}' превысила таймаут",
+                _ => $"Событие {eventType} для задачи '{taskName}'"
+            };
+        }
+
+        private static NotificationSeverity GetSeverity(EventType eventType)
+        {
+            return eventType switch
+            {
+                EventType.TaskCreated => NotificationSeverity.Success,
+                EventType.TaskDeleted => NotificationSeverity.Warning,
+                EventType.TaskStarted => NotificationSeverity.Info,
+                EventType.TaskCompleted => NotificationSeverity.Success,
+                EventType.TaskFailed => NotificationSeverity.Error,
+                EventType.TaskTimedOut => NotificationSeverity.Error,
+                EventType.TaskSkipped => NotificationSeverity.Warning,
+                _ => NotificationSeverity.Info
+            };
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\DTO\Pages\PagedRequest.cs =====
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+
+namespace JobRunner.Core.DTO.Pages
+{
+    /// <summary>
+    /// Безопасный запрос для пагинации и фильтрации
+    /// </summary>
+    /// <remarks>
+    /// Используется вместо Expression<Func<T, bool>> для защиты от инъекций.
+    /// Реализация на уровне Infrastructure сама преобразует эти параметры в безопасные LINQ-выражения.
+    /// </remarks>
+    public class PagedRequest
+    {
+        [DisplayName("Номер страницы (начиная с 1)")]
+        public int Page { get; set; } = 1;
+
+        [DisplayName("Размер страницы (1-1000)")]
+        public int PageSize { get; set; } = 20;
+
+        [DisplayName("Поисковый запрос (применяется к Name и Description)")]
+        public string? SearchTerm { get; set; }
+
+        [DisplayName("Поле для сортировки (только разрешенные: \"Name\", \"StartRun\", \"EndRun\", \"CreatedAt\")")]
+        public string? SortBy { get; set; }
+
+        [DisplayName("Направление сортировки")]
+        public bool SortDescending { get; set; } = false;
+
+        [DisplayName("Фильтры по конкретным полям (безопасные, проверяемые)")]
+        public Dictionary<string, object> Filters { get; set; } = new();
+
+        [DisplayName("Фильтр по статусу задачи")]
+        public bool? IsEnabled { get; set; }
+
+        [DisplayName("Фильтр по тегам (список ID)")]
+        public List<Guid>? TagIds { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\DTO\Pages\PagedResult.cs =====
+using System;
+using System.Collections.Generic;
+
+namespace JobRunner.Core.DTO.Pages
+{
+    /// <summary>
+    /// Результат пагинации
+    /// </summary>
+    public class PagedResult<T>
+    {
+
+        public IReadOnlyList<T> Items { get; }
+        public int TotalCount { get; }
+        public int Page { get; }
+        public int PageSize { get; }
+        public int TotalPages { get; }
+        public bool HasPreviousPage => Page > 1;
+        public bool HasNextPage => Page < TotalPages;
+
+        public PagedResult(IReadOnlyList<T> items, int totalCount, int page, int pageSize)
+        {
+            Items = items;
+            TotalCount = totalCount;
+            Page = page;
+            PageSize = pageSize;
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        }
+
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\IJobTask.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Results;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
+namespace JobRunner.Core.Entities
+{
+    /// <summary>
+    /// Интерфейс задачи (создаваемая задача в рамках программы JobRunner)
+    /// </summary>
+    public interface IJobTask
+    {
+        /// <summary>
+        /// ID задачи
+        /// </summary>
+        Guid Id { get; set; }
+
+        /// <summary>
+        /// Наименование задачи
+        /// </summary>
+        string Name { get; set; }
+
+        /// <summary>
+        /// Описание задачи
+        /// </summary>
+        string Description { get; set; }
+
+        /// <summary>
+        /// Путь к исполняемому файлу задачи
+        /// </summary>
+        string ExecutionPath { get; set; }
+
+        /// <summary>
+        /// Дата начала выполнения задачи
+        /// </summary>
+        DateTime StartRun { get; set; }
+
+        /// <summary>
+        /// Дата окончания действия задачи
+        /// </summary>
+        DateTime EndRun { get; set; }
+
+        /// <summary>
+        /// Задача активна? (вкл/выкл)
+        /// </summary>
+        bool IsEnabled { get; set; }
+
+        /// <summary>
+        /// Таймаут выполнения в секундах (null = без таймаута)
+        /// Если задача выполняется дольше указанного времени, она принудительно завершается
+        /// </summary>
+        int? TimeoutSeconds { get; set; }
+
+        /// <summary>
+        /// Настройки уведомлений задачи
+        /// </summary>
+        INotifySettings NotifySettings { get; set; }
+
+        /// <summary>
+        /// Параллельное выполнение?
+        /// IsAsyncExecution = true -->	Не ждать завершения процесса
+        /// IsAsyncExecution = false --> Ждать завершения процесса
+        /// </summary>
+        bool IsAsyncExecution { get; set; }
+
+        /// <summary>
+        /// Разрешить параллельное выполнение (несколько экземпляров одновременно)
+        /// AllowConcurrentExecution = true -->	Разрешить несколько экземпляров задачи одновременно
+        /// AllowConcurrentExecution = false --> Запретить несколько экземпляров
+        /// </summary>
+        bool AllowConcurrentExecution { get; set; }
+
+        /// <summary>
+        /// Настройки периодичности
+        /// </summary>
+        IScheduleSettings ScheduleSettings { get; set; }
+
+        /// <summary>
+        /// Аргументы задачи (с возможностью шифрования)
+        /// </summary>
+        IScheduleArguments ScheduleArguments { get; set; }
+
+        IJobTaskMetadata JobTaskMetadata { get; set; }
+
+        /// <summary>
+        /// Метки (задаются пользователем)
+        /// </summary>
+        ImmutableHashSet<Guid> Tags { get; set; }
+
+        /// <summary>
+        /// Проверяет бизнес-инварианты модели (не зависит от пользовательского ввода)
+        /// </summary>
+        /// <returns>Коллекция ошибок или null, если всё корректно</returns>
+        DomainValidationResult Validate();
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ITag.cs =====
+using System;
+
+namespace JobRunner.Core.Entities
+{
+    /// <summary>
+    /// Интерфейс метки (категории) задачи
+    /// </summary>
+    public interface ITag
+    {
+        /// <summary>
+        /// Уникальный идентификатор метки
+        /// </summary>
+        Guid Id { get; set; }
+
+        /// <summary>
+        /// Название метки 
+        /// </summary>
+        string Name { get; set; }
+
+        /// <summary>
+        /// Описание метки
+        /// </summary>
+        string Description { get; set; }
+
+        /// <summary>
+        /// Цвет метки в формате HEX ("#4CAF50")
+        /// </summary>
+        string Color { get; set; }
+
+        /// <summary>
+        /// Можно ли группировать по этой метке
+        /// </summary>
+        bool CanGrouping {  get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\Enums\EventType.cs =====
+using System.ComponentModel.DataAnnotations;
+
+namespace JobRunner.Core.Entities.Enums
+{
+    /// <summary>
+    /// Типы событий задач
+    /// </summary>
+    public enum EventType
+    {
+        [Display(Name = "Задача создана")]
+        TaskCreated,
+
+        [Display(Name = "Задача обновлена")]
+        TaskUpdated,
+
+        [Display(Name = "Задача удалена")]
+        TaskDeleted,
+
+        [Display(Name = "Задача запущена")]
+        TaskStarted,
+
+        [Display(Name = "Задача завершена (успешно или с ошибкой)")]
+        TaskCompleted,
+
+        [Display(Name = "Задача приостановлена")]
+        TaskPaused,
+
+        [Display(Name = "Задача возобновлена")]
+        TaskResumed,
+
+        [Display(Name = "Задача остановлена принудительно")]
+        TaskStopped,
+
+        [Display(Name = "Задача пропущена (например, из-за блокировки)")]
+        TaskSkipped,
+
+        [Display(Name = "Ошибка выполнения задачи")]
+        TaskFailed,
+
+        [Display(Name = "Задача истекла по таймауту")]
+        TaskTimedOut
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\Enums\NotificationSeverity.cs =====
+using System.ComponentModel.DataAnnotations;
+
+namespace JobRunner.Core.Entities.Enums
+{
+    /// <summary>
+    /// Уровень важности уведомления
+    /// </summary>
+    public enum NotificationSeverity
+    {
+        [Display(Name = "Информационное сообщение (низкая важность)")]
+        Info,
+
+        [Display(Name = "Успешное выполнение операции")]
+        Success,
+
+        [Display(Name = "Предупреждение (требует внимания, не критично, но может упасть)")]
+        Warning,
+
+        [Display(Name = "Критическая ошибка (требует немедленного вмешательства)")]
+        Error
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\Enums\NotificationType.cs =====
+using System.ComponentModel.DataAnnotations;
+
+namespace JobRunner.Core.Entities.Enums
+{
+    /// <summary>
+    /// Тип оповещения (внутри программы)
+    /// </summary>
+    public enum NotificationType
+    {
+        [Display(Name = "Всплывающее окно (Desktop)")]
+        Popup,
+
+        [Display(Name = "Звук (Desktop)")]
+        Sound,
+
+        [Display(Name = "Email (SMTP)")]
+        Email,
+
+        [Display(Name = "Файловый лог (сервер)")]
+        LogFile,
+
+        [Display(Name = "Windows Event Log")]
+        EventLog,
+
+        [Display(Name = "HTTP-вызов на указанный URL")]
+        Webhook,
+
+        [Display(Name = "Sentry, OpenTelemetry")]
+        Monitoring,
+
+        [Display(Name = "Telegram уведомление (сообщение)")]
+        Telegram
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\Enums\PeriodType.cs =====
+using System.ComponentModel.DataAnnotations;
+
+namespace JobRunner.Core.Entities.Enums
+{
+    /// <summary>
+    /// Список для периодичности задачи Jobtask
+    /// </summary>
+    public enum PeriodType
+    {
+        [Display(Name = "Однократно")]
+        Once,
+
+        [Display(Name = "Каждую минуту")]
+        EveryMinutes,
+
+        [Display(Name = "Каждый час")]
+        EveryHourly,
+
+        [Display(Name = "Каждый день")]
+        EveryDaily,
+
+        [Display(Name = "Каждую неделю")]
+        EveryWeekly,
+
+        [Display(Name = "Ежемесячно")]
+        EveryMonthly,
+
+        [Display(Name = "Каждый квартал")]
+        EveryQuarterly,
+
+        [Display(Name = "Каждый год")]
+        EveryYearly
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\IJobTaskMetadata.cs =====
+using System;
+
+namespace JobRunner.Core.Entities.ValueObjects
+{
+    /// <summary>
+    /// Метаданные выполнения задачи (статистика, история, состояние)
+    /// </summary>
+    public interface IJobTaskMetadata
+    {
+        /// <summary>
+        /// PID текущего процесса (если запущена)
+        /// </summary>
+        long? TaskPID { get; set; }
+
+        /// <summary>
+        /// Дата последнего запуска
+        /// </summary>
+        DateTime? LastRun { get; set; }
+
+        /// <summary>
+        /// Дата следующего запланированного запуска
+        /// </summary>
+        DateTime? NextRun { get; set; }
+
+        /// <summary>
+        /// Длительность последнего успешного выполнения (в миллисекундах)
+        /// </summary>
+        long? LastDurationMs { get; set; }
+
+        /// <summary>
+        /// Общее количество запусков задачи за всё время
+        /// </summary>
+        int TotalRunCount { get; set; }
+
+        /// <summary>
+        /// Количество успешных запусков
+        /// </summary>
+        int SuccessCount { get; set; }
+
+        /// <summary>
+        /// Количество неудачных запусков
+        /// </summary>
+        int FailureCount { get; set; }
+
+        /// <summary>
+        /// Версия
+        /// </summary>
+        string Version { get; set; }
+
+        /// <summary>
+        /// Количество последовательных ошибок подряд (для уведомлений и отказоустойчивости)
+        /// </summary>
+        int ConsecutiveFailures { get; set; }
+
+        /// <summary>
+        /// Последняя ошибка (сообщение)
+        /// </summary>
+        string? LastError { get; set; }
+
+        /// <summary>
+        /// Время последней ошибки
+        /// </summary>
+        DateTime? LastErrorTime { get; set; }
+
+        /// <summary>
+        /// Задача запущена в данный момент?
+        /// </summary>
+        bool IsRunning { get; set; }
+
+        /// <summary>
+        /// Задача завершена (для однократных задач)
+        /// </summary>
+        bool IsCompleted { get; set; }
+
+        /// <summary>
+        /// Сбросить статистику (на всякий случай)
+        /// </summary>
+        void ResetStats();
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\INotifySettings.cs =====
+using JobRunner.Core.Entities.Enums;
+using System;
+using System.Collections.Generic;
+
+namespace JobRunner.Core.Entities.ValueObjects
+{
+    /// <summary>
+    /// Интерфейс настроек уведомления задачи
+    /// </summary>
+    public interface INotifySettings
+    {
+        /// <summary>
+        /// Уведомлять до выполнения
+        /// </summary>
+        bool NotifyBefore { get; set; }
+
+        /// <summary>
+        /// Уведомлять после выполнения
+        /// </summary>
+        bool NotifyAfter { get; set; }
+
+        /// <summary>
+        /// За сколько времени до выполнения уведомить
+        /// </summary>
+        TimeSpan NotifyBeforeMinutes { get; set; }
+
+        /// <summary>
+        /// Текст уведомления
+        /// </summary>
+        string NotificationMessage { get; set; }
+
+        /// <summary>
+        /// Способы уведомления (можно несколько)
+        /// </summary>
+        List<NotificationType> NotificationMethods { get; set; }
+
+        /// <summary>
+        /// Email для уведомлений (если выбран Email)
+        /// </summary>
+        string? NotificationEmail { get; set; }
+
+        /// <summary>
+        /// Telegram chat ID (если выбран Telegram)
+        /// </summary>
+        string? TelegramChatId { get; set; }
+
+        /// <summary>
+        /// Webhook URL (если выбран Webhook)
+        /// </summary>
+        string? WebhookUrl { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\IScheduleArgumentItem.cs =====
+namespace JobRunner.Core.Entities.ValueObjects
+{
+    /// <summary>
+    /// Отдельный аргумент командной строки для задачи
+    /// </summary>
+    /// <para><b>Связь с <see cref="ScheduleArgumentItem"/>:</b></para>
+    /// <see cref="ScheduleArgumentItem"/> - это DTO для сериализации и UI.
+    /// <c>IScheduleArgumentItem</c> - интерфейс для доменной модели.
+    /// Они существуют отдельно, чтобы не смешивать слои.
+    /// </remarks>
+    public interface IScheduleArgumentItem
+    {
+        /// <summary>
+        /// Ключ (имя) аргумента
+        /// </summary>
+        string Key { get; set; }
+
+        /// <summary>
+        /// Значение аргумента
+        /// </summary>
+        string Value { get; set; }
+
+        /// <summary>
+        /// Зашифрован аргумент?
+        /// </summary>
+        bool IsEncrypted { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\IScheduleArguments.cs =====
+using JobRunner.Core.DTO;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace JobRunner.Core.Entities.ValueObjects
+{
+    /// <summary>
+    /// Интерфейс расширяемого набора аргументов задачи
+    /// </summary>
+    public interface IScheduleArguments
+    {
+        /// <summary>
+        /// Список аргументов задачи
+        /// </summary>
+        [Display(Name = "Аргументы задачи JobTask", Description = "Список аргументов командной строки")]
+        List<ScheduleArgumentItem> Items { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\IScheduleSettings.cs =====
+
+namespace JobRunner.Core.Entities.ValueObjects
+{
+    /// <summary>
+    /// Маркерный интерфейс для всех типов расписаний
+    /// только данные и методы, не зависящие от планировщика
+    /// </summary>
+    /// <remarks>
+    /// Реализации: OnceSchedule, IntervalSchedule, DailySchedule, WeeklySchedule, CronSchedule
+    /// Полиморфная сериализация настраивается в Infrastructure слое через JsonDerivedTypeAttribute
+    /// или через настройки JsonSerializerOptions.TypeInfoResolver
+    /// </remarks>
+    public interface IScheduleSettings
+    {
+        /// <summary>
+        /// Возвращает человекочитаемое описание расписания
+        /// </summary>
+        /// <returns>Описание на русском языке</returns>
+        string GetDescription();
+
+        /// <summary>
+        /// Проверяет, корректны ли параметры расписания
+        /// </summary>
+        /// <returns>true — расписание корректно, 
+        /// false — ошибка в параметрах</returns>
+        bool IsValid();
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\Settings\DailySchedule.cs =====
+using System.ComponentModel;
+
+namespace JobRunner.Core.Entities.ValueObjects.Settings
+{
+    /// <summary>
+    /// Расписание для ежедневного выполнения
+    /// </summary>
+    public sealed record DailySchedule : IScheduleSettings
+    {
+        [DisplayName("")]
+        public int Hour { get; set; }
+
+        [DisplayName("")]
+        public int Minute { get; set; }
+
+        /// <summary>
+        /// Возвращает человеко-читаемое описание расписания задачи
+        /// </summary>
+        /// <returns></returns>
+        public string GetDescription() => $"Ежедневно в {Hour:D2}:{Minute:D2}";
+
+        /// <summary>
+        /// Проверяет, корректны ли параметры расписания
+        /// </summary>
+        /// <returns></returns>
+        public bool IsValid() => Minute >= 0 && Minute <= 59 && Hour >= 0 && Hour <= 23;
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\Settings\IntervalSchedule.cs =====
+using System;
+
+namespace JobRunner.Core.Entities.ValueObjects.Settings
+{
+    /// <summary>
+    /// Расписание для периодического выполнения задачи с фиксированным интервалом
+    /// </summary>
+    public sealed record IntervalSchedule : IScheduleSettings
+    {
+        /// <summary>
+        /// Интервал между запусками
+        /// </summary>
+        public int IntervalMinutes { get; set; } = 60;
+
+        /// <summary>
+        /// Опциональное время первого запуска (если не указано — начинается с момента создания)
+        /// </summary>
+        public DateTime? StartAt { get; set; }
+
+        /// <summary>
+        /// Возвращает человекочитаемое описание расписания
+        /// </summary>
+        /// <returns>
+        public string GetDescription() => $"Каждые {(int)IntervalMinutes} минут";
+
+        /// <summary>
+        /// Проверяет, корректны ли параметры расписания
+        /// </summary>
+        /// <returns></returns>
+        public bool IsValid() => IntervalMinutes >= 1 && IntervalMinutes <= 59;
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\Settings\MonthlySchedule.cs =====
+using System;
+
+namespace JobRunner.Core.Entities.ValueObjects.Settings
+{
+    /// <summary>
+    /// Расписание для ежемесячного выполнения
+    /// </summary>
+    public sealed record MonthlySchedule : IScheduleSettings
+    {
+        /// <summary>
+        /// День месяца (1-31)
+        /// </summary>
+        public int Day { get; set; } = 1;
+
+        /// <summary>
+        /// Месяц (1-12, опционально)
+        /// </summary>
+        public int? Month { get; set; }
+
+        /// <summary>
+        /// Час (0-23)
+        /// </summary>
+        public int Hour { get; set; } = 0;
+
+        /// <summary>
+        /// Минута (0-59)
+        /// </summary>
+        public int Minute { get; set; } = 0;
+
+        public string GetDescription()
+        {
+            var monthPart = Month.HasValue ? $" в {GetMonthName(Month.Value)}" : "";
+            return $"Ежемесячно {Day} числа{monthPart} в {Hour:D2}:{Minute:D2}";
+        }
+
+        public bool IsValid()
+        {
+            if (Hour < 0 || Hour > 23) return false;
+            if (Minute < 0 || Minute > 59) return false;
+            if (Day < 1 || Day > 31) return false;
+            if (Month.HasValue && (Month.Value < 1 || Month.Value > 12)) return false;
+
+            // Проверка на 31 февраля и т.д.
+            if (Month.HasValue && Day > DateTime.DaysInMonth(DateTime.Now.Year, Month.Value))
+                return false;
+
+            return true;
+        }
+
+        private string GetMonthName(int month) => month switch
+        {
+            1 => "январе",
+            2 => "феврале",
+            3 => "марте",
+            4 => "апреле",
+            5 => "мае",
+            6 => "июне",
+            7 => "июле",
+            8 => "августе",
+            9 => "сентябре",
+            10 => "октябре",
+            11 => "ноябре",
+            12 => "декабре",
+            _ => ""
+        };
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\Settings\OnceSchedule.cs =====
+using System;
+using System.ComponentModel;
+
+namespace JobRunner.Core.Entities.ValueObjects.Settings
+{
+    /// <summary>
+    /// Расписание для однократного 
+    /// выполнения задачи в указанное время
+    /// </summary>
+    public sealed record OnceSchedule : IScheduleSettings
+    {
+        /// <summary>
+        /// Дата и время однократного запуска
+        /// </summary>
+        [DisplayName("Время запуска")]
+        public DateTime StartTime { get; set; }
+
+        /// <summary>
+        /// Возвращает человекочитаемое описание расписания
+        /// </summary>
+        /// <returns>
+        public string GetDescription() =>
+            $"Однократно {StartTime:dd.MM.yyyy HH:mm:ss}";
+
+        /// <summary>
+        /// Проверяет, корректны ли параметры расписания
+        /// </summary>
+        /// <returns></returns>
+        public bool IsValid() => StartTime != default;
+
+        /// <summary>
+        /// Проверяет, нужно ли выполнять задачу
+        /// </summary>
+        /// <param name="isCompleted">Флаг из IJobTaskMetadata.IsCompleted</param>
+        public bool ShouldExecute(bool isCompleted)
+        {
+            if (isCompleted) return false;
+            return StartTime <= DateTime.Now;
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\Settings\WeeklySchedule.cs =====
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace JobRunner.Core.Entities.ValueObjects.Settings
+{
+    /// <summary>
+    /// Расписание для еженедельного выполнения задачи
+    /// </summary>
+    public sealed record WeeklySchedule : IScheduleSettings
+    {
+        /// <summary>
+        /// Часы запуска (0-23)
+        /// </summary>
+        public int Hour { get; set; }
+
+        /// <summary>
+        /// Минуты запуска (0-59)
+        /// </summary>
+        public int Minute { get; set; }
+
+        /// <summary>
+        /// Дни недели для запуска
+        /// </summary>
+        public HashSet<DayOfWeek> DaysOfWeek { get; set; } = new();
+
+        public string GetDescription()
+        {
+            var days = string.Join(", ", DaysOfWeek.Select(GetShortDayName));
+            return $"Еженедельно в {Hour:D2}:{Minute:D2} ({days})";
+        }
+
+        public bool IsValid() => 
+            DaysOfWeek.Count > 0 && Minute >= 0 && Minute <= 59 && Hour >= 0 && Hour <= 23;
+
+        private static string GetShortDayName(DayOfWeek day) => day switch
+        {
+            DayOfWeek.Monday => "ПН",
+            DayOfWeek.Tuesday => "ВТ",
+            DayOfWeek.Wednesday => "СР",
+            DayOfWeek.Thursday => "ЧТ",
+            DayOfWeek.Friday => "ПТ",
+            DayOfWeek.Saturday => "СБ",
+            DayOfWeek.Sunday => "ВС",
+            _ => day.ToString()
+        };
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Entities\ValueObjects\Settings\YearlySchedule.cs =====
+using System;
+
+namespace JobRunner.Core.Entities.ValueObjects.Settings
+{
+    /// <summary>
+    /// Расписание для ежегодного выполнения
+    /// </summary>
+    public sealed record YearlySchedule : IScheduleSettings
+    {
+        /// <summary>
+        /// Месяц (1-12)
+        /// </summary>
+        public int Month { get; set; } = 1;
+
+        /// <summary>
+        /// День месяца (1-31)
+        /// </summary>
+        public int Day { get; set; } = 1;
+
+        /// <summary>
+        /// Час запуска (0-23)
+        /// </summary>
+        public int Hour { get; set; } = 0;
+
+        /// <summary>
+        /// Минута запуска (0-59)
+        /// </summary>
+        public int Minute { get; set; } = 0;
+
+        /// <summary>
+        /// Секунда запуска (0-59)
+        /// </summary>
+        public int Seconds { get; set; } = 0;
+
+        public string GetDescription()
+        {
+            return $"Ежегодно {Day:00}.{Month:00} в {Hour:D2}:{Minute:D2}:{Seconds:D2}";
+        }
+
+        /// <summary>
+        /// Проверка корректности дня для месяца (например, 31 апреля — невалидно)
+        /// </summary>
+        /// <returns></returns>
+        public bool IsValid()
+        {
+            if (Month < 1 || Month > 12) return false;
+            if (Day < 1 || Day > 31) return false;
+            if (Hour < 0 || Hour > 23) return false;
+            if (Minute < 0 || Minute > 59) return false;
+            if (Seconds < 0 || Seconds > 59) return false;
+
+            if (Day > DateTime.DaysInMonth(DateTime.Now.Year, Month))
+                return false;
+
+            return true;
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\DomainEventDispatcher.cs =====
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace JobRunner.Core.Events
+{
+    /// <summary>
+    /// Реализация диспетчера доменных событий
+    /// </summary>
+    public class DomainEventDispatcher : IDomainEventDispatcher
+    {
+        private readonly IServiceProvider _serviceProvider;
+
+        public DomainEventDispatcher(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
+        public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
+            where TEvent : class
+        {
+            var handlers = _serviceProvider.GetServices<IDomainEventHandler<TEvent>>();
+
+            foreach (var handler in handlers)
+            {
+                await handler.HandleAsync(@event, cancellationToken);
+            }
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\IDomainEventDispatcher.cs =====
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Events
+{
+    /// <summary>
+    /// Диспетчер доменных событий
+    /// </summary>
+    public interface IDomainEventDispatcher
+    {
+        /// <summary>
+        /// Публикует событие всем зарегистрированным обработчикам
+        /// </summary>
+        /// <typeparam name="TEvent">Тип события (должен быть классом)</typeparam>
+        /// <param name="event">Событие для публикации</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : class;
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\IDomainEventHandler.cs =====
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Events
+{
+    /// <summary>
+    /// Интерфейс обработчика доменных событий
+    /// </summary>
+    /// <typeparam name="TEvent"></typeparam>
+    public interface IDomainEventHandler<in TEvent> where TEvent : class
+    {
+        /// <summary>
+        /// Обрабатывает событие
+        /// </summary>
+        /// <param name="event">Событие для обработки</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
+        /// <returns></returns>
+        Task HandleAsync(TEvent @event, CancellationToken cancellationToken = default);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\Handlers\LogTaskCompletedHandler.cs =====
+using System.Threading;
+using System.Threading.Tasks;
+using JobRunner.Core.Events.TaskEvents.TaskStatus;
+using Microsoft.Extensions.Logging;
+
+namespace JobRunner.Core.Events.Handlers
+{
+    /// <summary>
+    /// Логирование завершения задачи
+    /// </summary>
+    public class LogTaskCompletedHandler : IDomainEventHandler<TaskCompletedEvent>
+    {
+        private readonly ILogger<LogTaskCompletedHandler> _logger;
+
+        public LogTaskCompletedHandler(ILogger<LogTaskCompletedHandler> logger)
+        {
+            _logger = logger;
+        }
+
+        public Task HandleAsync(TaskCompletedEvent @event, CancellationToken cancellationToken)
+        {
+            if (@event.Success)
+            {
+                _logger.LogInformation(
+                    "Task {TaskName} (Id: {TaskId}) completed successfully in {DurationMs} ms",
+                    @event.TaskName, @event.TaskId, @event.DurationMs);
+            }
+            else
+            {
+                _logger.LogError(
+                    "Task {TaskName} (Id: {TaskId}) failed: {ErrorMessage}",
+                    @event.TaskName, @event.TaskId, @event.ErrorMessage);
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\Handlers\SendNotificationHandler.cs =====
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using JobRunner.Core.Interfaces.Events.TaskStatus;
+using JobRunner.Core.Interfaces.Notification;
+using Microsoft.Extensions.Logging;
+
+namespace JobRunner.Core.Events.Handlers
+{
+    /// <summary>
+    /// Обработчик событий задачи для отправки уведомлений
+    /// (Email, Telegram, Webhook, Popup и т.д.)
+    /// Этот обработчик только маршрутизирует уведомления на основе настроек из события.
+    /// Реальная отправка делегируется INotificationService.
+    /// </summary>
+    /// <remarks>
+    /// Настройки уведомлений приходят прямо в событии (через INotifiableEvent),
+    /// поэтому не нужно загружать задачу из БД.
+    /// </remarks>
+    public class SendNotificationHandler :
+        IDomainEventHandler<ITaskStartedEvent>,
+        IDomainEventHandler<ITaskCompletedEvent>
+    {
+        private readonly INotificationService _notificationService;
+        private readonly ILogger<SendNotificationHandler> _logger;
+
+        public SendNotificationHandler(
+            INotificationService notificationService,
+            ILogger<SendNotificationHandler> logger)
+        {
+            _notificationService = notificationService;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Обработка события "Задача запущена" → уведомление ДО выполнения
+        /// </summary>
+        public async Task HandleAsync(ITaskStartedEvent @event, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (@event.NotifySettings?.NotifyBefore != true)
+                {
+                    _logger.LogDebug(
+                        "Before-notification skipped for task {TaskId} (NotifyBefore=false or null)",
+                        @event.TaskId);
+                    return;
+                }
+
+                _logger.LogInformation(
+                    "Sending before-notification for task {TaskName} (Id: {TaskId})",
+                    @event.TaskName, @event.TaskId);
+
+                await _notificationService.NotifyBeforeAsync(
+                    @event.TaskId,
+                    @event.TaskName,
+                    @event.NotifySettings,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send before-notification for task {TaskId}", @event.TaskId);
+            }
+        }
+
+        /// <summary>
+        /// Обработка события "Задача завершена" → уведомление ПОСЛЕ выполнения
+        /// </summary>
+        public async Task HandleAsync(ITaskCompletedEvent @event, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (@event.NotifySettings?.NotifyAfter != true)
+                {
+                    _logger.LogDebug(
+                        "After-notification skipped for task {TaskId} (NotifyAfter=false or null)",
+                        @event.TaskId);
+                    return;
+                }
+
+                var status = @event.Success ? "successfully" : "with error";
+                _logger.LogInformation(
+                    "Sending after-notification for task {TaskName} (Id: {TaskId}) completed {Status}",
+                    @event.TaskName, @event.TaskId, status);
+
+                await _notificationService.NotifyAsync(
+                    @event.TaskId,
+                    @event.TaskName,
+                    @event.Success,
+                    @event.ErrorMessage,
+                    @event.NotifySettings,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send after-notification for task {TaskId}", @event.TaskId);
+            }
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\Handlers\UiHandlers\UiNotificationHandler.cs =====
+using JobRunner.Core.DTO;
+using JobRunner.Core.Entities.Enums;
+using JobRunner.Core.Interfaces.Events.TaskCrud;
+using JobRunner.Core.Interfaces.Events.TaskStatus;
+using JobRunner.Core.Interfaces.Notification.UI;
+using Microsoft.Extensions.Logging;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Events.Handlers.UiHandlers
+{
+    /// <summary>
+    /// Обработчик событий задачи для отправки уведомлений в UI
+    /// </summary>
+    public class UiNotificationHandler :
+        IDomainEventHandler<ITaskCreatedEvent>,
+        IDomainEventHandler<ITaskUpdatedEvent>,
+        IDomainEventHandler<ITaskDeletedEvent>,
+        IDomainEventHandler<ITaskStartedEvent>,
+        IDomainEventHandler<ITaskCompletedEvent>
+    {
+        private readonly IUiNotificationService _uiNotification;
+        private readonly ILogger<UiNotificationHandler> _logger;
+
+        public UiNotificationHandler(
+            IUiNotificationService uiNotification,
+            ILogger<UiNotificationHandler> logger)
+        {
+            _uiNotification = uiNotification;
+            _logger = logger;
+        }
+
+        public async Task HandleAsync(ITaskCreatedEvent @event, CancellationToken cancellationToken)
+        {
+            var notification = UiNotification.FromEvent(
+                EventType.TaskCreated,
+                @event.TaskId,
+                @event.TaskName,
+                new { @event.CreatedAt, @event.IsEnabled, @event.ScheduleDescription });
+
+            await _uiNotification.NotifyAsync(notification, cancellationToken);
+        }
+
+        public async Task HandleAsync(ITaskUpdatedEvent @event, CancellationToken cancellationToken)
+        {
+            var notification = UiNotification.FromEvent(
+                EventType.TaskUpdated,
+                @event.TaskId,
+                @event.TaskName,
+                new { @event.UpdatedAt, @event.ChangedFields });
+
+            await _uiNotification.NotifyAsync(notification, cancellationToken);
+        }
+
+        public async Task HandleAsync(ITaskDeletedEvent @event, CancellationToken cancellationToken)
+        {
+            var notification = UiNotification.FromEvent(
+                EventType.TaskDeleted,
+                @event.TaskId,
+                @event.TaskName);
+
+            await _uiNotification.NotifyAsync(notification, cancellationToken);
+        }
+
+        public async Task HandleAsync(ITaskStartedEvent @event, CancellationToken cancellationToken)
+        {
+            var notification = UiNotification.FromEvent(
+                EventType.TaskStarted,
+                @event.TaskId,
+                @event.TaskName,
+                new { @event.StartTime, @event.ProcessId, @event.ExecutionPath });
+
+            await _uiNotification.NotifyAsync(notification, cancellationToken);
+        }
+
+        public async Task HandleAsync(ITaskCompletedEvent @event, CancellationToken cancellationToken)
+        {
+            var eventType = @event.Success ? EventType.TaskCompleted : EventType.TaskFailed;
+
+            var notification = UiNotification.FromEvent(
+                eventType,
+                @event.TaskId,
+                @event.TaskName,
+                new { @event.Success, @event.DurationMs, @event.ErrorMessage, @event.CompletionTime });
+
+            await _uiNotification.NotifyAsync(notification, cancellationToken);
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\TaskEvents\TaskCrudEvents\TaskCreatedEvent.cs =====
+using JobRunner.Core.Interfaces.Events.TaskCrud;
+using System;
+
+namespace JobRunner.Core.Events.TaskEvents.TaskCrudEvents
+{
+    /// <summary>
+    /// Событие: создана задача
+    /// </summary>
+    public class TaskCreatedEvent : ITaskCreatedEvent
+    {
+        /// <summary>
+        /// Уникальный идентификатор задачи
+        /// </summary>
+        public Guid TaskId { get; set; }
+
+        /// <summary>
+        /// Наименование задачи
+        /// </summary>
+        public string TaskName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Дата и время создания задачи (UTC)
+        /// </summary>
+        public DateTime CreatedAt { get; set; }
+
+        /// <summary>
+        /// Активна ли задача (включена/выключена)
+        /// </summary>
+        public bool IsEnabled { get; set; }
+
+        /// <summary>
+        /// Человекочитаемое описание расписания (например "Ежедневно в 14:30")
+        /// </summary>
+        public string? ScheduleDescription { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\TaskEvents\TaskCrudEvents\TaskDeletedEvent.cs =====
+using JobRunner.Core.Interfaces.Events.TaskCrud;
+using System;
+
+namespace JobRunner.Core.Events.TaskEvents.TaskCrudEvents
+{
+    /// <summary>
+    /// Событие, возникающее при удалении задачи из системы.
+    /// Содержит информацию об удалённой задаче для аудита и логирования.
+    /// </summary>
+    public class TaskDeletedEvent : ITaskDeletedEvent
+    {
+        /// <summary>
+        /// Уникальный идентификатор удалённой задачи
+        /// </summary>
+        public Guid TaskId { get; set; }
+
+        /// <summary>
+        /// Наименование удалённой задачи
+        /// </summary>
+        public string TaskName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Дата и время удаления задачи в формате UTC
+        /// </summary>
+        public DateTime DeletedAt { get; set; }
+
+        /// <summary>
+        /// Идентификатор или наименование инициатора удаления.
+        /// По умолчанию "system", может содержать имя пользователя или идентификатор API-ключа
+        /// </summary>
+        public string DeletedBy { get; set; } = "system";
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\TaskEvents\TaskCrudEvents\TaskUpdatedEvent.cs =====
+using JobRunner.Core.Interfaces.Events.TaskCrud;
+using System;
+
+namespace JobRunner.Core.Events.TaskEvents.TaskCrudEvents
+{
+    /// <summary>
+    /// Событие, возникающее при обновлении существующей задачи.
+    /// Содержит информацию о том, какие поля были изменены.
+    /// </summary>
+    public class TaskUpdatedEvent : ITaskUpdatedEvent
+    {
+        /// <summary>
+        /// Уникальный идентификатор обновлённой задачи
+        /// </summary>
+        public Guid TaskId { get; set; }
+
+        /// <summary>
+        /// Наименование обновлённой задачи
+        /// </summary>
+        public string TaskName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Дата и время обновления задачи в формате UTC
+        /// </summary>
+        public DateTime UpdatedAt { get; set; }
+
+        /// <summary>
+        /// Массив наименований полей, которые были изменены.
+        /// Примеры: "Name", "ExecutionPath", "ScheduleSettings", "IsEnabled"
+        /// </summary>
+        public string[] ChangedFields { get; set; } = Array.Empty<string>();
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\TaskEvents\TaskHistory\TaskHistoryEvent.cs =====
+using System;
+
+namespace JobRunner.Core.Events.TaskEvents.TaskHistory
+{
+    /// <summary>
+    /// Событие, возникающее при каждом выполнении задачи, содержащее полную информацию о запуске и результате.
+    /// Используется для аудита, логирования, сбора метрик и анализа производительности.
+    /// Подписчики могут сохранять эти данные в БД, отправлять в системы мониторинга или уведомления.
+    /// </summary>
+    public class TaskHistoryEvent
+    {
+        /// <summary>
+        /// Уникальный идентификатор задачи
+        /// </summary>
+        public Guid TaskId { get; set; }
+
+        /// <summary>
+        /// Наименование задачи (снэпшот на момент выполнения)
+        /// </summary>
+        public string TaskName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Время начала выполнения задачи в формате UTC
+        /// </summary>
+        public DateTime StartTime { get; set; }
+
+        /// <summary>
+        /// Время окончания выполнения задачи в формате UTC.
+        /// Значение null указывает на то, что задача ещё выполняется или не завершена
+        /// </summary>
+        public DateTime? EndTime { get; set; }
+
+        /// <summary>
+        /// Длительность выполнения задачи в миллисекундах
+        /// </summary>
+        public long? DurationMs { get; set; }
+
+        /// <summary>
+        /// Флаг успешности выполнения задачи.
+        /// true — задача завершена без ошибок, false — с ошибкой, таймаутом или отменой
+        /// </summary>
+        public bool Success { get; set; }
+
+        /// <summary>
+        /// Статус выполнения задачи.
+        /// Возможные значения: "completed", "failed", "timeout", "cancelled", "skipped"
+        /// </summary>
+        public string? Status { get; set; }
+
+        /// <summary>
+        /// Сообщение об ошибке, если выполнение задачи завершилось с ошибкой
+        /// </summary>
+        public string? ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Идентификатор процесса (PID), в котором выполнялась задача.
+        /// Значение null, если процесс не был запущен или не удалось получить PID
+        /// </summary>
+        public long? ProcessId { get; set; }
+
+        /// <summary>
+        /// Код завершения процесса, возвращённый при его остановке.
+        /// Интерпретация кода зависит от конкретного приложения
+        /// </summary>
+        public int? ExitCode { get; set; }
+
+        /// <summary>
+        /// Источник запуска задачи.
+        /// Возможные значения: "schedule" (по расписанию), "user" (пользователь), "api" (через API)
+        /// </summary>
+        public string? TriggeredBy { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\TaskEvents\TaskStatus\TaskCompletedEvent.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Interfaces.Events.TaskStatus;
+using System;
+
+namespace JobRunner.Core.Events.TaskEvents.TaskStatus
+{
+    /// <summary>
+    /// Событие, возникающее при завершении выполнения задачи (успешном или с ошибкой).
+    /// Содержит информацию о результате выполнения для уведомлений, аудита и анализа.
+    /// </summary>
+    public class TaskCompletedEvent : ITaskCompletedEvent
+    {
+        /// <summary>
+        /// Уникальный идентификатор завершённой задачи
+        /// </summary>
+        public Guid TaskId { get; set; }
+
+        /// <summary>
+        /// Наименование завершённой задачи
+        /// </summary>
+        public string TaskName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Флаг успешности выполнения задачи.
+        /// true — задача выполнена без ошибок, false — произошла ошибка
+        /// </summary>
+        public bool Success { get; set; }
+
+        /// <summary>
+        /// Сообщение об ошибке, если выполнение задачи завершилось неудачно
+        /// </summary>
+        public string? ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Дата и время завершения выполнения задачи в формате UTC
+        /// </summary>
+        public DateTime CompletionTime { get; set; }
+
+        /// <summary>
+        /// Длительность выполнения задачи в миллисекундах
+        /// </summary>
+        public long? DurationMs { get; set; }
+
+        /// <summary>
+        /// Настройки уведомлений задачи, используемые для отправки оповещений о результате выполнения
+        /// </summary>
+        public INotifySettings NotifySettings { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Events\TaskEvents\TaskStatus\TaskStartedEvent.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Interfaces.Events.TaskStatus;
+using System;
+
+namespace JobRunner.Core.Events.TaskEvents.TaskStatus
+{
+    /// <summary>
+    /// Событие, возникающее при начале выполнения задачи.
+    /// Содержит информацию о запуске для уведомлений, аудита и мониторинга.
+    /// </summary>
+    public class TaskStartedEvent : ITaskStartedEvent
+    {
+        /// <summary>
+        /// Уникальный идентификатор запущенной задачи
+        /// </summary>
+        public Guid TaskId { get; set; }
+
+        /// <summary>
+        /// Наименование запущенной задачи
+        /// </summary>
+        public string TaskName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Дата и время начала выполнения задачи в формате UTC
+        /// </summary>
+        public DateTime StartTime { get; set; }
+
+        /// <summary>
+        /// Идентификатор процесса (PID), в котором выполняется задача.
+        /// Может быть null в случае ошибки запуска или асинхронного режима без ожидания
+        /// </summary>
+        public long? ProcessId { get; set; }
+
+        /// <summary>
+        /// Полный путь к исполняемому файлу задачи
+        /// </summary>
+        public string? ExecutionPath { get; set; }
+
+        /// <summary>
+        /// Настройки уведомлений задачи, используемые для отправки оповещений о начале выполнения
+        /// </summary>
+        public INotifySettings NotifySettings { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\IExecutionScope.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Events;
+using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.EntityServices;
+using JobRunner.Core.Results;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces
+{
+    /// <summary>
+    /// В процессе выполнения задачи (управление жизненным циклом) нужно, 
+    /// чтобы состояние выполнения задачи инкапсулировалось
+    /// Инкапсулирует состояние выполнения задачи и предоставляет методы для управления жизненным циклом.
+    /// </summary>
+    /// Этот интерфейс гарантирует правильную последовательность операций:
+    /// расшифровка → выполнение → шифрование.
+    /// Реализация должна обеспечивать атомарность и защиту от утечек данных.
+    /// </remarks>
+    public interface IExecutionScope 
+    {
+
+        /// <summary>
+        /// Задача, которая выполняется
+        /// </summary>
+        IJobTask Task { get; }
+
+        /// <summary>
+        /// Время старта выполнения (UTC)
+        /// </summary>
+        DateTime StartTime { get; }
+
+        /// <summary>
+        /// Расшифровывает чувствительные аргументы задачи
+        /// </summary>
+        Task DecryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Публикует событие старта задачи
+        /// </summary>
+        Task PublishStartedEventAsync(IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновляет метаданные перед выполнением
+        /// </summary>
+        Task UpdateBeforeExecutionAsync(ITaskService<IJobTask> storage, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновляет метаданные после выполнения
+        /// </summary>
+        Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<IJobTask> storage, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Публикует событие завершения задачи
+        /// </summary>
+        Task PublishCompletedEventAsync(JobExecutionResult result, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обрабатывает отмену выполнения
+        /// </summary>
+        Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<IJobTask> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обрабатывает ошибку выполнения
+        /// </summary>
+        Task HandleFailureAsync(Exception ex, ITaskService<IJobTask> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Повторно шифрует аргументы (вызывается автоматически при Dispose)
+        /// </summary>
+        Task ReencryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Converters\IIntervalConverter.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+using System;
+
+namespace JobRunner.Core.Interfaces.Converters
+{
+    /// <summary>
+    /// Интерфейс конвертера интервала для других вариантов библиотек
+    /// (для Timer/FluentScheduler)
+    /// работает с TimeSpan интервалами
+    /// </summary>
+    public interface IIntervalConverter
+    {
+        /// <summary>
+        /// Преобразует IScheduleSettings в TimeSpan интервал
+        /// </summary>
+        TimeSpan Convert(IScheduleSettings settings);
+
+        /// <summary>
+        /// Проверяет, можно ли представить настройки как простой интервал
+        /// </summary>
+        bool CanConvert(IScheduleSettings settings);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Converters\IScheduleConverter.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+
+namespace JobRunner.Core.Interfaces.Converters
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public interface IScheduleConverter
+    {
+        /// <summary>
+        /// Преобразует настройки в формат, понятный планировщику
+        /// (для Quartz → Cron, для FluentScheduler → интервал и т.д.)
+        /// </summary>
+        string Convert(IScheduleSettings settings);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Converters\IScheduleStringConverter.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+
+namespace JobRunner.Core.Interfaces.Converters
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public interface IScheduleStringConverter
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        IScheduleSettings ConvertFromString(string value);
+
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Core\ICrudService.cs =====
+using JobRunner.Core.DTO.Pages;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces.Core
+{
+    /// <summary>
+    /// Базовый интерфейс для сущностей
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    public interface ICrudService<T, in TKey> where T : class
+    {
+        /// <summary>
+        /// Получить сущность по id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <remarks>
+        /// <b>Требуемое разрешение:</b> <c>read</c>
+        /// </remarks>
+        Task<T?> GetByIdAsync(TKey id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Получить все сущности
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <remarks>
+        /// <b>Требуемое разрешение:</b> <c>read</c>
+        /// </remarks>
+        Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Создать сущность
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="cancellationToken"></param>
+        /// <remarks>
+        /// <b>Требуемое разрешение:</b> <c>admin</c>
+        /// </remarks>
+        Task<T> CreateAsync(T entity, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// PUT (обновить) значения сущности по id
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<bool> UpdateAsync(T entity, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Удалить сущность по id (guid)
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// <b>Требуемое разрешение:</b> <c>admin</c>
+        /// </remarks>
+        Task<bool> DeleteAsync(TKey id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Получить общее количество сущностей
+        /// </summary>
+        Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Получить страницу с фильтрацией через безопасные DTO
+        /// </summary>
+        /// <remarks>
+        /// <b>Требуемое разрешение:</b> <c>read</c>
+        /// </remarks>
+        Task<PagedResult<T>> GetPagedAsync(PagedRequest request, CancellationToken cancellationToken = default);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Core\IEncryptionService.cs =====
+using JobRunner.Core.DTO;
+using JobRunner.Core.Entities.ValueObjects;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces.Core
+{
+    /// <summary>
+    /// Сервис для шифрования чувствительных данных
+    /// </summary>
+    public interface IEncryptionService
+    {
+        /// <summary>
+        /// Зашифровать значение аргумента
+        /// </summary>
+        string EncryptArgument(ScheduleArgumentItem argument);
+
+        /// <summary>
+        /// Расшифровать значение аргумента
+        /// </summary>
+        string DecryptArgument(ScheduleArgumentItem argument);
+
+        /// <summary>
+        /// Зашифровать все чувствительные аргументы задачи
+        /// </summary>
+        Task EncryptSensitiveArgumentsAsync(IScheduleArguments arguments, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Расшифровать все чувствительные аргументы задачи
+        /// </summary>
+        Task DecryptSensitiveArgumentsAsync(IScheduleArguments arguments, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Вернуть аргументы в исходное (зашифрованное) состояние
+        /// </summary>
+        /// <param name="arguments"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task ReencryptSensitiveArgumentsAsync(IScheduleArguments arguments, CancellationToken ct = default);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\EntityServices\ITagService.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Interfaces.Core;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces.EntityServices
+{
+    /// <summary>
+    /// Набор методов для взаимодействия с метками
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public interface ITagService<T> : ICrudService<T, Guid> where T : class, ITag
+    {
+        /// <summary>
+        /// Установить цвет метки
+        /// </summary>
+        /// <param name="id">id метки</param>
+        /// <param name="color">Цвет метки (#hex)</param>
+        /// <returns></returns>
+        Task<ITag> SetTagColor(Guid id, string color, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Посчитать количество задач, у которых есть данная метка
+        /// </summary>
+        /// <param name="id">id метки</param>
+        /// <returns></returns>
+        Task<ITag> CountJobsToTag(Guid id, CancellationToken cancellationToken = default);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\EntityServices\ITaskService.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Interfaces.Core;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces.EntityServices
+{
+    /// <summary>
+    /// Набор методов для работы с задачей JobTask --> БД
+    /// (операции только с БД)
+    /// </summary>
+    /// <typeparam name="T">Тип задачи, реализующий IJobTask</typeparam>
+    public interface ITaskService<T> : ICrudService<T, Guid> where T : class, IJobTask
+    {
+        /// <summary>
+        /// Получение задачи по идентификатору процесса
+        /// </summary>
+        /// <param name="pid">Идентификатор процесса (PID)</param>
+        /// <returns>Задача или null, если не найдена</returns>
+        /// <remarks>Важный ньюанс - PID существует только когда задача выполняется</remarks>
+        Task<T?> GetByPIDAsync(long pid, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Мето для получения статуса задачи (выполнена/включена/завершена с ошибкой и тд)
+        /// </summary>
+        /// <param name="guid">Идентификатор процесса (основной)</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<T?> GetStatusAsync(Guid guid, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Очистить все аргументы задачи
+        /// </summary>
+        /// <param name="taskId">Идентификатор задачи</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        /// <returns>true — если аргументы очищены, false — задача не найдена</returns>
+        Task<bool> ClearAllArgumentsAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновить значение аргумента задачи
+        /// </summary>
+        /// <param name="taskId">Идентификатор задачи</param>
+        /// <param name="key">Ключ аргумента</param>
+        /// <param name="value">Новое значение</param>
+        /// <param name="isEncrypted">Зашифровано ли значение</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        /// <returns>true — если аргумент обновлён, false — задача или аргумент не найдены</returns>
+        Task<bool> UpdateArgumentValueAsync(Guid taskId, string key, object value,
+                                            bool isEncrypted = false, CancellationToken cancellationToken = default);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Events\INotifiableEvent.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+
+namespace JobRunner.Core.Interfaces.Events
+{
+    /// <summary>
+    /// Уведомление содержит в себе INotifySettings задачи?
+    /// </summary>
+    public interface INotifiableEvent
+    {
+        /// <summary>
+        /// Настройки уведомлений у задачи
+        /// </summary>
+        INotifySettings? NotifySettings { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Events\ITaskEventData.cs =====
+using System;
+
+namespace JobRunner.Core.Interfaces.Events
+{
+    /// <summary>
+    /// Базовые данные события задачи
+    /// </summary>
+    public interface ITaskEventData
+    {
+        Guid TaskId { get; set; }
+        string TaskName { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Events\TaskCrud\ITaskCreatedEvent.cs =====
+using System;
+
+namespace JobRunner.Core.Interfaces.Events.TaskCrud
+{
+    /// <summary>
+    /// Событие: задача создана
+    /// </summary>
+    public interface ITaskCreatedEvent : ITaskEventData
+    {
+        DateTime CreatedAt { get; set; }
+        bool IsEnabled { get; set; }
+        string? ScheduleDescription { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Events\TaskCrud\ITaskDeletedEvent.cs =====
+using System;
+
+namespace JobRunner.Core.Interfaces.Events.TaskCrud
+{
+    /// <summary>
+    /// Событие: задача удалена
+    /// </summary>
+    public interface ITaskDeletedEvent : ITaskEventData
+    {
+        DateTime DeletedAt { get; set; }
+        string DeletedBy { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Events\TaskCrud\ITaskUpdatedEvent.cs =====
+using System;
+
+namespace JobRunner.Core.Interfaces.Events.TaskCrud
+{
+    /// <summary>
+    /// Событие: задача обновлена
+    /// </summary>
+    public interface ITaskUpdatedEvent : ITaskEventData
+    {
+        DateTime UpdatedAt { get; set; }
+        string[] ChangedFields { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Events\TaskStatus\ITaskCompletedEvent.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+using System;
+
+namespace JobRunner.Core.Interfaces.Events.TaskStatus
+{
+    /// <summary>
+    /// Событие: задача завершена
+    /// </summary>
+    public interface ITaskCompletedEvent : ITaskEventData, INotifiableEvent
+    {
+        bool Success { get; set; }
+        string? ErrorMessage { get; set; }
+        DateTime CompletionTime { get; set; }
+        long? DurationMs { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Events\TaskStatus\ITaskStartedEvent.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+using System;
+
+namespace JobRunner.Core.Interfaces.Events.TaskStatus
+{
+    /// <summary>
+    /// Событие: задача стартовала
+    /// </summary>
+    public interface ITaskStartedEvent : ITaskEventData, INotifiableEvent
+    {
+        DateTime StartTime { get; set; }
+        long? ProcessId { get; set; }
+        string? ExecutionPath { get; set; }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Execution\IJobExecutor.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Events.TaskEvents.TaskStatus;
+using JobRunner.Core.Results;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces.Execution
+{
+    /// <summary>
+    /// Исполнитель задачи — отвечает за низкоуровневый запуск внешнего процесса.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Назначение:</b>
+    /// Этот интерфейс является технической абстракцией для запуска внешних исполняемых файлов.
+    /// Он НЕ занимается бизнес-логикой (обновление БД, события, уведомления) — только запуск процесса.
+    /// </para>
+    /// 
+    /// <para>
+    /// <b>Ответственности:</b>
+    /// <list type="bullet">
+    ///   <item>Запуск процесса по указанному пути <see cref="IJobTask.ExecutionPath"/></item>
+    ///   <item>Передача аргументов командной строки из <see cref="IJobTask.ScheduleArguments"/></item>
+    ///   <item>Применение таймаута <see cref="IJobTask.TimeoutSeconds"/> (если задан)</item>
+    ///   <item>Учёт флага <see cref="IJobTask.IsAsyncExecution"/> (ожидать завершения или нет)</item>
+    ///   <item>Сбор stdout/stderr процесса</item>
+    ///   <item>Возврат результата в виде <see cref="JobExecutionResult"/></item>
+    /// </list>
+    /// </para>
+    /// 
+    /// <para>
+    /// <b>Что НЕ входит в ответственность исполнителя:</b>
+    /// <list type="bullet">
+    ///   <item>Обновление метаданных задачи (<see cref="IJobTaskMetadata"/>)</item>
+    ///   <item>Публикация доменных событий (<see cref="IDomainEventDispatcher"/>)</item>
+    ///   <item>Работа с базой данных</item>
+    ///   <item>Отправка уведомлений</item>
+    ///   <item>Логирование (кроме технических ошибок)</item>
+    /// </list>
+    /// </para>
+    /// 
+    /// <para>
+    /// <b>Где находится реализация:</b>
+    /// Реализация этого интерфейса должна находиться в слое Infrastructure (например, JobRunner.Infrastructure),
+    /// так как она зависит от System.Diagnostics.Process и платформозависимых API.
+    /// </para>
+    /// 
+    /// <para>
+    /// <b>Пример использования:</b>
+    /// <code>
+    /// var result = await jobExecutor.ExecuteAsync(task, cancellationToken);
+    /// if (result.Success)
+    /// {
+    ///     // Обработка успешного выполнения
+    /// }
+    /// else if (result.IsTimeout)
+    /// {
+    ///     // Обработка таймаута
+    /// }
+    /// </code>
+    /// </para>
+    /// </remarks>
+    public interface IJobExecutor
+    {
+        event Func<TaskStartedEvent, Task>? TaskStarted;
+        event Func<TaskCompletedEvent, Task>? TaskCompleted;
+
+        /// <summary>
+        /// Выполнить задачу
+        /// </summary>
+        /// <param name="task">Задача для выполнения</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        /// <returns>Результат выполнения</returns>
+        /// <remarks>
+        /// Если у задачи задан TimeoutSeconds, должен использоваться linked token source
+        /// с таймаутом. При превышении таймаута процесс принудительно завершается.
+        /// </remarks>
+        Task<JobExecutionResult> ExecuteAsync(IJobTask task, CancellationToken ct = default);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Notification\INotificationSender.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces.Notification
+{
+    /// <summary>
+    /// Отвечает за отправку уведомлений через конкретный канал 
+    /// (Email, Telegram, Webhook, Popup и т.д.)
+    /// </summary>
+    /// <remarks>
+    /// Каждая реализация отвечает за один способ уведомления.
+    /// Регистрируются в DI как scoped или transient сервисы.
+    /// </remarks>
+    public interface INotificationSender
+    {
+        /// <summary>
+        /// Асинхронно отправляет уведомление о выполнении задачи (с полным объектом)
+        /// </summary>
+        Task SendAsync(IJobTask task, bool isSuccess, string? errorMessage = null, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Асинхронно отправляет уведомление о выполнении задачи (по данным из события)
+        /// </summary>
+        /// <param name="taskId">ID задачи</param>
+        /// <param name="taskName">Название задачи</param>
+        /// <param name="isSuccess">Успешно ли выполнена</param>
+        /// <param name="errorMessage">Сообщение об ошибке</param>
+        /// <param name="settings">Настройки уведомлений</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        Task SendAsync(Guid taskId, string taskName, bool isSuccess, string? errorMessage, INotifySettings settings, CancellationToken cancellationToken = default);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Notification\INotificationService.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces.Notification
+{
+    /// <summary>
+    /// Сервис уведомлений (абстракция)
+    /// </summary>
+    public interface INotificationService
+    {
+        /// <summary>
+        /// Отправить уведомление о выполнении задачи (с полным объектом)
+        /// </summary>
+        Task NotifyAsync(IJobTask task, bool isSuccess, string? errorMessage = null, CancellationToken ct = default);
+
+        /// <summary>
+        /// Отправить уведомление о выполнении задачи (по данным из события)
+        /// </summary>
+        Task NotifyAsync(Guid taskId, string taskName, bool isSuccess, string? errorMessage, INotifySettings? settings, CancellationToken ct = default);
+
+        /// <summary>
+        /// Отправить уведомление до выполнения задачи (с полным объектом)
+        /// </summary>
+        Task NotifyBeforeAsync(IJobTask task, CancellationToken ct = default);
+
+        /// <summary>
+        /// Отправить уведомление до выполнения задачи (по данным из события)
+        /// </summary>
+        Task NotifyBeforeAsync(Guid taskId, string taskName, INotifySettings? settings, CancellationToken ct = default);
+    
+        
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Notification\UI\IUiNotificationService.cs =====
+using JobRunner.Core.DTO;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces.Notification.UI
+{
+    /// <summary>
+    /// Сервис для отправки уведомлений в UI (абстракция)
+    /// Реализация будет в UI проекте (WPF/Blazor/Console)
+    /// </summary>
+    public interface IUiNotificationService
+    {
+        /// <summary>
+        /// Уведомить UI о событии задачи
+        /// </summary>
+        Task NotifyAsync(UiNotification notification, CancellationToken ct = default);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Orchestration\ITaskOrchestrator.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Results;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces.Orchestration
+{
+    /// <summary>
+    /// Оркестратор задач (координация хранилища и планировщика)
+    /// </summary>
+    public interface ITaskOrchestrator<T> where T : IJobTask
+    {
+        /// <summary>
+        /// Создание задачи и её регистрация в планировщике
+        /// </summary>
+        /// <param name="task">Задача для создания (Id может пусто быть)</param>
+        /// <returns>T - созданная задача с присвоенным значением Id</returns>
+        Task<T> CreateAndScheduleAsync(T task, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновление задачи и перерегистрация в планировщике
+        /// </summary>
+        /// <param name="task">Задача с обновлёнными данными</param>
+        /// <returns>true — обновление успешно, 
+        /// false — задача не найдена</returns>
+        Task<bool> UpdateAndRescheduleAsync(T task, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Удаление задачи и её удаление из планировщика
+        /// </summary>
+        /// <param name="taskId">Уникальный идентификатор задачи</param>
+        /// <returns> true — удаление успешно,
+        /// false — задача не найдена </returns>
+        Task<bool> DeleteAndUnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Загрузить все задачи из БД и восстановить их в планировщике
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task RestoreAllTasksAsync(CancellationToken ct = default);
+
+        /// <summary>
+        /// Получение задачи по идентификатору
+        /// </summary>
+        /// <param name="taskId">Уникальный идентификатор задачи</param>
+        /// <returns>Задача или null, если не найдена</returns>
+        Task<T?> GetTaskAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Получение всех задач
+        /// </summary>
+        /// <returns>Коллекция всех задач, отсортированных по Id</returns>
+        /// <remarks>Данные читаются из БД (ITaskStorage.GetAllAsync)</remarks>
+        Task<IReadOnlyList<T>> GetAllTasksAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Принудительный немедленный запуск задачи
+        /// </summary>
+        /// <param name="taskId">Уникальный идентификатор задачи</param>
+        /// <returns>true — задача запущена, 
+        /// false — задача не найдена</returns>
+        /// <remarks>Вызывает IJobScheduler.RunNowAsync</remarks>
+        Task<bool> RunNowAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Приостановка выполнения задачи по расписанию
+        /// </summary>
+        /// <param name="taskId">Уникальный идентификатор задачи</param>
+        /// <returns>true — задача приостановлена, 
+        /// false — задача не найдена</returns>
+        /// <remarks>Вызывает IJobScheduler.PauseAsync. 
+        /// Может быть возобновлена через ResumeAsync</remarks>
+        Task<bool> PauseAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Возобновление выполнения задачи по расписанию
+        /// </summary>
+        /// <param name="taskId">Уникальный идентификатор задачи</param>
+        /// <returns>true — задача возобновлена, 
+        /// false — задача не найдена</returns>
+        /// <remarks>Вызывает IJobScheduler.ResumeAsync</remarks>
+        Task<bool> ResumeAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Принудительная остановка выполняющейся задачи
+        /// </summary>
+        /// <param name="taskId">Уникальный идентификатор задачи</param>
+        /// <returns>true — задача остановлена, 
+        /// false — задача не найдена или не выполняется</returns>
+        /// <remarks>Вызывает IJobScheduler.StopAsync. 
+        /// Завершает процесс задачи.</remarks>
+        Task<bool> StopAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Выполнить задачу 
+        /// </summary>
+        Task<JobExecutionResult> ExecuteTaskAsync(Guid taskId, CancellationToken ct = default);
+
+        /// <summary>
+        /// Инициализация оркестратора при старте приложения
+        /// </summary>
+        /// <remarks>
+        /// Сбрасывает флаг IsRunning у всех задач (т.к. процессы уже не актуальны)
+        /// и восстанавливает расписания.
+        /// </remarks>
+        Task InitializeAsync(CancellationToken ct = default);
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Interfaces\Scheduler\IJobScheduler.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace JobRunner.Core.Interfaces.Scheduler
+{
+    /// <summary>
+    /// Сборник методов планировщика заданий (операции с памятью и выполнением)
+    /// </summary>
+    /// <typeparam name="T">Тип задачи, реализующий IJobTask</typeparam>
+    public interface IJobScheduler
+    {
+        #region Планировщик (жизненный цикл)
+        /// <summary>
+        /// Запуск программы
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Инициализирует внутренний планировщик (Quartz), загружает сохранённые задачи
+        /// и начинает отслеживание расписаний. Должен быть вызван перед любыми другими операциями.
+        /// </remarks>
+        Task StartProgramAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Остановка программы
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Останавливает все активные задачи, завершает работу внутреннего планировщика.
+        /// Состояние задач сохраняется для последующего восстановления.
+        /// </remarks>
+        Task StopProgramAsync(CancellationToken cancellationToken = default);
+        #endregion
+
+        #region Задача - Управление выполнением
+        /// <summary>
+        /// Принудительный немедленный запуск задачи
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <returns></returns>
+        Task<bool> RunNowAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Перезапуск задачи (остановить и запустить заново)
+        /// </summary>
+        /// <param name="taskId">Уникальный идентификатор задачи</param>
+        /// <returns>true — задача успешно перезапущена, false — ошибка</returns>
+        /// <remarks>
+        /// 1. Останавливает текущий процесс (если запущен)
+        /// 2. Сбрасывает состояние задачи (LastError, IsRunning)
+        /// 3. Запускает задачу заново
+        /// </remarks>
+        Task<bool> RestartAsync(Guid taskId, int delay = 100, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Приостановка выполнения задачи по расписанию
+        /// </summary>
+        /// <param name="taskId">Уникальный идентификатор задачи</param>
+        /// <returns>true — задача приостановлена, false — задача не найдена</returns>
+        /// <remarks>
+        /// Задача остаётся в системе, но не будет запускаться по расписанию.
+        /// Может быть возобновлена методом ResumeAsync.
+        /// </remarks>
+        Task<bool> PauseAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Остановка выполняющейся задачи (принудительное завершение)
+        /// </summary>
+        /// <param name="taskId">Уникальный идентификатор задачи</param>
+        /// <returns>true — задача остановлена, false — задача не найдена или не выполняется</returns>
+        /// <remarks>
+        /// Принудительно завершает процесс, связанный с задачей.
+        /// Состояние задачи обновляется, ошибка фиксируется в LastError.
+        /// </remarks>
+        Task<bool> StopAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Возобновление выполнения задачи по расписанию
+        /// </summary>
+        /// <param name="taskId">Уникальный идентификатор задачи</param>
+        /// <returns>true — задача возобновлена, false — задача не найдена</returns>
+        /// <remarks>
+        /// Восстанавливает выполнение ранее приостановленной задачи.
+        /// Расписание сохраняется и начинает отсчитываться заново.
+        /// </remarks>
+        Task<bool> ResumeAsync(Guid taskId, CancellationToken cancellationToken = default);
+        #endregion
+
+        #region Управление расписанием
+        /// <summary>
+        /// Зарегистрировать задачу в планировщике
+        /// </summary>
+        Task ScheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Удалить задачу из планировщика
+        /// </summary>
+        Task UnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновить расписание задачи
+        /// </summary>
+        Task RescheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Перерегистрировать все задачи из БД в Quartz (восстановление после перезапуска)
+        /// </summary>
+        /// <param name="tasks"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task RestoreSchedulesAsync(IEnumerable<IJobTask> tasks, CancellationToken ct = default);
+        #endregion
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Results\DomainValidationResult.cs =====
+using System.Collections.Generic;
+using System.ComponentModel;
+
+namespace JobRunner.Core.Results
+{
+    public class DomainValidationResult
+    {
+        [DisplayName("IsValid")]
+        public bool IsValid { get; set; }
+
+        [DisplayName("Errors")]
+        public List<string> Errors { get; set; } = new();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static DomainValidationResult Success() => new() { IsValid = true };
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="error"></param>
+        /// <returns></returns>
+        public static DomainValidationResult Fail(string error) => new() { IsValid = false, Errors = { error } };
+    }
+
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Core\Results\JobExecutionResult.cs =====
+using System;
+
+namespace JobRunner.Core.Results
+{
+    /// <summary>
+    /// Результат выполнения задачи
+    /// </summary>
+    public class JobExecutionResult
+    {
+        /// <summary>
+        /// Успешно ли выполнена задача
+        /// </summary>
+        public bool Success { get; set; }
+
+        /// <summary>
+        /// PID процесса (если запущен)
+        /// </summary>
+        public long? ProcessId { get; set; }
+
+        /// <summary>
+        /// Сообщение об ошибке (если есть)
+        /// </summary>
+        public string? ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Время начала выполнения
+        /// </summary>
+        public DateTime StartTime { get; set; }
+
+        /// <summary>
+        /// Время окончания выполнения (если завершена)
+        /// </summary>
+        public DateTime? EndTime { get; set; }
+
+        /// <summary>
+        /// Длительность выполнения в миллисекундах
+        /// </summary>
+        public long? DurationMs { get; set; }
+
+        /// <summary>
+        /// Был ли превышен таймаут выполнения
+        /// </summary>
+        public bool IsTimeout { get; set; }
+
+        /// <summary>
+        /// Выходной код процесса (если есть)
+        /// </summary>
+        public int? ExitCode { get; set; }
+
+        /// <summary>
+        /// Стандартный вывод процесса
+        /// </summary>
+        public string? StandardOutput { get; set; }
+
+        /// <summary>
+        /// Стандартный вывод ошибок
+        /// </summary>
+        public string? StandardError { get; set; }
+
+        /// <summary>
+        /// Создать успешный результат
+        /// </summary>
+        public static JobExecutionResult CreateSuccess(long? processId, DateTime startTime, DateTime? endTime = null, long? durationMs = null)
+        {
+            return new JobExecutionResult
+            {
+                Success = true,
+                ProcessId = processId,
+                StartTime = startTime,
+                EndTime = endTime,
+                DurationMs = durationMs
+            };
+        }
+
+        /// <summary>
+        /// Создать результат с ошибкой
+        /// </summary>
+        public static JobExecutionResult CreateFailure(string errorMessage, DateTime startTime, int? exitCode = null)
+        {
+            return new JobExecutionResult
+            {
+                Success = false,
+                ErrorMessage = errorMessage,
+                StartTime = startTime,
+                EndTime = DateTime.UtcNow,
+                ExitCode = exitCode
+            };
+        }
+
+        /// <summary>
+        /// Создать результат с таймаутом
+        /// </summary>
+        public static JobExecutionResult CreateTimeout(int timeoutSeconds, DateTime startTime)
+        {
+            return new JobExecutionResult
+            {
+                Success = false,
+                ErrorMessage = $"Task exceeded timeout of {timeoutSeconds} seconds",
+                StartTime = startTime,
+                EndTime = DateTime.UtcNow,
+                IsTimeout = true
+            };
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Domain.Tests\QuartzTests\CronConverterTests.cs =====
+using JobRunner.Core.Entities.ValueObjects.Settings;
+using JobRunner.Quartz.Converters;
+using FluentAssertions;
+using Xunit;
+using Moq;
+using JobRunner.Core.Entities.ValueObjects;
+
+namespace JobRunner.Domain.Tests.QuartzTests
+{
+    public class CronConverterTests
+    {
+        private readonly CronConverter _converter = new();
+
+        [Fact]
+        public void Convert_DailySchedule_ReturnsCorrectCron()
+        {
+            var schedule = new DailySchedule { Hour = 14, Minute = 30 };
+
+            var result = _converter.Convert(schedule);
+
+            result.Should().Be("0 30 14 * * ?");
+        }
+
+        [Fact]
+        public void Convert_WeeklySchedule_ReturnsCorrectCron()
+        {
+            var schedule = new WeeklySchedule
+            {
+                Hour = 9,
+                Minute = 0,
+                DaysOfWeek = { DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday }
+            };
+
+            var result = _converter.Convert(schedule);
+
+            // В Quartz: 1=Sunday, 2=Monday, 3=Tuesday, 4=Wednesday, 5=Thursday, 6=Friday, 7=Saturday
+            result.Should().Be("0 0 9 ? * 2,4,6");
+        }
+
+        [Fact]
+        public void Convert_IntervalSchedule_30Minutes_ReturnsCorrectCron()
+        {
+            var schedule = new IntervalSchedule { IntervalMinutes = 30 };
+
+            var result = _converter.Convert(schedule);
+
+            result.Should().Be("0 */30 * * * ?");
+        }
+
+        [Fact]
+        public void Convert_IntervalSchedule_60Minutes_ReturnsHourlyCron()
+        {
+            var schedule = new IntervalSchedule { IntervalMinutes = 60 };
+
+            var result = _converter.Convert(schedule);
+
+            // 0 */60 * * * ? и 0 0 * * * ? эквивалентны, но второй читаемее
+            result.Should().Be("0 */60 * * * ?");
+        }
+
+        [Fact]
+        public void Convert_OnceSchedule_ReturnsSpecificDateCron()
+        {
+            var startTime = new DateTime(2026, 12, 25, 10, 30, 15);
+            var schedule = new OnceSchedule { StartTime = startTime };
+
+            var result = _converter.Convert(schedule);
+
+            result.Should().Be("15 30 10 25 12 ? 2026");
+        }
+
+        [Fact]
+        public void Convert_UnsupportedSchedule_ThrowsNotSupportedException()
+        {
+            var schedule = new Mock<IScheduleSettings>();
+
+            var act = () => _converter.Convert(schedule.Object);
+
+            act.Should().Throw<NotSupportedException>();
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Domain.Tests\QuartzTests\ExecutionScopeTests.cs =====
+using FluentAssertions;
+using JobRunner.Core.DefaultImplementations;
+using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Events;
+using JobRunner.Core.Events.TaskEvents.TaskStatus;
+using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.EntityServices;
+using JobRunner.Core.Results;
+using JobRunner.Quartz;
+using Microsoft.Extensions.Logging;
+using Moq;
+
+namespace JobRunner.Domain.Tests.QuartzTests
+{
+    public class ExecutionScopeTests
+    {
+        private readonly Mock<ILogger> _loggerMock;
+        private readonly Mock<IEncryptionService> _encryptionMock;
+        private readonly Mock<IDomainEventDispatcher> _dispatcherMock;
+        private readonly Mock<ITaskService<IJobTask>> _storageMock;
+        private readonly Mock<IJobTask> _taskMock;
+
+        public ExecutionScopeTests()
+        {
+            _loggerMock = new Mock<ILogger>();
+            _encryptionMock = new Mock<IEncryptionService>();
+            _dispatcherMock = new Mock<IDomainEventDispatcher>();
+            _storageMock = new Mock<ITaskService<IJobTask>>();
+            _taskMock = new Mock<IJobTask>();
+
+            _taskMock.Setup(x => x.Id).Returns(Guid.NewGuid());
+            _taskMock.Setup(x => x.Name).Returns("Test Task");
+            _taskMock.Setup(x => x.ScheduleArguments).Returns(new Mock<IScheduleArguments>().Object);
+            _taskMock.Setup(x => x.JobTaskMetadata).Returns(new Mock<IJobTaskMetadata>().Object);
+        }
+
+        [Fact]
+        public async Task DecryptArgumentsAsync_ShouldCallDecryptionAndSetFlag()
+        {
+            var scope = new ExecutionScope(_taskMock.Object, _loggerMock.Object);
+
+            await scope.DecryptArgumentsAsync(_encryptionMock.Object);
+
+            _encryptionMock.Verify(x =>
+                x.DecryptSensitiveArgumentsAsync(_taskMock.Object.ScheduleArguments, It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task ReencryptArgumentsAsync_WhenNotDecrypted_ShouldNotEncrypt()
+        {
+            var scope = new ExecutionScope(_taskMock.Object, _loggerMock.Object);
+
+            await scope.ReencryptArgumentsAsync(_encryptionMock.Object);
+
+            _encryptionMock.Verify(x =>
+                x.ReencryptSensitiveArgumentsAsync(It.IsAny<IScheduleArguments>(), It.IsAny<CancellationToken>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task ReencryptArgumentsAsync_WhenDecrypted_ShouldEncryptAndResetFlag()
+        {
+            var scope = new ExecutionScope(_taskMock.Object, _loggerMock.Object);
+
+            await scope.DecryptArgumentsAsync(_encryptionMock.Object);
+            await scope.ReencryptArgumentsAsync(_encryptionMock.Object);
+            await scope.ReencryptArgumentsAsync(_encryptionMock.Object); 
+
+            _encryptionMock.Verify(x =>
+                x.ReencryptSensitiveArgumentsAsync(It.IsAny<IScheduleArguments>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task PublishStartedEventAsync_ShouldSetStartTimeAndPublish()
+        {
+            var scope = new ExecutionScope(_taskMock.Object, _loggerMock.Object);
+            var beforeTime = DateTime.UtcNow;
+
+            await scope.PublishStartedEventAsync(_dispatcherMock.Object);
+
+            scope.StartTime.Should().BeAfter(beforeTime);
+            _dispatcherMock.Verify(x =>
+                x.PublishAsync(It.IsAny<TaskStartedEvent>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateBeforeExecutionAsync_ShouldSetRunningFlagAndUpdate()
+        {
+            var metadataMock = new Mock<IJobTaskMetadata>();
+            _taskMock.Setup(x => x.JobTaskMetadata).Returns(metadataMock.Object);
+
+            var scope = new ExecutionScope(_taskMock.Object, _loggerMock.Object);
+            await scope.PublishStartedEventAsync(_dispatcherMock.Object);
+
+            await scope.UpdateBeforeExecutionAsync(_storageMock.Object);
+
+            metadataMock.VerifySet(x => x.IsRunning = true, Times.Once);
+            metadataMock.VerifySet(x => x.LastRun = scope.StartTime, Times.Once);
+            _taskMock.VerifySet(x => x.StartRun = scope.StartTime, Times.Once);
+            _storageMock.Verify(x => x.UpdateAsync(_taskMock.Object, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateAfterExecutionAsync_WhenSuccessful_ShouldIncrementCounters()
+        {
+            var metadataMock = new Mock<IJobTaskMetadata>();
+            metadataMock.SetupProperty(x => x.TotalRunCount, 0);
+            metadataMock.SetupProperty(x => x.SuccessCount, 0);
+            metadataMock.SetupProperty(x => x.ConsecutiveFailures, 3);
+            metadataMock.SetupProperty(x => x.IsRunning, true);
+            _taskMock.Setup(x => x.JobTaskMetadata).Returns(metadataMock.Object);
+
+            var result = JobExecutionResult.CreateSuccess(12345, DateTime.UtcNow);
+            var scope = new ExecutionScope(_taskMock.Object, _loggerMock.Object);
+
+            await scope.PublishStartedEventAsync(_dispatcherMock.Object);
+            await scope.UpdateAfterExecutionAsync(result, _storageMock.Object);
+
+            metadataMock.Object.TotalRunCount.Should().Be(1);
+            metadataMock.Object.SuccessCount.Should().Be(1);
+            metadataMock.Object.ConsecutiveFailures.Should().Be(0);
+            metadataMock.Object.IsRunning.Should().BeFalse();
+        }
+
+
+        [Fact]
+        public async Task UpdateAfterExecutionAsync_WhenFailed_ShouldIncrementFailureCount()
+        {
+            var metadata = new JobTaskMetadata();  // ← реальный объект
+            _taskMock.Setup(x => x.JobTaskMetadata).Returns(metadata);
+
+            var result = JobExecutionResult.CreateFailure("Test error", DateTime.UtcNow);
+            var scope = new ExecutionScope(_taskMock.Object, _loggerMock.Object);
+
+            await scope.PublishStartedEventAsync(_dispatcherMock.Object);
+            await scope.UpdateAfterExecutionAsync(result, _storageMock.Object);
+
+            metadata.TotalRunCount.Should().Be(1);
+            metadata.FailureCount.Should().Be(1);
+            metadata.ConsecutiveFailures.Should().Be(1);
+            metadata.LastError.Should().Be("Test error");  
+            metadata.IsRunning.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task HandleCancellationAsync_ShouldUpdateMetadataAndPublish()
+        {
+            var metadata = new JobTaskMetadata { IsRunning = true };
+            _taskMock.Setup(x => x.JobTaskMetadata).Returns(metadata);
+
+            var scope = new ExecutionScope(_taskMock.Object, _loggerMock.Object);
+            var exception = new OperationCanceledException();
+
+            await scope.HandleCancellationAsync(exception, _storageMock.Object, _dispatcherMock.Object);
+
+            metadata.IsRunning.Should().BeFalse();
+            metadata.FailureCount.Should().Be(1);
+            metadata.ConsecutiveFailures.Should().Be(1);
+            metadata.LastError.Should().Be("Execution was cancelled");
+            _storageMock.Verify(x => x.UpdateAsync(_taskMock.Object, It.IsAny<CancellationToken>()), Times.Once);
+            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task HandleFailureAsync_ShouldUpdateMetadataAndPublish()
+        {
+            var metadata = new JobTaskMetadata { IsRunning = true };
+            _taskMock.Setup(x => x.JobTaskMetadata).Returns(metadata);
+
+            var scope = new ExecutionScope(_taskMock.Object, _loggerMock.Object);
+            var exception = new InvalidOperationException("Something went wrong");
+
+            await scope.HandleFailureAsync(exception, _storageMock.Object, _dispatcherMock.Object);
+
+            metadata.IsRunning.Should().BeFalse();
+            metadata.FailureCount.Should().Be(1);
+            metadata.ConsecutiveFailures.Should().Be(1);
+            metadata.LastError.Should().Be("Something went wrong");
+            _storageMock.Verify(x => x.UpdateAsync(_taskMock.Object, It.IsAny<CancellationToken>()), Times.Once);
+            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ReencryptArgumentsAsync_WhenEncryptionFails_ShouldLogCritical()
+        {
+            var scope = new ExecutionScope(_taskMock.Object, _loggerMock.Object);
+            _encryptionMock
+                .Setup(x => x.ReencryptSensitiveArgumentsAsync(It.IsAny<IScheduleArguments>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception("Encryption failed"));
+
+            await scope.DecryptArgumentsAsync(_encryptionMock.Object);
+            await scope.ReencryptArgumentsAsync(_encryptionMock.Object);
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Domain.Tests\QuartzTests\JobAdapterTests.cs =====
+using FluentAssertions;
+using JobRunner.Core.DefaultImplementations;
+using JobRunner.Core.Entities;
+using JobRunner.Core.Events;
+using JobRunner.Core.Events.TaskEvents.TaskStatus;
+using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.EntityServices;
+using JobRunner.Core.Interfaces.Execution;
+using JobRunner.Core.Results;
+using JobRunner.Quartz.Adapters;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Quartz;
+
+namespace JobRunner.Domain.Tests.QuartzTests
+{
+    public class JobAdapterTests
+    {
+        private readonly Mock<ITaskService<IJobTask>> _storageMock;
+        private readonly Mock<IJobExecutor> _executorMock;
+        private readonly Mock<IDomainEventDispatcher> _dispatcherMock;
+        private readonly Mock<IEncryptionService> _encryptionMock;
+        private readonly Mock<ILogger<JobAdapter>> _loggerMock;
+        private readonly JobAdapter _adapter;
+
+        public JobAdapterTests()
+        {
+            _storageMock = new Mock<ITaskService<IJobTask>>();
+            _executorMock = new Mock<IJobExecutor>();
+            _dispatcherMock = new Mock<IDomainEventDispatcher>();
+            _encryptionMock = new Mock<IEncryptionService>();
+            _loggerMock = new Mock<ILogger<JobAdapter>>();
+
+            _adapter = new JobAdapter(
+                _storageMock.Object,
+                _executorMock.Object,
+                _dispatcherMock.Object,
+                _encryptionMock.Object,
+                _loggerMock.Object);
+        }
+
+        private static IJobExecutionContext CreateContext(Guid taskId)
+        {
+            var contextMock = new Mock<IJobExecutionContext>();
+            var dataMap = new JobDataMap();
+            dataMap.Put("TaskId", taskId.ToString());
+            contextMock.Setup(x => x.MergedJobDataMap).Returns(dataMap);
+            contextMock.Setup(x => x.CancellationToken).Returns(CancellationToken.None);
+            return contextMock.Object;
+        }
+
+        private static JobTask CreateTestTask(Guid? id = null, bool isEnabled = true, bool allowConcurrent = true, bool isRunning = false)
+        {
+            return new JobTask
+            {
+                Id = id ?? Guid.NewGuid(),
+                Name = "Test Task",
+                ExecutionPath = "test.exe",
+                IsEnabled = isEnabled,
+                AllowConcurrentExecution = allowConcurrent,
+                JobTaskMetadata = new JobTaskMetadata { IsRunning = isRunning },
+                ScheduleArguments = new ScheduleArguments()
+            };
+        }
+
+        [Fact]
+        public async Task Execute_WhenTaskNotFound_ShouldLogWarning()
+        {
+            var taskId = Guid.NewGuid();
+            _storageMock.Setup(x => x.GetByIdAsync(taskId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IJobTask?)null);
+
+            await _adapter.Execute(CreateContext(taskId));
+
+            _loggerMock.Verify(x =>
+                x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("not found")),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                Times.Once);
+
+            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Execute_WhenTaskDisabled_ShouldSkipExecution()
+        {
+            var task = CreateTestTask(isEnabled: false);
+            _storageMock.Setup(x => x.GetByIdAsync(task.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(task);
+
+            await _adapter.Execute(CreateContext(task.Id));
+
+            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Execute_WhenConcurrentDisabledAndTaskRunning_ShouldSkip()
+        {
+            var task = CreateTestTask(allowConcurrent: false, isRunning: true);
+            _storageMock.Setup(x => x.GetByIdAsync(task.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(task);
+
+            await _adapter.Execute(CreateContext(task.Id));
+
+            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Execute_WhenConcurrentEnabled_ShouldRunEvenIfRunning()
+        {
+            var task = CreateTestTask(allowConcurrent: true, isRunning: true);
+            _storageMock.Setup(x => x.GetByIdAsync(task.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(task);
+
+            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(JobExecutionResult.CreateSuccess(123, DateTime.UtcNow));
+
+            await _adapter.Execute(CreateContext(task.Id));
+
+            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Execute_WhenTwoConcurrentExecutions_ShouldRunOnlyOne()
+        {
+            var task = CreateTestTask(allowConcurrent: false, isRunning: false);
+            _storageMock.Setup(x => x.GetByIdAsync(task.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(task);
+
+            var executorCalled = 0;
+            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()))
+                .Returns(async () =>
+                {
+                    Interlocked.Increment(ref executorCalled);
+                    await Task.Delay(100); // Имитация долгого выполнения
+                    return JobExecutionResult.CreateSuccess(123, DateTime.UtcNow);
+                });
+
+            var context = CreateContext(task.Id);
+                var task1 = _adapter.Execute(context);
+                var task2 = _adapter.Execute(context);
+
+            await Task.WhenAll(task1, task2);
+
+            executorCalled.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Execute_WhenSuccessful_ShouldUpdateMetadata()
+        {
+            var task = CreateTestTask();
+            _storageMock.Setup(x => x.GetByIdAsync(task.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(task);
+
+            var result = JobExecutionResult.CreateSuccess(12345, DateTime.UtcNow);
+            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(result);
+
+            await _adapter.Execute(CreateContext(task.Id));
+
+            _storageMock.Verify(x => x.UpdateAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskStartedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Execute_WhenExecutorThrows_ShouldHandleError()
+        {
+            var task = CreateTestTask();
+            _storageMock.Setup(x => x.GetByIdAsync(task.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(task);
+
+            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new InvalidOperationException("Execution failed"));
+
+            var act = async () => await _adapter.Execute(CreateContext(task.Id));
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+
+            _storageMock.Verify(x => x.UpdateAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Execute_ShouldDecryptAndReencryptArguments()
+        {
+            var task = CreateTestTask();
+            _storageMock.Setup(x => x.GetByIdAsync(task.Id, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(task);
+
+            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(JobExecutionResult.CreateSuccess(123, DateTime.UtcNow));
+
+            await _adapter.Execute(CreateContext(task.Id));
+
+            _encryptionMock.Verify(x => x.DecryptSensitiveArgumentsAsync(task.ScheduleArguments, It.IsAny<CancellationToken>()), Times.Once);
+            _encryptionMock.Verify(x => x.ReencryptSensitiveArgumentsAsync(task.ScheduleArguments, It.IsAny<CancellationToken>()), Times.Once);
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Domain.Tests\QuartzTests\QuartzSchedulerTests.cs =====
+using FluentAssertions;
+using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects.Settings;
+using JobRunner.Core.Interfaces.Converters;
+using Moq;
+using Quartz;
+using JobRunner.Quartz.Scheduler;
+
+namespace JobRunner.Domain.Tests.QuartzTests
+{
+    public class QuartzSchedulerTests
+    {
+        private readonly Mock<IScheduler> _schedulerMock;
+        private readonly Mock<IScheduleConverter> _converterMock;
+        private readonly QuartzScheduler _scheduler;
+
+        public QuartzSchedulerTests()
+        {
+            _schedulerMock = new Mock<IScheduler>();
+            _converterMock = new Mock<IScheduleConverter>();
+            _scheduler = new QuartzScheduler(_schedulerMock.Object, _converterMock.Object);
+        }
+
+        [Fact]
+        public async Task RunNowAsync_ShouldTriggerJob()
+        {
+            var taskId = Guid.NewGuid();
+
+            await _scheduler.RunNowAsync(taskId);
+
+            _schedulerMock.Verify(x =>
+                x.TriggerJob(
+                    It.Is<JobKey>(key => key.Name == taskId.ToString()),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task PauseAsync_ShouldPauseJob()
+        {
+            var taskId = Guid.NewGuid();
+
+            await _scheduler.PauseAsync(taskId);
+
+            _schedulerMock.Verify(x =>
+                x.PauseJob(
+                    It.Is<JobKey>(key => key.Name == taskId.ToString()),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task ResumeAsync_ShouldResumeJob()
+        {
+            var taskId = Guid.NewGuid();
+
+            await _scheduler.ResumeAsync(taskId);
+
+            _schedulerMock.Verify(x =>
+                x.ResumeJob(
+                    It.Is<JobKey>(key => key.Name == taskId.ToString()),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task StopAsync_ShouldInterruptJob()
+        {
+            var taskId = Guid.NewGuid();
+
+            await _scheduler.StopAsync(taskId);
+
+            _schedulerMock.Verify(x =>
+                x.Interrupt(
+                    It.Is<JobKey>(key => key.Name == taskId.ToString()),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task RestartAsync_ShouldStopThenRun()
+        {
+            var taskId = Guid.NewGuid();
+
+            await _scheduler.RestartAsync(taskId, delay: 10);
+
+            _schedulerMock.Verify(x => x.Interrupt(It.Is<JobKey>(key => key.Name == taskId.ToString()), It.IsAny<CancellationToken>()), Times.Once);
+            _schedulerMock.Verify(x => x.TriggerJob(It.Is<JobKey>(key => key.Name == taskId.ToString()), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ScheduleAsync_ShouldScheduleJobWithTrigger()
+        {
+            var taskId = Guid.NewGuid();
+            var schedule = new DailySchedule { Hour = 14, Minute = 30 };
+            var cronExpression = "0 30 14 * * ?";
+
+            _converterMock.Setup(x => x.Convert(schedule)).Returns(cronExpression);
+
+            await _scheduler.ScheduleAsync(taskId, schedule);
+
+            _schedulerMock.Verify(x =>
+                x.ScheduleJob(
+                    It.IsAny<IJobDetail>(),
+                    It.IsAny<ITrigger>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task ScheduleAsync_WhenCronExpressionEmpty_ShouldThrow()
+        {
+            var taskId = Guid.NewGuid();
+            var schedule = new DailySchedule();
+
+            _converterMock.Setup(x => x.Convert(schedule)).Returns(string.Empty);
+
+            var act = async () => await _scheduler.ScheduleAsync(taskId, schedule);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
+        }
+
+        [Fact]
+        public async Task UnscheduleAsync_ShouldDeleteJob()
+        {
+            var taskId = Guid.NewGuid();
+
+            await _scheduler.UnscheduleAsync(taskId);
+
+            _schedulerMock.Verify(x =>
+                x.DeleteJob(
+                    It.Is<JobKey>(key => key.Name == taskId.ToString()),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task RestoreSchedulesAsync_ShouldScheduleOnlyEnabledTasks()
+        {
+            var enabledTask = new Mock<IJobTask>();
+            enabledTask.Setup(x => x.Id).Returns(Guid.NewGuid());
+            enabledTask.Setup(x => x.IsEnabled).Returns(true);
+            enabledTask.Setup(x => x.ScheduleSettings).Returns(new DailySchedule());
+
+            var disabledTask = new Mock<IJobTask>();
+            disabledTask.Setup(x => x.Id).Returns(Guid.NewGuid());
+            disabledTask.Setup(x => x.IsEnabled).Returns(false);
+
+            var tasks = new[] { enabledTask.Object, disabledTask.Object };
+
+            _converterMock.Setup(x => x.Convert(It.IsAny<DailySchedule>())).Returns("0 0 9 * * ?");
+
+            await _scheduler.RestoreSchedulesAsync(tasks);
+
+            _schedulerMock.Verify(x =>
+                x.ScheduleJob(
+                    It.IsAny<IJobDetail>(),
+                    It.IsAny<ITrigger>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Quartz\ExecutionScope.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Events;
+using JobRunner.Core.Events.TaskEvents.TaskHistory;
+using JobRunner.Core.Events.TaskEvents.TaskStatus;
+using JobRunner.Core.Interfaces;
+using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.EntityServices;
+using JobRunner.Core.Results;
+using Microsoft.Extensions.Logging;
+
+namespace JobRunner.Quartz
+{
+    /// <summary>
+    /// Реализация IExecutionScope для Quartz с поддержкой любого типа, реализующего IJobTask.
+    /// Инкапсулирует состояние выполнения задачи и управляет жизненным циклом: расшифровка аргументов,
+    /// публикация событий, обновление метаданных, повторное шифрование.
+    /// </summary>
+    public class ExecutionScope : IExecutionScope
+    {
+        private readonly ILogger _logger;
+        private readonly IDomainEventDispatcher _dispatcher;  // ✅ ДОБАВИТЬ
+
+        /// <summary>
+        /// Возвращает задачу, которая выполняется в текущем scope.
+        /// </summary>
+        public IJobTask Task => _task;
+        private readonly IJobTask _task;
+
+        private bool _decrypted = false;
+
+        /// <summary>
+        /// Время старта выполнения задачи в формате UTC.
+        /// </summary>
+        public DateTime StartTime { get; private set; }
+
+        public ExecutionScope(IJobTask task, ILogger logger, IDomainEventDispatcher dispatcher)  // ✅ ДОБАВИТЬ dispatcher в конструктор
+        {
+            _task = task ?? throw new ArgumentNullException(nameof(task));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        }
+
+        /// <summary>
+        /// Расшифровывает чувствительные аргументы задачи через сервис шифрования.
+        /// Устанавливает внутренний флаг _decrypted для отслеживания состояния.
+        /// Должен вызываться до начала выполнения задачи.
+        /// </summary>
+        public async Task DecryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default)
+        {
+            await encryption.DecryptSensitiveArgumentsAsync(_task.ScheduleArguments, cancellationToken);
+            _decrypted = true;
+            _logger.LogDebug("Sensitive arguments decrypted for task {TaskName}", _task.Name);
+        }
+
+        /// <summary>
+        /// Публикует событие TaskStartedEvent через диспетчер доменных событий.
+        /// Устанавливает StartTime в текущее время UTC. Вызывается после расшифровки аргументов.
+        /// Событие используется для уведомлений, логирования и аудита.
+        /// </summary>
+        public async Task PublishStartedEventAsync(IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
+        {
+            StartTime = DateTime.UtcNow;
+
+            await dispatcher.PublishAsync(new TaskStartedEvent
+            {
+                TaskId = _task.Id,
+                TaskName = _task.Name,
+                StartTime = StartTime,
+                ExecutionPath = _task.ExecutionPath,
+                NotifySettings = _task.NotifySettings
+            }, cancellationToken);
+
+            _logger.LogInformation("Task {TaskName} started at {StartTime}", _task.Name, StartTime);
+        }
+
+        /// <summary>
+        /// Обновляет метаданные задачи перед выполнением: устанавливает IsRunning = true,
+        /// LastRun и StartRun равными StartTime. Сохраняет изменения через сервис хранения.
+        /// Вызывается после публикации события старта.
+        /// </summary>
+        public async Task UpdateBeforeExecutionAsync(ITaskService<IJobTask> storage, CancellationToken cancellationToken = default)
+        {
+            _task.JobTaskMetadata.IsRunning = true;
+            _task.JobTaskMetadata.LastRun = StartTime;
+            _task.StartRun = StartTime;
+
+            await storage.UpdateAsync(_task, cancellationToken);
+            _logger.LogDebug("Task metadata updated before execution");
+        }
+
+        /// <summary>
+        /// Обновляет метаданные задачи после выполнения: TotalRunCount, SuccessCount/FailureCount,
+        /// длительность выполнения, PID процесса, сбрасывает IsRunning = false.
+        /// При успехе обнуляет ConsecutiveFailures, при ошибке увеличивает счётчик и сохраняет ошибку.
+        /// Сохраняет изменения через сервис хранения.
+        /// </summary>
+        public async Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<IJobTask> storage, CancellationToken cancellationToken = default)
+        {
+            var endTime = result.EndTime ?? DateTime.UtcNow;
+            var durationMs = result.DurationMs ?? (long)(endTime - StartTime).TotalMilliseconds;
+
+            _task.JobTaskMetadata.LastRun = result.StartTime;
+            _task.JobTaskMetadata.LastDurationMs = durationMs;
+            _task.JobTaskMetadata.TotalRunCount++;
+
+            if (result.Success)
+            {
+                _task.JobTaskMetadata.SuccessCount++;
+                _task.JobTaskMetadata.ConsecutiveFailures = 0;
+                _logger.LogInformation("Task {TaskName} completed successfully in {DurationMs}ms", _task.Name, durationMs);
+            }
+            else
+            {
+                _task.JobTaskMetadata.FailureCount++;
+                _task.JobTaskMetadata.ConsecutiveFailures++;
+                _task.JobTaskMetadata.LastError = result.ErrorMessage;
+                _task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
+                _logger.LogError(result.ErrorMessage, "Task {TaskName} failed", _task.Name);
+            }
+
+            _task.JobTaskMetadata.IsRunning = false;
+
+            if (result.ProcessId.HasValue)
+            {
+                _task.JobTaskMetadata.TaskPID = result.ProcessId.Value;
+            }
+
+            _task.EndRun = endTime;
+            await storage.UpdateAsync(_task, cancellationToken);
+
+            // ✅ Публикуем событие истории
+            await PublishHistoryEventAsync(result, result.Success ? "completed" : "failed", cancellationToken);
+        }
+
+        /// <summary>
+        /// Публикует событие TaskCompletedEvent через диспетчер доменных событий.
+        /// Содержит информацию об успешности выполнения, ошибке и длительности.
+        /// Вызывается после обновления метаданных задачи.
+        /// </summary>
+        public async Task PublishCompletedEventAsync(JobExecutionResult result, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
+        {
+            var endTime = result.EndTime ?? DateTime.UtcNow;
+            var durationMs = result.DurationMs ?? (long)(endTime - StartTime).TotalMilliseconds;
+
+            await dispatcher.PublishAsync(new TaskCompletedEvent
+            {
+                TaskId = _task.Id,
+                TaskName = _task.Name,
+                Success = result.Success,
+                ErrorMessage = result.ErrorMessage,
+                CompletionTime = endTime,
+                DurationMs = durationMs,
+                NotifySettings = _task.NotifySettings
+            }, cancellationToken);
+        }
+
+        /// <summary>
+        /// Обрабатывает отмену выполнения задачи (OperationCanceledException).
+        /// Обновляет метаданные: сбрасывает IsRunning, увеличивает FailureCount и ConsecutiveFailures,
+        /// сохраняет сообщение об отмене. Публикует событие TaskCompletedEvent с флагом Success = false.
+        /// Вызывается при явной отмене через CancellationToken.
+        /// </summary>
+        public async Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<IJobTask> storage,
+            IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
+        {
+            _logger.LogWarning(ex, "Task {TaskName} execution was cancelled", _task.Name);
+
+            _task.JobTaskMetadata.IsRunning = false;
+            _task.JobTaskMetadata.FailureCount++;
+            _task.JobTaskMetadata.ConsecutiveFailures++;
+            _task.JobTaskMetadata.LastError = "Execution was cancelled";
+            _task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
+
+            await storage.UpdateAsync(_task, cancellationToken);
+
+            await dispatcher.PublishAsync(new TaskCompletedEvent
+            {
+                TaskId = _task.Id,
+                TaskName = _task.Name,
+                Success = false,
+                ErrorMessage = "Execution was cancelled",
+                CompletionTime = DateTime.UtcNow,
+                DurationMs = 0,
+                NotifySettings = _task.NotifySettings
+            }, cancellationToken);
+
+            // ✅ Публикуем событие истории
+            var emptyResult = new JobExecutionResult { Success = false, ErrorMessage = "Execution was cancelled" };
+            await PublishHistoryEventAsync(emptyResult, "cancelled", cancellationToken);
+        }
+
+        /// <summary>
+        /// Обрабатывает непредвиденную ошибку выполнения задачи (любое исключение кроме OperationCanceledException).
+        /// Обновляет метаданные: сбрасывает IsRunning, увеличивает FailureCount и ConsecutiveFailures,
+        /// сохраняет сообщение об ошибке. Публикует событие TaskCompletedEvent с флагом Success = false.
+        /// Вызывается при любом исключении в процессе выполнения.
+        /// </summary>
+        public async Task HandleFailureAsync(Exception ex, ITaskService<IJobTask> storage,
+            IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
+        {
+            _logger.LogError(ex, "Unexpected error executing task {TaskName}", _task.Name);
+
+            _task.JobTaskMetadata.IsRunning = false;
+            _task.JobTaskMetadata.FailureCount++;
+            _task.JobTaskMetadata.ConsecutiveFailures++;
+            _task.JobTaskMetadata.LastError = ex.Message;
+            _task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
+
+            await storage.UpdateAsync(_task, cancellationToken);
+
+            await dispatcher.PublishAsync(new TaskCompletedEvent
+            {
+                TaskId = _task.Id,
+                TaskName = _task.Name,
+                Success = false,
+                ErrorMessage = ex.Message,
+                CompletionTime = DateTime.UtcNow,
+                DurationMs = 0,
+                NotifySettings = _task.NotifySettings
+            }, cancellationToken);
+
+            // ✅ Публикуем событие истории
+            var emptyResult = new JobExecutionResult { Success = false, ErrorMessage = ex.Message };
+            await PublishHistoryEventAsync(emptyResult, "failed", cancellationToken);
+        }
+
+        /// <summary>
+        /// Повторно шифрует чувствительные аргументы задачи через сервис шифрования.
+        /// Выполняется только если ранее была вызвана расшифровка (флаг _decrypted = true).
+        /// ВЫЗЫВАЕТСЯ ВСЕГДА в блоке finally для защиты от утечек данных.
+        /// При ошибке шифрования логирует CRITICAL, но не пробрасывает исключение,
+        /// чтобы не потерять основную ошибку выполнения. Данные могут остаться незашифрованными.
+        /// </summary>
+        public async Task ReencryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default)
+        {
+            if (!_decrypted) return;
+
+            try
+            {
+                await encryption.ReencryptSensitiveArgumentsAsync(_task.ScheduleArguments, cancellationToken);
+                _decrypted = false;
+                _logger.LogDebug("Sensitive arguments re-encrypted for task {TaskName}", _task.Name);
+            }
+            catch (Exception encryptionEx)
+            {
+                _logger.LogCritical(encryptionEx, "CRITICAL: Failed to re-encrypt arguments for task {TaskName}", _task.Name);
+            }
+        }
+
+        /// <summary>
+        /// Публикует событие истории выполнения задачи.
+        /// Содержит полную информацию о запуске и результате для аудита и анализа.
+        /// </summary>
+        /// <param name="result">Результат выполнения задачи</param>
+        /// <param name="status">Статус выполнения (completed, failed, cancelled, timeout)</param>
+        /// <param name="ct">Токен отмены</param>
+        private async Task PublishHistoryEventAsync(JobExecutionResult result, string status, CancellationToken ct)
+        {
+            await _dispatcher.PublishAsync(new TaskHistoryEvent
+            {
+                TaskId = _task.Id,
+                TaskName = _task.Name,
+                StartTime = StartTime,
+                EndTime = result.EndTime ?? DateTime.UtcNow,
+                DurationMs = result.DurationMs,
+                Success = result.Success,
+                Status = status,
+                ErrorMessage = result.ErrorMessage,
+                ProcessId = result.ProcessId,
+                ExitCode = result.ExitCode,
+                TriggeredBy = "schedule"
+            }, ct);
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Quartz\Adapters\JobAdapter.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Events;
+using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.EntityServices;
+using JobRunner.Core.Interfaces.Execution;
+using Microsoft.Extensions.Logging;
+using Quartz;
+using System.Collections.Concurrent;
+
+namespace JobRunner.Quartz.Adapters
+{
+    /// <summary>
+    /// паттерн Adapter, который соединяет (адаптирует)
+    /// доменную модель с внешним планировщиком Quartz.NET
+    /// </summary>
+    public class JobAdapter : IJob
+    {
+        private readonly ITaskService<IJobTask> _storage;
+        private readonly IJobExecutor _executor;
+        private readonly IDomainEventDispatcher _dispatcher;
+        private readonly IEncryptionService _encryption;
+        private readonly ILogger<JobAdapter> _logger;
+
+        /// <summary>
+        /// Для блокировки race condition
+        /// </summary>
+        private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _locks = new();
+
+        public JobAdapter(
+            ITaskService<IJobTask> storage,
+            IJobExecutor executor,
+            IDomainEventDispatcher dispatcher,
+            IEncryptionService encryption,
+            ILogger<JobAdapter> logger)
+        {
+            _storage = storage;
+            _executor = executor;
+            _dispatcher = dispatcher;
+            _encryption = encryption;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public async Task Execute(IJobExecutionContext context)
+        {
+            var taskIdStr = context.MergedJobDataMap.GetString("TaskId");
+            var taskId = Guid.Parse(taskIdStr);
+
+            var semaphore = _locks.GetOrAdd(taskId, new SemaphoreSlim(1, 1));
+
+            if (!semaphore.Wait(0))
+            {
+                _logger.LogWarning(
+                    "Task {TaskId} is already running, skipping this trigger. " +
+                    "Consider increasing interval or enabling AllowConcurrentExecution",
+                    taskId);
+
+                if (semaphore.CurrentCount == 1)
+                    _locks.TryRemove(taskId, out _);
+
+                return;
+            }
+
+            try
+            {
+                await ExecuteInternal(taskId, context.CancellationToken);
+            }
+            finally
+            {
+                semaphore.Release();
+                if (semaphore.CurrentCount == 1)
+                    _locks.TryRemove(taskId, out _);
+            }
+        }
+
+        /// <summary>
+        /// Выполняет внутреннюю логику запуска задачи.
+        /// </summary>
+        /// <param name="taskId">Идентификатор задачи</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
+        /// <returns>Task, представляющий асинхронную операцию</returns>
+        /// <remarks>
+        /// Метод координирует полный жизненный цикл выполнения задачи:
+        /// загрузка, валидация, расшифровка аргументов, публикация событий,
+        /// выполнение, обновление статистики, повторное шифрование.
+        /// В случае ошибки обновляет метаданные и публикует событие об ошибке.
+        /// </remarks>
+        private async Task ExecuteInternal(Guid taskId, CancellationToken cancellationToken)
+        {
+            var task = await LoadAndValidateTaskAsync(taskId, cancellationToken);
+            if (task == null) return;
+
+            var executionScope = new ExecutionScope(task, _logger, _dispatcher);
+
+            try
+            {
+                await executionScope.DecryptArgumentsAsync(_encryption, cancellationToken);
+                await executionScope.PublishStartedEventAsync(_dispatcher, cancellationToken);
+                await executionScope.UpdateBeforeExecutionAsync(_storage, cancellationToken);
+
+                var result = await _executor.ExecuteAsync(task, cancellationToken);
+
+                await executionScope.UpdateAfterExecutionAsync(result, _storage, cancellationToken);
+                await executionScope.PublishCompletedEventAsync(result, _dispatcher, cancellationToken);
+            }
+            catch (OperationCanceledException ex)
+            {
+                await executionScope.HandleCancellationAsync(ex, _storage, _dispatcher, cancellationToken);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                await executionScope.HandleFailureAsync(ex, _storage, _dispatcher, cancellationToken);
+                throw;
+            }
+            finally
+            {
+                await executionScope.ReencryptArgumentsAsync(_encryption, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Загружает задачу из хранилища и проверяет возможность выполнения.
+        /// </summary>
+        /// <param name="taskId">Идентификатор задачи</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
+        /// <returns>Задача или null, если выполнение невозможно</returns>
+        /// <remarks>
+        /// Проверяет: существование задачи, активность (IsEnabled),
+        /// возможность параллельного выполнения (AllowConcurrentExecution).
+        /// При недоступности задачи логирует причину пропуска.
+        /// </remarks>
+        private async Task<IJobTask?> LoadAndValidateTaskAsync(Guid taskId, CancellationToken cancellationToken)
+        {
+            var task = await _storage.GetByIdAsync(taskId, cancellationToken);
+
+            if (task == null)
+            {
+                _logger.LogWarning("Task {TaskId} not found in storage. Skipping execution.", taskId);
+                return null;
+            }
+
+            if (!task.IsEnabled)
+            {
+                _logger.LogInformation(
+                    "Task {TaskName} (Id: {TaskId}) is disabled. Skipping scheduled execution.",
+                    task.Name, task.Id);
+                return null;
+            }
+
+            if (!task.AllowConcurrentExecution && task.JobTaskMetadata.IsRunning)
+            {
+                _logger.LogWarning(
+                    "Task {TaskName} (Id: {TaskId}) is already running and concurrent execution is disabled. " +
+                    "Skipping this trigger. Consider increasing execution interval or enabling AllowConcurrentExecution.",
+                    task.Name, task.Id);
+                return null;
+            }
+
+            return task;
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Quartz\Converters\CronConverter.cs =====
+using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Entities.ValueObjects.Settings;
+using JobRunner.Core.Interfaces.Converters;
+
+namespace JobRunner.Quartz.Converters
+{
+    /// <summary>
+    /// Конвертер IScheduleSettings → Cron-выражение для Quartz
+    /// </summary>
+    public class CronConverter : IScheduleConverter
+    {
+        /// <summary>
+        /// Конвертировать IScheduleSettings в CRON выражение
+        /// учет периодов по типам
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
+        public string Convert(IScheduleSettings settings)
+        {
+            return settings switch
+            {
+                OnceSchedule once => ConvertOnce(once),
+                DailySchedule daily => ConvertDaily(daily),
+                WeeklySchedule weekly => ConvertWeekly(weekly),
+                IntervalSchedule interval => ConvertInterval(interval),
+                _ => throw new NotSupportedException($"Unsupported schedule type: {settings.GetType()}")
+            };
+        }
+
+        #region Конвертация по типам 
+        private string ConvertOnce(OnceSchedule once)
+        {
+            var start = once.StartTime;
+            return $"{start.Second} {start.Minute} {start.Hour} {start.Day} {start.Month} ? {start.Year}";
+        }
+
+        private string ConvertDaily(DailySchedule daily)
+        {
+            return $"0 {daily.Minute} {daily.Hour} * * ?";
+        }
+
+        private string ConvertWeekly(WeeklySchedule weekly)
+        {
+            var days = string.Join(",", weekly.DaysOfWeek.Select(d => (int)d + 1));
+            return $"0 {weekly.Minute} {weekly.Hour} ? * {days}";
+        }
+
+        private string ConvertInterval(IntervalSchedule interval)
+        {
+            return $"0 */{interval.IntervalMinutes} * * * ?";
+        }
+        #endregion
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Quartz\Extensions\ServiceCollectionExtensions.cs =====
+using JobRunner.Core.Interfaces.Converters;
+using JobRunner.Core.Interfaces.Scheduler;
+using JobRunner.Quartz.Converters;
+using JobRunner.Quartz.Scheduler;
+using Microsoft.Extensions.DependencyInjection;
+using Quartz;
+
+namespace JobRunner.Quartz.Extensions
+{
+    public static class ServiceCollectionExtensions
+    {
+        public static IServiceCollection AddQuartzScheduler(this IServiceCollection services)
+        {
+            services.AddQuartz(q =>
+            {
+                q.UseMicrosoftDependencyInjectionJobFactory();
+                q.UseInMemoryStore();
+            });
+
+            services.AddQuartzHostedService(options =>
+            {
+                options.WaitForJobsToComplete = true;
+            });
+
+            services.AddSingleton<IScheduleConverter, CronConverter>();
+            services.AddSingleton<IJobScheduler, QuartzScheduler>();
+
+            return services;
+        }
+    }
+}
+===== C:\Users\kirya\source\repos\2026_repos\JobRunner\JobRunner\JobRunner.Quartz\Scheduler\QuartzScheduler.cs =====
+using JobRunner.Core.Entities;
+using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Interfaces.Converters;
+using JobRunner.Core.Interfaces.Scheduler;
+using JobRunner.Quartz.Adapters;
+using Quartz;
+
+namespace JobRunner.Quartz.Scheduler
+{
+    /// <summary>
+    /// Реализация IJobScheduler через Quartz.NET
+    /// </summary>
+    public class QuartzScheduler : IJobScheduler
+    {
+        private readonly IScheduler _scheduler;
+        private readonly IScheduleConverter _converter;
+
+        public QuartzScheduler(IScheduler scheduler, IScheduleConverter converter)
+        {
+            _scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
+            _converter = converter;
+        }
+
+        /// <summary>
+        /// Запускает планировщик Quartz.NET
+        /// </summary>
+        /// <returns></returns>
+        public async Task StartProgramAsync(CancellationToken cancellationToken = default)
+        {
+            if (!_scheduler.IsStarted)
+                await _scheduler.Start(cancellationToken);
+        }
+
+        /// <summary>
+        /// Останавливает планировщик и освобождает ресурсы
+        /// </summary>
+        /// <returns></returns>
+        public async Task StopProgramAsync(CancellationToken cancellationToken = default)
+        {
+            if (!_scheduler.IsShutdown)
+                await _scheduler.Shutdown(cancellationToken);
+        }
+
+        /// <summary>
+        /// Немедленный запуск задачи вне зависимости от расписания
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <returns></returns>
+        public async Task<bool> RunNowAsync(Guid taskId, CancellationToken cancellationToken = default)
+        {
+            await _scheduler.TriggerJob(new JobKey(taskId.ToString()), cancellationToken);
+            return true;
+        }
+
+        /// <summary>
+        /// Приостанавливает выполнение задачи по расписанию
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Задача не будет запускаться по триггерам до вызова ResumeAsync()
+        /// </remarks>
+        public async Task<bool> PauseAsync(Guid taskId, CancellationToken cancellationToken = default)
+        {
+            await _scheduler.PauseJob(new JobKey(taskId.ToString()));
+            return true;
+        }
+
+        /// <summary>
+        /// Возобновляет выполнение ранее приостановленной задачи
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <returns></returns>
+        public async Task<bool> ResumeAsync(Guid taskId, CancellationToken cancellationToken = default)
+        {
+            await _scheduler.ResumeJob(new JobKey(taskId.ToString()));
+            return true;
+        }
+
+        /// <summary>
+        /// Прерывает выполнение текущего экземпляра задачи
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <returns></returns>
+        public async Task<bool> StopAsync(Guid taskId, CancellationToken cancellationToken = default)
+        {
+            await _scheduler.Interrupt(new JobKey(taskId.ToString()));
+            return true;
+        }
+
+        /// <summary>
+        /// Перезапускает задачу (останавливает и запускает заново)
+        /// </summary>
+        /// <param name="taskId">Guid задачи</param>
+        /// <param name="delay">предполагаемая задержка для перезапуска 
+        /// (дефолт --> 100 мс)</param>
+        /// <returns></returns>
+        public async Task<bool> RestartAsync(Guid taskId, int delay = 100, CancellationToken cancellationToken = default)
+        {
+            await StopAsync(taskId, cancellationToken);
+            await Task.Delay(delay, cancellationToken);
+            return await RunNowAsync(taskId, cancellationToken);
+        }
+
+        #region Управление состояниями задачи через Quartz
+        /// <summary>
+        /// Регистрация задачи в планировщике (вызывается оркестратором)
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="schedule"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public async Task ScheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default)
+        {
+            var cronExpression = _converter.Convert(schedule);
+            if (string.IsNullOrEmpty(cronExpression))
+                throw new InvalidOperationException("Cron expression is empty or invalid");
+
+            var job = JobBuilder.Create<JobAdapter>()
+                .WithIdentity(taskId.ToString())
+                .UsingJobData("TaskId", taskId.ToString())
+                .StoreDurably()
+                .Build();
+
+            var trigger = TriggerBuilder.Create()
+                .WithIdentity($"{taskId}-trigger")
+                .WithCronSchedule(cronExpression)
+                .Build();
+
+            await _scheduler.ScheduleJob(job, trigger, cancellationToken);
+        }
+
+        /// <summary>
+        /// Удалить задачу из планировщика
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task UnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default)
+        {
+            await _scheduler.DeleteJob(new JobKey(taskId.ToString()), cancellationToken);
+        }
+
+        /// <summary>
+        /// Обновить расписание задачи
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task RescheduleAsync(Guid taskId, IScheduleSettings settings, CancellationToken cancellationToken = default)
+        {
+            await UnscheduleAsync(taskId, cancellationToken);
+            await ScheduleAsync(taskId, settings, cancellationToken);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Перерегистрировать все задачи из БД (восстановление после перезапуска)
+        /// </summary>
+        /// <param name="tasks"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        public async Task RestoreSchedulesAsync(IEnumerable<IJobTask> tasks, CancellationToken ct = default)
+        {
+            foreach (var task in tasks)
+            {
+                if (!task.IsEnabled) continue;
+
+                await ScheduleAsync(task.Id, task.ScheduleSettings, ct);
+            }
+        }
+    }
+}
