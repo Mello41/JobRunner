@@ -28,6 +28,25 @@ namespace JobRunner.Core.Interfaces.EntityServices
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<T?> GetStatusAsync(Guid guid, CancellationToken cancellationToken = default);
-    
+
+        /// <summary>
+        /// Очистить все аргументы задачи
+        /// </summary>
+        /// <param name="taskId">Идентификатор задачи</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        /// <returns>true — если аргументы очищены, false — задача не найдена</returns>
+        Task<bool> ClearAllArgumentsAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Обновить значение аргумента задачи
+        /// </summary>
+        /// <param name="taskId">Идентификатор задачи</param>
+        /// <param name="key">Ключ аргумента</param>
+        /// <param name="value">Новое значение</param>
+        /// <param name="isEncrypted">Зашифровано ли значение</param>
+        /// <param name="cancellationToken">Токен отмены</param>
+        /// <returns>true — если аргумент обновлён, false — задача или аргумент не найдены</returns>
+        Task<bool> UpdateArgumentValueAsync(Guid taskId, string key, object value,
+                                            bool isEncrypted = false, CancellationToken cancellationToken = default);
     }
 }
