@@ -81,7 +81,15 @@ namespace JobRunner.Core.Entities
         /// </summary>
         IScheduleArguments ScheduleArguments { get; set; }
 
+        /// <summary>
+        /// Метаданные задачи
+        /// </summary>
         IJobTaskMetadata JobTaskMetadata { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        IRetrySettings RetrySettings { get; set; }
 
         /// <summary>
         /// Метки (задаются пользователем)
