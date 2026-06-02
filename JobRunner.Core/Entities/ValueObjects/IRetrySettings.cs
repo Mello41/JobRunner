@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using JobRunner.Core.Entities.Enums;
+using System.Collections.Generic;
 
 namespace JobRunner.Core.Entities.ValueObjects
 {
@@ -12,6 +13,10 @@ namespace JobRunner.Core.Entities.ValueObjects
         /// </summary>
         int MaxAttempts { get; set; }
 
+        /// <summary>
+        /// Стратегия расчета задержки между повторными попытками
+        /// </summary>
+        RetryStrategy Strategy { get; set; }
 
         /// <summary>
         /// Начальная задержка перед первой повторной попыткой (в секундах)
@@ -47,20 +52,5 @@ namespace JobRunner.Core.Entities.ValueObjects
         /// </summary>
         IReadOnlyList<int> RetryableExitCodes { get; }
 
-        /// <summary>
-        /// Рассчитывает задержку перед следующей попыткой на основе текущего номера попытки
-        /// </summary>
-        /// <param name="attemptNumber">Номер текущей попытки (начиная с 1)</param>
-        /// <returns>Задержка в миллисекундах перед следующей попыткой</returns>
-        int GetDelayMilliseconds(int attemptNumber);
-
-        /// <summary>
-        /// Проверяет, нужно ли повторять выполнение при данной ошибке
-        /// </summary>
-        /// <param name="errorMessage">Сообщение об ошибке</param>
-        /// <param name="exitCode">Код завершения процесса (может быть null)</param>
-        /// <param name="isTimeout">Был ли превышен таймаут</param>
-        /// <returns>true — стоит повторить, false — окончательная ошибка</returns>
-        bool ShouldRetry(string? errorMessage, int? exitCode, bool isTimeout);
     }
 }
