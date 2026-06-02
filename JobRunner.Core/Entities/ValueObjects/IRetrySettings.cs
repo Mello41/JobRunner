@@ -16,7 +16,7 @@ namespace JobRunner.Core.Entities.ValueObjects
         /// <summary>
         /// Стратегия расчета задержки между повторными попытками
         /// </summary>
-        RetryStrategy Strategy { get; set; }
+        IRetryStrategy Strategy { get; set; }
 
         /// <summary>
         /// Начальная задержка перед первой повторной попыткой (в секундах)

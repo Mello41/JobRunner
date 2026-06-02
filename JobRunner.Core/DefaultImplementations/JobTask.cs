@@ -30,6 +30,7 @@ namespace JobRunner.Core.DefaultImplementations
         public IScheduleSettings ScheduleSettings { get; set; } // = new CronSchedule();
         public IScheduleArguments ScheduleArguments { get; set; } = new ScheduleArguments();
         public IJobTaskMetadata JobTaskMetadata { get; set; } = new JobTaskMetadata();
+        public IRetrySettings RetrySettings { get; set; }
 
         public bool IsAsyncExecution { get; set; }
         public bool AllowConcurrentExecution { get; set; }
@@ -38,6 +39,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// Метки (задаются пользователем)
         /// </summary>
         public ImmutableHashSet<Guid> Tags { get; set; } = new Guid[0].ToImmutableHashSet<Guid>();
+        
 
         public DomainValidationResult Validate()
         {
