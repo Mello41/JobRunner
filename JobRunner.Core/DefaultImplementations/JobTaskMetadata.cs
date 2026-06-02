@@ -31,6 +31,8 @@ namespace JobRunner.Core.DefaultImplementations
             LastDurationMs = null;
             IsRunning = false;
             TaskPID = null;
+            NextRun = null;   
+            IsCompleted = false;   
         }
     }
 }

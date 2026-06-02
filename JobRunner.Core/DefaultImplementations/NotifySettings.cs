@@ -33,6 +33,25 @@ namespace JobRunner.Core.DefaultImplementations
         public List<NotificationType> NotificationMethods { get; set; } = new();
         public string? NotificationEmail { get; set; } 
         public string? TelegramChatId { get; set; } 
-        public string? WebhookUrl { get; set; } 
+        public string? WebhookUrl { get; set; }
+
+        public string FormatMessage(string taskName, bool isSuccess, string? errorMessage = null)
+        {
+            if (!string.IsNullOrWhiteSpace(NotificationMessage))
+            {
+                var message = NotificationMessage
+                    .Replace("{TaskName}", taskName)
+                    .Replace("{Status}", isSuccess ? "успешно" : "с ошибкой");
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                    message = message.Replace("{ErrorMessage}", errorMessage);
+
+                return message;
+            }
+
+            return isSuccess
+                ? $"Задача '{taskName}' успешно выполнена"
+                : $"Задача '{taskName}' завершилась с ошибкой: {errorMessage}";
+        }
     }
 }
