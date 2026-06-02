@@ -35,6 +35,9 @@ namespace JobRunner.Core.Events.Handlers
         /// <summary>
         /// Обработка события "Задача запущена" → уведомление ДО выполнения
         /// </summary>
+        /// <param name="event"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task HandleAsync(ITaskStartedEvent @event, CancellationToken cancellationToken)
         {
             try
@@ -66,6 +69,9 @@ namespace JobRunner.Core.Events.Handlers
         /// <summary>
         /// Обработка события "Задача завершена" → уведомление ПОСЛЕ выполнения
         /// </summary>
+        /// <param name="event"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task HandleAsync(ITaskCompletedEvent @event, CancellationToken cancellationToken)
         {
             try
@@ -83,6 +89,11 @@ namespace JobRunner.Core.Events.Handlers
                     "Sending after-notification for task {TaskName} (Id: {TaskId}) completed {Status}",
                     @event.TaskName, @event.TaskId, status);
 
+                var formattedMessage = @event.NotifySettings?.FormatMessage(
+                    @event.TaskName,
+                    @event.Success,
+                    @event.ErrorMessage) ?? GetDefaultMessage(@event.TaskName, @event.Success, @event.ErrorMessage);
+
                 await _notificationService.NotifyAsync(
                     @event.TaskId,
                     @event.TaskName,
@@ -95,6 +106,20 @@ namespace JobRunner.Core.Events.Handlers
             {
                 _logger.LogError(ex, "Failed to send after-notification for task {TaskId}", @event.TaskId);
             }
+        }
+
+        /// <summary>
+        /// Получить сообщение по умолчанию
+        /// </summary>
+        /// <param name="taskName"></param>
+        /// <param name="success"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
+        private static string GetDefaultMessage(string taskName, bool success, string? errorMessage)
+        {
+            return success
+                ? $"Task '{taskName}' completed successfully"
+                : $"Task '{taskName}' failed: {errorMessage}";
         }
     }
 }

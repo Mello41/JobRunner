@@ -48,5 +48,14 @@ namespace JobRunner.Core.Entities.ValueObjects
         /// Webhook URL (если выбран Webhook)
         /// </summary>
         string? WebhookUrl { get; set; }
+
+        /// <summary>
+        /// Форматирует сообщение уведомления с подстановкой параметров
+        /// </summary>
+        /// <param name="taskName">Имя задачи</param>
+        /// <param name="isSuccess">Успех или ошибка</param>
+        /// <param name="errorMessage">Сообщение об ошибке (опционально)</param>
+        /// <returns>Отформатированное сообщение</returns>
+        string FormatMessage(string taskName, bool isSuccess, string? errorMessage = null);
     }
 }
