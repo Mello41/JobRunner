@@ -5,9 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	
-	
 	<PackageId>JobRunner.Quartz</PackageId>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Authors>Mello41</Authors>
     <Description>Quartz.NET implementation for JobRunner</Description>
     <RepositoryUrl></RepositoryUrl>
@@ -24,7 +23,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JobRunner.Core\JobRunner.Core.csproj" />
+  <!-- при публикации PackageReference, при разработке ProjectReference -->
+	<ProjectReference Include="..\JobRunner.Core\JobRunner.Core.csproj" />
+	
+    <!-- 
+    <PackageReference Include="JobRunner.Core" Version="1.0.9" />
+    -->
   </ItemGroup>
 
 </Project>

@@ -61,3 +61,30 @@ C# + Quartz (библиотеки классов)
 # Ссылки на Nuget
 	https://www.nuget.org/packages/JobRunner.Core
 	https://www.nuget.org/packages/JobRunner.Quartz
+
+# Быстрый старт
+
+
+
+Установка
+dotnet add package JobRunner.Core
+dotnet add package JobRunner.Quartz
+
+Нстройка моделей
+создайте классы под каждую сущность (задача, метка и тд), наследуясь от именованного интерфейса
+
+DI Настройка сервисов
+builder.Services.AddQuartzScheduler();
+builder.Services.AddScoped<ITaskService<MyTask>, MyTaskService>(); // MyTask --> Ваш обьект задачи, наследованный от IJobtask
+builder.Services.AddScoped<IJobExecutor, MyJobExecutor>();
+
+Создание задачи
+var task = new MyTask
+{
+    Name = "Backup",
+    ExecutionPath = "backup.exe",
+    ScheduleSettings = new DailySchedule { Hour = 2, Minute = 0 }
+};
+
+Запуск
+await orchestrator.CreateAndScheduleAsync(task);

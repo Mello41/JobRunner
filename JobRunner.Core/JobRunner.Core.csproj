@@ -3,16 +3,28 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
+	<Nullable>enable</Nullable>
 	
 	<PackageId>JobRunner.Core</PackageId>
-    <Version>1.0.9</Version>
+    <Version>1.0.10</Version>
     <Authors>Mello41</Authors>
-    <Description>Core domain models and interfaces for JobRunner</Description>
+    <Description>Core domain models and interfaces for JobRunner. Contains IJobTask, 
+	IScheduleSettings, INotifySettings, CRUD interfaces and domain events.</Description>
     <RepositoryUrl></RepositoryUrl>
-    <PackageTags>jobrunner;tasks;scheduler</PackageTags>
+    <PackageTags>jobrunner;tasks;scheduler;background;jobs;domain;core</PackageTags>
+	
+    <PackageReadmeFile>README.Core.md</PackageReadmeFile>
+	
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
 	
     <MinVerSkip>true</MinVerSkip>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="README.Core.md" Pack="true" PackagePath="\" />
+    <None Include="icon.Core.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />

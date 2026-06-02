@@ -92,12 +92,14 @@ namespace JobRunner.Core.Results
         /// </summary>
         public static JobExecutionResult CreateTimeout(int timeoutSeconds, DateTime startTime)
         {
+            var endTime = DateTime.UtcNow;
             return new JobExecutionResult
             {
                 Success = false,
                 ErrorMessage = $"Task exceeded timeout of {timeoutSeconds} seconds",
                 StartTime = startTime,
-                EndTime = DateTime.UtcNow,
+                EndTime = endTime,
+                DurationMs = (long)(endTime - startTime).TotalMilliseconds,
                 IsTimeout = true
             };
         }

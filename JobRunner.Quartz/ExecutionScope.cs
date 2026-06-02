@@ -18,7 +18,7 @@ namespace JobRunner.Quartz
     public class ExecutionScope : IExecutionScope
     {
         private readonly ILogger _logger;
-        private readonly IDomainEventDispatcher _dispatcher;  // ✅ ДОБАВИТЬ
+        private readonly IDomainEventDispatcher _dispatcher;  
 
         /// <summary>
         /// Возвращает задачу, которая выполняется в текущем scope.
@@ -128,7 +128,6 @@ namespace JobRunner.Quartz
             _task.EndRun = endTime;
             await storage.UpdateAsync(_task, cancellationToken);
 
-            // ✅ Публикуем событие истории
             await PublishHistoryEventAsync(result, result.Success ? "completed" : "failed", cancellationToken);
         }
 
@@ -184,7 +183,6 @@ namespace JobRunner.Quartz
                 NotifySettings = _task.NotifySettings
             }, cancellationToken);
 
-            // ✅ Публикуем событие истории
             var emptyResult = new JobExecutionResult { Success = false, ErrorMessage = "Execution was cancelled" };
             await PublishHistoryEventAsync(emptyResult, "cancelled", cancellationToken);
         }
@@ -219,7 +217,6 @@ namespace JobRunner.Quartz
                 NotifySettings = _task.NotifySettings
             }, cancellationToken);
 
-            // ✅ Публикуем событие истории
             var emptyResult = new JobExecutionResult { Success = false, ErrorMessage = ex.Message };
             await PublishHistoryEventAsync(emptyResult, "failed", cancellationToken);
         }
