@@ -51,6 +51,5 @@ namespace JobRunner.Core.Entities.ValueObjects
         /// Повторять попытки при определенных кодах завершения процесса (ExitCode)
         /// </summary>
         IReadOnlyList<int> RetryableExitCodes { get; }
-
     }
 }
