@@ -10,7 +10,7 @@ namespace JobRunner.Core.DefaultImplementations
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; } = string.Empty;
-        public string Color { get; set; } = "#888888";
+        public string? Color { get; set; } = "#888888";
         public bool CanGrouping { get; set; }
         public string Description { get; set; }
     }

@@ -25,7 +25,7 @@ namespace JobRunner.Core.Entities
         /// <summary>
         /// Цвет метки в формате HEX ("#4CAF50")
         /// </summary>
-        string Color { get; set; }
+        string? Color { get; set; }
 
         /// <summary>
         /// Можно ли группировать по этой метке

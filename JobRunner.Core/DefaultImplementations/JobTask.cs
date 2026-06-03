@@ -40,7 +40,6 @@ namespace JobRunner.Core.DefaultImplementations
         /// </summary>
         public ImmutableHashSet<Guid> Tags { get; set; } = new Guid[0].ToImmutableHashSet<Guid>();
         
-
         public DomainValidationResult Validate()
         {
             throw new NotImplementedException();
