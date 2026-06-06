@@ -24,5 +24,6 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
         /// </summary>
         /// <returns></returns>
         public bool IsValid() => Minute >= 0 && Minute <= 59 && Hour >= 0 && Hour <= 23;
+    
     }
 }

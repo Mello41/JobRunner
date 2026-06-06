@@ -3,7 +3,8 @@
 namespace JobRunner.Core.Entities.ValueObjects.Settings
 {
     /// <summary>
-    /// Расписание для периодического выполнения задачи с фиксированным интервалом
+    /// Расписание для периодического выполнения
+    /// задачи с фиксированным интервалом
     /// </summary>
     public sealed record IntervalSchedule : IScheduleSettings
     {
