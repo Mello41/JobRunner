@@ -2,7 +2,6 @@
 using JobRunner.Core.Entities.ValueObjects;
 using JobRunner.Core.Results;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace JobRunner.Core.DefaultImplementations
@@ -11,7 +10,7 @@ namespace JobRunner.Core.DefaultImplementations
     /// Создаваемая задача (в рамках программы JobRunner) 
     /// (пример реализации)
     /// </summary>
-    public class JobTask : IJobTask
+    public class JobTask : IJobTask<Guid>
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; } = string.Empty;
