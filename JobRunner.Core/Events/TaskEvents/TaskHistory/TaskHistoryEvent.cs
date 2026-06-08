@@ -1,13 +1,15 @@
-﻿using System;
+﻿using JobRunner.Core.Interfaces.Events.TaskHistory;
+using JobRunner.Core.Results;
+using System;
 
 namespace JobRunner.Core.Events.TaskEvents.TaskHistory
 {
     /// <summary>
     /// Событие, возникающее при каждом выполнении задачи, содержащее полную информацию о запуске и результате.
     /// Используется для аудита, логирования, сбора метрик и анализа производительности.
-    /// Подписчики могут сохранять эти данные в БД, отправлять в системы мониторинга или уведомления.
     /// </summary>
-    public class TaskHistoryEvent<TId> where TId : IEquatable<TId>
+    public class TaskHistoryEvent<TId> : ITaskHistoryEvent<TId>
+        where TId : IEquatable<TId>
     {
         /// <summary>
         /// Уникальный идентификатор задачи
@@ -25,8 +27,7 @@ namespace JobRunner.Core.Events.TaskEvents.TaskHistory
         public DateTime StartTime { get; set; }
 
         /// <summary>
-        /// Время окончания выполнения задачи в формате UTC.
-        /// Значение null указывает на то, что задача ещё выполняется или не завершена
+        /// Время окончания выполнения задачи в формате UTC
         /// </summary>
         public DateTime? EndTime { get; set; }
 
@@ -36,14 +37,12 @@ namespace JobRunner.Core.Events.TaskEvents.TaskHistory
         public long? DurationMs { get; set; }
 
         /// <summary>
-        /// Флаг успешности выполнения задачи.
-        /// true — задача завершена без ошибок, false — с ошибкой, таймаутом или отменой
+        /// Флаг успешности выполнения задачи
         /// </summary>
         public bool Success { get; set; }
 
         /// <summary>
-        /// Статус выполнения задачи.
-        /// Возможные значения: "completed", "failed", "timeout", "cancelled", "skipped"
+        /// Статус выполнения задачи
         /// </summary>
         public string? Status { get; set; }
 
@@ -53,21 +52,70 @@ namespace JobRunner.Core.Events.TaskEvents.TaskHistory
         public string? ErrorMessage { get; set; }
 
         /// <summary>
-        /// Идентификатор процесса (PID), в котором выполнялась задача.
-        /// Значение null, если процесс не был запущен или не удалось получить PID
+        /// Идентификатор процесса (PID), в котором выполнялась задача
         /// </summary>
         public long? ProcessId { get; set; }
 
         /// <summary>
-        /// Код завершения процесса, возвращённый при его остановке.
-        /// Интерпретация кода зависит от конкретного приложения
+        /// Код завершения процесса, возвращённый при его остановке
         /// </summary>
         public int? ExitCode { get; set; }
 
         /// <summary>
-        /// Источник запуска задачи.
-        /// Возможные значения: "schedule" (по расписанию), "user" (пользователь), "api" (через API)
+        /// Источник запуска задачи
         /// </summary>
         public string? TriggeredBy { get; set; }
+
+        /// <summary>
+        /// Стандартный вывод процесса (stdout)
+        /// </summary>
+        public string? StandardOutput { get; set; }
+
+        /// <summary>
+        /// Стандартный вывод ошибок (stderr)
+        /// </summary>
+        public string? StandardError { get; set; }
+
+        /// <summary>
+        /// Количество попыток выполнения
+        /// </summary>
+        public int AttemptNumber { get; set; }
+
+        /// <summary>
+        /// Была ли задача выполнена в рамках retry-политики
+        /// </summary>
+        public bool IsRetry { get; set; }
+
+        /// <summary>
+        /// Создает событие из результата выполнения
+        /// </summary>
+        public static TaskHistoryEvent<TId> FromExecutionResult(
+            TId taskId,
+            string taskName,
+            DateTime startTime,
+            JobExecutionResult result,
+            string? triggeredBy = "schedule",
+            int attemptNumber = 1,
+            bool isRetry = false)
+        {
+            return new TaskHistoryEvent<TId>
+            {
+                TaskId = taskId,
+                TaskName = taskName,
+                StartTime = startTime,
+                EndTime = result.EndTime ?? DateTime.UtcNow,
+                DurationMs = result.DurationMs,
+                Success = result.Success,
+                Status = result.IsTimeout ? "timeout" : (result.Success ? "completed" : "failed"),
+                ErrorMessage = result.ErrorMessage,
+                ProcessId = result.ProcessId,
+                ExitCode = result.ExitCode,
+                TriggeredBy = triggeredBy,
+                StandardOutput = result.StandardOutput,
+                StandardError = result.StandardError,
+                AttemptNumber = attemptNumber,
+                IsRetry = isRetry
+            };
+        }
     }
 }
