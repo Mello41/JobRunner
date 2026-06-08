@@ -125,7 +125,8 @@ namespace JobRunner.Quartz
                 _task.JobTaskMetadata.ConsecutiveFailures++;
                 _task.JobTaskMetadata.LastError = result.ErrorMessage;
                 _task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
-                _logger.LogError(result.ErrorMessage ?? "Unknown error", "Task {TaskName} failed", _task.Name);
+                _logger.LogError("Task {TaskName} failed. Execution details: {@ExecutionResult}",
+                                _task.Name, new { result.ExitCode, result.IsTimeout, result.StartTime });
             }
 
             _task.JobTaskMetadata.IsRunning = false;
