@@ -15,5 +15,10 @@ namespace JobRunner.Core.DefaultImplementations
         /// </summary>
         [Display(Name = "Аргументы задачи JobTask", Description = "Список аргументов командной строки")]
         public List<ScheduleArgumentItem> Items { get; set; } = new List<ScheduleArgumentItem>();
+
+        /// <summary>
+        /// Построить безопасную командную строку с экранированием
+        /// </summary>
+        string BuildCommandLineArguments();
     }
 }
