@@ -6,7 +6,7 @@ namespace JobRunner.Core.DefaultImplementations
     /// <summary>
     /// Пример реализации ITag
     /// </summary>
-    public class Tag : ITag
+    public class Tag : IJobTag<Guid>
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Name { get; set; } = string.Empty;
