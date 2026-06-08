@@ -93,7 +93,7 @@ namespace JobRunner.Core.Entities
         /// <summary>
         /// Метки (задаются пользователем)
         /// </summary>
-        ImmutableHashSet<Guid> Tags { get; set; }
+        ImmutableHashSet<TId> Tags { get; set; }
 
         /// <summary>
         /// Проверяет бизнес-инварианты модели (не зависит от пользовательского ввода)
