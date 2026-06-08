@@ -169,24 +169,49 @@ namespace JobRunner.Quartz.Adapters
         /// <summary>
         /// Преобразует строку из JobDataMap в TId
         /// </summary>
-        /// <param name="idStr"></param>
-        /// <returns></returns>
-        /// <exception cref="NotSupportedException"></exception>
+        /// <param name="idStr">Строковое представление ID из JobDataMap</param>
+        /// <returns>Распаршенный ID типа TId</returns>
+        /// <exception cref="InvalidOperationException">Когда ID имеет неверный формат или тип не поддерживается</exception>
         private TId ParseId(string idStr)
         {
-            if (typeof(TId) == typeof(Guid))
-                return (TId)(object)Guid.Parse(idStr);
+            if (string.IsNullOrEmpty(idStr))
+                throw new InvalidOperationException("TaskId cannot be null or empty in JobDataMap");
 
-            if (typeof(TId) == typeof(long))
-                return (TId)(object)long.Parse(idStr);
+            try
+            {
+                if (typeof(TId) == typeof(Guid))
+                {
+                    if (Guid.TryParse(idStr, out var guid))
+                        return (TId)(object)guid;
 
-            if (typeof(TId) == typeof(int))
-                return (TId)(object)int.Parse(idStr);
+                    throw new InvalidOperationException($"Invalid Guid format for TaskId: {idStr}");
+                }
 
-            if (typeof(TId) == typeof(string))
-                return (TId)(object)idStr;
+                if (typeof(TId) == typeof(long))
+                {
+                    if (long.TryParse(idStr, out var longId))
+                        return (TId)(object)longId;
 
-            throw new NotSupportedException($"Unsupported ID type: {typeof(TId)}");
+                    throw new InvalidOperationException($"Invalid Int64 format for TaskId: {idStr}");
+                }
+
+                if (typeof(TId) == typeof(int))
+                {
+                    if (int.TryParse(idStr, out var intId))
+                        return (TId)(object)intId;
+
+                    throw new InvalidOperationException($"Invalid Int32 format for TaskId: {idStr}");
+                }
+
+                if (typeof(TId) == typeof(string))
+                    return (TId)(object)idStr;
+
+                throw new NotSupportedException($"Unsupported ID type: {typeof(TId)}. Supported types: Guid, long, int, string");
+            }
+            catch (Exception ex) when (ex is not InvalidOperationException and not NotSupportedException)
+            {
+                throw new InvalidOperationException($"Failed to parse TaskId '{idStr}' to type {typeof(TId)}", ex);
+            }
         }
     }
 }
