@@ -6,7 +6,7 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
     /// <summary>
     /// Расписание "Каждый квартал"
     /// </summary>
-    public class QuarterlySchedule : IScheduleSettings
+    public record QuarterlySchedule : IScheduleSettings
     {
         [Display(Name = "Месяц начала квартала")]
         public int StartMonth { get; set; } = 1; 
