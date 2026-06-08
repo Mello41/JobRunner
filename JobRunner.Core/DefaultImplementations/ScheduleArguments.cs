@@ -1,7 +1,9 @@
 ﻿using JobRunner.Core.DTO;
 using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Platform;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace JobRunner.Core.DefaultImplementations
 {
@@ -16,9 +18,20 @@ namespace JobRunner.Core.DefaultImplementations
         [Display(Name = "Аргументы задачи JobTask", Description = "Список аргументов командной строки")]
         public List<ScheduleArgumentItem> Items { get; set; } = new List<ScheduleArgumentItem>();
 
-        /// <summary>
-        /// Построить безопасную командную строку с экранированием
-        /// </summary>
-        string BuildCommandLineArguments();
+        private readonly ICommandLineEscaper _escaper;
+
+        public ScheduleArguments()
+        {
+            _escaper = PlatformDetector.CreateEscaper();
+        }
+
+        public string BuildCommandLineArguments()
+        {
+            if (Items == null || Items.Count == 0)
+                return string.Empty;
+
+            return string.Join(" ", Items.Select(item =>
+                $"{_escaper.EscapeArgument(item.Key)} {_escaper.EscapeArgument(item.Value?.ToString() ?? string.Empty)}"));
+        }
     }
 }
