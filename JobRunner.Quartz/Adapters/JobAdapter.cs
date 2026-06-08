@@ -13,25 +13,27 @@ namespace JobRunner.Quartz.Adapters
     /// паттерн Adapter, который соединяет (адаптирует)
     /// доменную модель с внешним планировщиком Quartz.NET
     /// </summary>
-    public class JobAdapter : IJob
+    public class JobAdapter<TTask, TId> : IJob
+                        where TTask : class, IJobTask<TId>
+                        where TId : IEquatable<TId>
     {
-        private readonly ITaskService<IJobTask> _storage;
-        private readonly IJobExecutor _executor;
+        private readonly ITaskService<TTask, TId> _storage;
+        private readonly IJobExecutor<TId> _executor;
         private readonly IDomainEventDispatcher _dispatcher;
         private readonly IEncryptionService _encryption;
-        private readonly ILogger<JobAdapter> _logger;
+        private readonly ILogger<JobAdapter<TTask, TId>> _logger;
 
         /// <summary>
         /// Для блокировки race condition
         /// </summary>
-        private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _locks = new();
+        private static readonly ConcurrentDictionary<TId, SemaphoreSlim> _locks = new();
 
         public JobAdapter(
-            ITaskService<IJobTask> storage,
-            IJobExecutor executor,
+            ITaskService<TTask, TId> storage,
+            IJobExecutor<TId> executor,
             IDomainEventDispatcher dispatcher,
             IEncryptionService encryption,
-            ILogger<JobAdapter> logger)
+            ILogger<JobAdapter<TTask, TId>> logger)
         {
             _storage = storage;
             _executor = executor;
@@ -48,7 +50,7 @@ namespace JobRunner.Quartz.Adapters
         public async Task Execute(IJobExecutionContext context)
         {
             var taskIdStr = context.MergedJobDataMap.GetString("TaskId");
-            var taskId = Guid.Parse(taskIdStr);
+            var taskId = ParseId(taskIdStr);
 
             var semaphore = _locks.GetOrAdd(taskId, new SemaphoreSlim(1, 1));
 
@@ -89,12 +91,12 @@ namespace JobRunner.Quartz.Adapters
         /// выполнение, обновление статистики, повторное шифрование.
         /// В случае ошибки обновляет метаданные и публикует событие об ошибке.
         /// </remarks>
-        private async Task ExecuteInternal(Guid taskId, CancellationToken cancellationToken)
+        private async Task ExecuteInternal(TId taskId, CancellationToken cancellationToken)
         {
             var task = await LoadAndValidateTaskAsync(taskId, cancellationToken);
-            if (task == null) return;
+            if (task is null) return;
 
-            var executionScope = new ExecutionScope(task, _logger, _dispatcher);
+            var executionScope = new ExecutionScope<TTask, TId>(task, _logger, _dispatcher);
 
             try
             {
@@ -134,11 +136,11 @@ namespace JobRunner.Quartz.Adapters
         /// возможность параллельного выполнения (AllowConcurrentExecution).
         /// При недоступности задачи логирует причину пропуска.
         /// </remarks>
-        private async Task<IJobTask?> LoadAndValidateTaskAsync(Guid taskId, CancellationToken cancellationToken)
+        private async Task<TTask?> LoadAndValidateTaskAsync(TId taskId, CancellationToken cancellationToken)
         {
             var task = await _storage.GetByIdAsync(taskId, cancellationToken);
 
-            if (task == null)
+            if (task is null)
             {
                 _logger.LogWarning("Task {TaskId} not found in storage. Skipping execution.", taskId);
                 return null;
@@ -162,6 +164,29 @@ namespace JobRunner.Quartz.Adapters
             }
 
             return task;
+        }
+
+        /// <summary>
+        /// Преобразует строку из JobDataMap в TId
+        /// </summary>
+        /// <param name="idStr"></param>
+        /// <returns></returns>
+        /// <exception cref="NotSupportedException"></exception>
+        private TId ParseId(string idStr)
+        {
+            if (typeof(TId) == typeof(Guid))
+                return (TId)(object)Guid.Parse(idStr);
+
+            if (typeof(TId) == typeof(long))
+                return (TId)(object)long.Parse(idStr);
+
+            if (typeof(TId) == typeof(int))
+                return (TId)(object)int.Parse(idStr);
+
+            if (typeof(TId) == typeof(string))
+                return (TId)(object)idStr;
+
+            throw new NotSupportedException($"Unsupported ID type: {typeof(TId)}");
         }
     }
 }

@@ -10,7 +10,9 @@ namespace JobRunner.Quartz.Scheduler
     /// <summary>
     /// Реализация IJobScheduler через Quartz.NET
     /// </summary>
-    public class QuartzScheduler : IJobScheduler
+    public class QuartzScheduler<TTask, TId> : IJobScheduler<TId>
+                                where TTask : class, IJobTask<TId>
+                                where TId : IEquatable<TId>
     {
         private readonly IScheduler _scheduler;
         private readonly IScheduleConverter _converter;
@@ -46,7 +48,7 @@ namespace JobRunner.Quartz.Scheduler
         /// </summary>
         /// <param name="taskId"></param>
         /// <returns></returns>
-        public async Task<bool> RunNowAsync(Guid taskId, CancellationToken cancellationToken = default)
+        public async Task<bool> RunNowAsync(TId taskId, CancellationToken cancellationToken = default)
         {
             await _scheduler.TriggerJob(new JobKey(taskId.ToString()), cancellationToken);
             return true;
@@ -60,7 +62,7 @@ namespace JobRunner.Quartz.Scheduler
         /// <remarks>
         /// Задача не будет запускаться по триггерам до вызова ResumeAsync()
         /// </remarks>
-        public async Task<bool> PauseAsync(Guid taskId, CancellationToken cancellationToken = default)
+        public async Task<bool> PauseAsync(TId taskId, CancellationToken cancellationToken = default)
         {
             await _scheduler.PauseJob(new JobKey(taskId.ToString()));
             return true;
@@ -71,7 +73,7 @@ namespace JobRunner.Quartz.Scheduler
         /// </summary>
         /// <param name="taskId"></param>
         /// <returns></returns>
-        public async Task<bool> ResumeAsync(Guid taskId, CancellationToken cancellationToken = default)
+        public async Task<bool> ResumeAsync(TId taskId, CancellationToken cancellationToken = default)
         {
             await _scheduler.ResumeJob(new JobKey(taskId.ToString()));
             return true;
@@ -82,7 +84,7 @@ namespace JobRunner.Quartz.Scheduler
         /// </summary>
         /// <param name="taskId"></param>
         /// <returns></returns>
-        public async Task<bool> StopAsync(Guid taskId, CancellationToken cancellationToken = default)
+        public async Task<bool> StopAsync(TId taskId, CancellationToken cancellationToken = default)
         {
             await _scheduler.Interrupt(new JobKey(taskId.ToString()));
             return true;
@@ -95,7 +97,7 @@ namespace JobRunner.Quartz.Scheduler
         /// <param name="delay">предполагаемая задержка для перезапуска 
         /// (дефолт --> 100 мс)</param>
         /// <returns></returns>
-        public async Task<bool> RestartAsync(Guid taskId, int delay = 100, CancellationToken cancellationToken = default)
+        public async Task<bool> RestartAsync(TId taskId, int delay = 100, CancellationToken cancellationToken = default)
         {
             await StopAsync(taskId, cancellationToken);
             await Task.Delay(delay, cancellationToken);
@@ -111,13 +113,13 @@ namespace JobRunner.Quartz.Scheduler
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task ScheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default)
+        public async Task ScheduleAsync(TId taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default)
         {
             var cronExpression = _converter.Convert(schedule);
             if (string.IsNullOrEmpty(cronExpression))
                 throw new InvalidOperationException("Cron expression is empty or invalid");
 
-            var job = JobBuilder.Create<JobAdapter>()
+            var job = JobBuilder.Create<JobAdapter<TTask, TId>>()
                 .WithIdentity(taskId.ToString())
                 .UsingJobData("TaskId", taskId.ToString())
                 .StoreDurably()
@@ -137,7 +139,7 @@ namespace JobRunner.Quartz.Scheduler
         /// <param name="taskId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task UnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default)
+        public async Task UnscheduleAsync(TId taskId, CancellationToken cancellationToken = default)
         {
             await _scheduler.DeleteJob(new JobKey(taskId.ToString()), cancellationToken);
         }
@@ -148,7 +150,7 @@ namespace JobRunner.Quartz.Scheduler
         /// <param name="taskId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task RescheduleAsync(Guid taskId, IScheduleSettings settings, CancellationToken cancellationToken = default)
+        public async Task RescheduleAsync(TId taskId, IScheduleSettings settings, CancellationToken cancellationToken = default)
         {
             await UnscheduleAsync(taskId, cancellationToken);
             await ScheduleAsync(taskId, settings, cancellationToken);
@@ -162,7 +164,7 @@ namespace JobRunner.Quartz.Scheduler
         /// <param name="tasks"></param>
         /// <param name="ct"></param>
         /// <returns></returns>
-        public async Task RestoreSchedulesAsync(IEnumerable<IJobTask> tasks, CancellationToken ct = default)
+        public async Task RestoreSchedulesAsync(IEnumerable<IJobTask<TId>> tasks, CancellationToken ct = default)
         {
             foreach (var task in tasks)
             {

@@ -15,25 +15,26 @@ namespace JobRunner.Quartz
     /// Инкапсулирует состояние выполнения задачи и управляет жизненным циклом: расшифровка аргументов,
     /// публикация событий, обновление метаданных, повторное шифрование.
     /// </summary>
-    public class ExecutionScope : IExecutionScope
+    public class ExecutionScope<TTask, TId> : IExecutionScope<TTask, TId>
+                                        where TTask : class, IJobTask<TId>
+                                        where TId : IEquatable<TId>
     {
         private readonly ILogger _logger;
-        private readonly IDomainEventDispatcher _dispatcher;  
+        private readonly IDomainEventDispatcher _dispatcher;
+        private readonly TTask _task;
+        private bool _decrypted = false;
 
         /// <summary>
         /// Возвращает задачу, которая выполняется в текущем scope.
         /// </summary>
-        public IJobTask Task => _task;
-        private readonly IJobTask _task;
-
-        private bool _decrypted = false;
+        public TTask Task => _task;
 
         /// <summary>
         /// Время старта выполнения задачи в формате UTC.
         /// </summary>
         public DateTime StartTime { get; private set; }
 
-        public ExecutionScope(IJobTask task, ILogger logger, IDomainEventDispatcher dispatcher)  // ✅ ДОБАВИТЬ dispatcher в конструктор
+        public ExecutionScope(TTask task, ILogger logger, IDomainEventDispatcher dispatcher)
         {
             _task = task ?? throw new ArgumentNullException(nameof(task));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -45,6 +46,9 @@ namespace JobRunner.Quartz
         /// Устанавливает внутренний флаг _decrypted для отслеживания состояния.
         /// Должен вызываться до начала выполнения задачи.
         /// </summary>
+        /// <param name="encryption"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task DecryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default)
         {
             await encryption.DecryptSensitiveArgumentsAsync(_task.ScheduleArguments, cancellationToken);
@@ -61,7 +65,7 @@ namespace JobRunner.Quartz
         {
             StartTime = DateTime.UtcNow;
 
-            await dispatcher.PublishAsync(new TaskStartedEvent
+            await dispatcher.PublishAsync(new TaskStartedEvent<TId>
             {
                 TaskId = _task.Id,
                 TaskName = _task.Name,
@@ -78,7 +82,10 @@ namespace JobRunner.Quartz
         /// LastRun и StartRun равными StartTime. Сохраняет изменения через сервис хранения.
         /// Вызывается после публикации события старта.
         /// </summary>
-        public async Task UpdateBeforeExecutionAsync(ITaskService<IJobTask> storage, CancellationToken cancellationToken = default)
+        /// <param name="storage"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task UpdateBeforeExecutionAsync(ITaskService<TTask, TId> storage, CancellationToken cancellationToken = default)
         {
             _task.JobTaskMetadata.IsRunning = true;
             _task.JobTaskMetadata.LastRun = StartTime;
@@ -94,12 +101,15 @@ namespace JobRunner.Quartz
         /// При успехе обнуляет ConsecutiveFailures, при ошибке увеличивает счётчик и сохраняет ошибку.
         /// Сохраняет изменения через сервис хранения.
         /// </summary>
-        public async Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<IJobTask> storage, CancellationToken cancellationToken = default)
+        /// <param name="result"></param>
+        /// <param name="storage"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<TTask, TId> storage, CancellationToken cancellationToken = default)
         {
             var endTime = result.EndTime ?? DateTime.UtcNow;
             var durationMs = result.DurationMs ?? (long)(endTime - StartTime).TotalMilliseconds;
 
-            _task.JobTaskMetadata.LastRun = result.StartTime;
             _task.JobTaskMetadata.LastDurationMs = durationMs;
             _task.JobTaskMetadata.TotalRunCount++;
 
@@ -115,7 +125,7 @@ namespace JobRunner.Quartz
                 _task.JobTaskMetadata.ConsecutiveFailures++;
                 _task.JobTaskMetadata.LastError = result.ErrorMessage;
                 _task.JobTaskMetadata.LastErrorTime = DateTime.UtcNow;
-                _logger.LogError(result.ErrorMessage, "Task {TaskName} failed", _task.Name);
+                _logger.LogError(result.ErrorMessage ?? "Unknown error", "Task {TaskName} failed", _task.Name);
             }
 
             _task.JobTaskMetadata.IsRunning = false;
@@ -136,12 +146,16 @@ namespace JobRunner.Quartz
         /// Содержит информацию об успешности выполнения, ошибке и длительности.
         /// Вызывается после обновления метаданных задачи.
         /// </summary>
+        /// <param name="result"></param>
+        /// <param name="dispatcher"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task PublishCompletedEventAsync(JobExecutionResult result, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
         {
             var endTime = result.EndTime ?? DateTime.UtcNow;
             var durationMs = result.DurationMs ?? (long)(endTime - StartTime).TotalMilliseconds;
 
-            await dispatcher.PublishAsync(new TaskCompletedEvent
+            await dispatcher.PublishAsync(new TaskCompletedEvent<TId>
             {
                 TaskId = _task.Id,
                 TaskName = _task.Name,
@@ -159,7 +173,12 @@ namespace JobRunner.Quartz
         /// сохраняет сообщение об отмене. Публикует событие TaskCompletedEvent с флагом Success = false.
         /// Вызывается при явной отмене через CancellationToken.
         /// </summary>
-        public async Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<IJobTask> storage,
+        /// <param name="ex"></param>
+        /// <param name="storage"></param>
+        /// <param name="dispatcher"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<TTask, TId> storage,
             IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
         {
             _logger.LogWarning(ex, "Task {TaskName} execution was cancelled", _task.Name);
@@ -172,7 +191,7 @@ namespace JobRunner.Quartz
 
             await storage.UpdateAsync(_task, cancellationToken);
 
-            await dispatcher.PublishAsync(new TaskCompletedEvent
+            await dispatcher.PublishAsync(new TaskCompletedEvent<TId>
             {
                 TaskId = _task.Id,
                 TaskName = _task.Name,
@@ -193,7 +212,12 @@ namespace JobRunner.Quartz
         /// сохраняет сообщение об ошибке. Публикует событие TaskCompletedEvent с флагом Success = false.
         /// Вызывается при любом исключении в процессе выполнения.
         /// </summary>
-        public async Task HandleFailureAsync(Exception ex, ITaskService<IJobTask> storage,
+        /// <param name="ex"></param>
+        /// <param name="storage"></param>
+        /// <param name="dispatcher"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task HandleFailureAsync(Exception ex, ITaskService<TTask, TId> storage,
             IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
         {
             _logger.LogError(ex, "Unexpected error executing task {TaskName}", _task.Name);
@@ -206,7 +230,7 @@ namespace JobRunner.Quartz
 
             await storage.UpdateAsync(_task, cancellationToken);
 
-            await dispatcher.PublishAsync(new TaskCompletedEvent
+            await dispatcher.PublishAsync(new TaskCompletedEvent<TId>
             {
                 TaskId = _task.Id,
                 TaskName = _task.Name,
@@ -228,6 +252,9 @@ namespace JobRunner.Quartz
         /// При ошибке шифрования логирует CRITICAL, но не пробрасывает исключение,
         /// чтобы не потерять основную ошибку выполнения. Данные могут остаться незашифрованными.
         /// </summary>
+        /// <param name="encryption"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task ReencryptArgumentsAsync(IEncryptionService encryption, CancellationToken cancellationToken = default)
         {
             if (!_decrypted) return;
@@ -253,7 +280,7 @@ namespace JobRunner.Quartz
         /// <param name="ct">Токен отмены</param>
         private async Task PublishHistoryEventAsync(JobExecutionResult result, string status, CancellationToken ct)
         {
-            await _dispatcher.PublishAsync(new TaskHistoryEvent
+            await _dispatcher.PublishAsync(new TaskHistoryEvent<TId>
             {
                 TaskId = _task.Id,
                 TaskName = _task.Name,
