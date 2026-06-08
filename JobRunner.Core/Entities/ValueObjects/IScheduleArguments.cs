@@ -14,5 +14,10 @@ namespace JobRunner.Core.Entities.ValueObjects
         /// </summary>
         [Display(Name = "Аргументы задачи JobTask", Description = "Список аргументов командной строки")]
         List<ScheduleArgumentItem> Items { get; set; }
+
+        /// <summary>
+        /// Построить безопасную командную строку с экранированием
+        /// </summary>
+        string BuildCommandLineArguments();
     }
 }
