@@ -16,22 +16,22 @@ namespace JobRunner.Domain.Tests.QuartzTests
 {
     public class JobAdapterTests
     {
-        private readonly Mock<ITaskService<IJobTask>> _storageMock;
-        private readonly Mock<IJobExecutor> _executorMock;
+        private readonly Mock<ITaskService<JobTask, Guid>> _storageMock;
+        private readonly Mock<IJobExecutor<Guid>> _executorMock;
         private readonly Mock<IDomainEventDispatcher> _dispatcherMock;
         private readonly Mock<IEncryptionService> _encryptionMock;
-        private readonly Mock<ILogger<JobAdapter>> _loggerMock;
-        private readonly JobAdapter _adapter;
+        private readonly Mock<ILogger<JobAdapter<JobTask, Guid>>> _loggerMock;
+        private readonly JobAdapter<JobTask, Guid> _adapter;
 
         public JobAdapterTests()
         {
-            _storageMock = new Mock<ITaskService<IJobTask>>();
-            _executorMock = new Mock<IJobExecutor>();
+            _storageMock = new Mock<ITaskService<JobTask, Guid>>();
+            _executorMock = new Mock<IJobExecutor<Guid>>();
             _dispatcherMock = new Mock<IDomainEventDispatcher>();
             _encryptionMock = new Mock<IEncryptionService>();
-            _loggerMock = new Mock<ILogger<JobAdapter>>();
+            _loggerMock = new Mock<ILogger<JobAdapter<JobTask, Guid>>>();
 
-            _adapter = new JobAdapter(
+            _adapter = new JobAdapter<JobTask, Guid>(
                 _storageMock.Object,
                 _executorMock.Object,
                 _dispatcherMock.Object,
@@ -68,7 +68,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
         {
             var taskId = Guid.NewGuid();
             _storageMock.Setup(x => x.GetByIdAsync(taskId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync((IJobTask?)null);
+                .ReturnsAsync((JobTask?)null);
 
             await _adapter.Execute(CreateContext(taskId));
 
@@ -81,7 +81,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
 
-            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.Never);
+            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask<Guid>>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -93,7 +93,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
 
             await _adapter.Execute(CreateContext(task.Id));
 
-            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.Never);
+            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask<Guid>>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
 
             await _adapter.Execute(CreateContext(task.Id));
 
-            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.Never);
+            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask<Guid>>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -115,12 +115,12 @@ namespace JobRunner.Domain.Tests.QuartzTests
             _storageMock.Setup(x => x.GetByIdAsync(task.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(task);
 
-            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()))
+            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask<Guid>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(JobExecutionResult.CreateSuccess(123, DateTime.UtcNow));
 
             await _adapter.Execute(CreateContext(task.Id));
 
-            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.Once);
+            _executorMock.Verify(x => x.ExecuteAsync(It.IsAny<IJobTask<Guid>>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -131,17 +131,17 @@ namespace JobRunner.Domain.Tests.QuartzTests
                 .ReturnsAsync(task);
 
             var executorCalled = 0;
-            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()))
+            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask<Guid>>(), It.IsAny<CancellationToken>()))
                 .Returns(async () =>
                 {
                     Interlocked.Increment(ref executorCalled);
-                    await Task.Delay(100); // Имитация долгого выполнения
+                    await Task.Delay(100);
                     return JobExecutionResult.CreateSuccess(123, DateTime.UtcNow);
                 });
 
             var context = CreateContext(task.Id);
-                var task1 = _adapter.Execute(context);
-                var task2 = _adapter.Execute(context);
+            var task1 = _adapter.Execute(context);
+            var task2 = _adapter.Execute(context);
 
             await Task.WhenAll(task1, task2);
 
@@ -156,14 +156,14 @@ namespace JobRunner.Domain.Tests.QuartzTests
                 .ReturnsAsync(task);
 
             var result = JobExecutionResult.CreateSuccess(12345, DateTime.UtcNow);
-            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()))
+            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask<Guid>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(result);
 
             await _adapter.Execute(CreateContext(task.Id));
 
-            _storageMock.Verify(x => x.UpdateAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
-            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskStartedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
-            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+            _storageMock.Verify(x => x.UpdateAsync(It.IsAny<JobTask>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskStartedEvent<Guid>>(), It.IsAny<CancellationToken>()), Times.Once);
+            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent<Guid>>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -173,15 +173,15 @@ namespace JobRunner.Domain.Tests.QuartzTests
             _storageMock.Setup(x => x.GetByIdAsync(task.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(task);
 
-            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()))
+            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask<Guid>>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("Execution failed"));
 
             var act = async () => await _adapter.Execute(CreateContext(task.Id));
 
             await act.Should().ThrowAsync<InvalidOperationException>();
 
-            _storageMock.Verify(x => x.UpdateAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
-            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+            _storageMock.Verify(x => x.UpdateAsync(It.IsAny<JobTask>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent<Guid>>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -191,7 +191,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
             _storageMock.Setup(x => x.GetByIdAsync(task.Id, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(task);
 
-            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask>(), It.IsAny<CancellationToken>()))
+            _executorMock.Setup(x => x.ExecuteAsync(It.IsAny<IJobTask<Guid>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(JobExecutionResult.CreateSuccess(123, DateTime.UtcNow));
 
             await _adapter.Execute(CreateContext(task.Id));

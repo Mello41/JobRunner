@@ -18,29 +18,28 @@ namespace JobRunner.Domain.Tests.QuartzTests
         private readonly Mock<ILogger> _loggerMock;
         private readonly Mock<IEncryptionService> _encryptionMock;
         private readonly Mock<IDomainEventDispatcher> _dispatcherMock;
-        private readonly Mock<ITaskService<IJobTask>> _storageMock;
-        private readonly Mock<IJobTask> _taskMock;
+        private readonly Mock<ITaskService<JobTask, Guid>> _storageMock;
+        private readonly JobTask _task;
 
         public ExecutionScopeTests()
         {
             _loggerMock = new Mock<ILogger>();
             _encryptionMock = new Mock<IEncryptionService>();
             _dispatcherMock = new Mock<IDomainEventDispatcher>();
-            _storageMock = new Mock<ITaskService<IJobTask>>();
-            _taskMock = new Mock<IJobTask>();
-
-            _taskMock.Setup(x => x.Id).Returns(Guid.NewGuid());
-            _taskMock.Setup(x => x.Name).Returns("Test Task");
-            _taskMock.Setup(x => x.ScheduleArguments).Returns(new Mock<IScheduleArguments>().Object);
-            _taskMock.Setup(x => x.JobTaskMetadata).Returns(new Mock<IJobTaskMetadata>().Object);
-
-            // Добавляем настройку для NotifySettings, если нужно
-            _taskMock.Setup(x => x.NotifySettings).Returns(new Mock<INotifySettings>().Object);
+            _storageMock = new Mock<ITaskService<JobTask, Guid>>();
+            _task = new JobTask
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Task",
+                ScheduleArguments = new ScheduleArguments(),
+                JobTaskMetadata = new JobTaskMetadata(),
+                NotifySettings = new NotifySettings()
+            };
         }
 
-        private ExecutionScope CreateScope()
+        private ExecutionScope<JobTask, Guid> CreateScope()
         {
-            return new ExecutionScope(_taskMock.Object, _loggerMock.Object, _dispatcherMock.Object);
+            return new ExecutionScope<JobTask, Guid>(_task, _loggerMock.Object, _dispatcherMock.Object);
         }
 
         [Fact]
@@ -54,7 +53,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
 
             // Assert
             _encryptionMock.Verify(x =>
-                x.DecryptSensitiveArgumentsAsync(_taskMock.Object.ScheduleArguments, It.IsAny<CancellationToken>()),
+                x.DecryptSensitiveArgumentsAsync(_task.ScheduleArguments, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -103,7 +102,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
             // Assert
             scope.StartTime.Should().BeAfter(beforeTime);
             _dispatcherMock.Verify(x =>
-                x.PublishAsync(It.IsAny<TaskStartedEvent>(), It.IsAny<CancellationToken>()),
+                x.PublishAsync(It.IsAny<TaskStartedEvent<Guid>>(), It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -111,8 +110,6 @@ namespace JobRunner.Domain.Tests.QuartzTests
         public async Task UpdateBeforeExecutionAsync_ShouldSetRunningFlagAndUpdate()
         {
             // Arrange
-            var metadataMock = new Mock<IJobTaskMetadata>();
-            _taskMock.Setup(x => x.JobTaskMetadata).Returns(metadataMock.Object);
             var scope = CreateScope();
 
             // Act
@@ -120,101 +117,89 @@ namespace JobRunner.Domain.Tests.QuartzTests
             await scope.UpdateBeforeExecutionAsync(_storageMock.Object);
 
             // Assert
-            metadataMock.VerifySet(x => x.IsRunning = true, Times.Once);
-            metadataMock.VerifySet(x => x.LastRun = scope.StartTime, Times.Once);
-            _taskMock.VerifySet(x => x.StartRun = scope.StartTime, Times.Once);
-            _storageMock.Verify(x => x.UpdateAsync(_taskMock.Object, It.IsAny<CancellationToken>()), Times.Once);
+            _task.JobTaskMetadata.IsRunning.Should().BeTrue();
+            _task.JobTaskMetadata.LastRun.Should().Be(scope.StartTime);
+            _task.StartRun.Should().Be(scope.StartTime);
+            _storageMock.Verify(x => x.UpdateAsync(_task, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task UpdateAfterExecutionAsync_WhenSuccessful_ShouldIncrementCounters()
         {
             // Arrange
-            var metadataMock = new Mock<IJobTaskMetadata>();
-            metadataMock.SetupProperty(x => x.TotalRunCount, 0);
-            metadataMock.SetupProperty(x => x.SuccessCount, 0);
-            metadataMock.SetupProperty(x => x.ConsecutiveFailures, 3);
-            metadataMock.SetupProperty(x => x.IsRunning, true);
-            _taskMock.Setup(x => x.JobTaskMetadata).Returns(metadataMock.Object);
-
-            var result = JobExecutionResult.CreateSuccess(12345, DateTime.UtcNow);
             var scope = CreateScope();
+            _task.JobTaskMetadata = new JobTaskMetadata();
+            var result = JobExecutionResult.CreateSuccess(12345, DateTime.UtcNow);
 
             // Act
             await scope.PublishStartedEventAsync(_dispatcherMock.Object);
             await scope.UpdateAfterExecutionAsync(result, _storageMock.Object);
 
             // Assert
-            metadataMock.Object.TotalRunCount.Should().Be(1);
-            metadataMock.Object.SuccessCount.Should().Be(1);
-            metadataMock.Object.ConsecutiveFailures.Should().Be(0);
-            metadataMock.Object.IsRunning.Should().BeFalse();
+            _task.JobTaskMetadata.TotalRunCount.Should().Be(1);
+            _task.JobTaskMetadata.SuccessCount.Should().Be(1);
+            _task.JobTaskMetadata.ConsecutiveFailures.Should().Be(0);
+            _task.JobTaskMetadata.IsRunning.Should().BeFalse();
         }
 
         [Fact]
         public async Task UpdateAfterExecutionAsync_WhenFailed_ShouldIncrementFailureCount()
         {
             // Arrange
-            var metadata = new JobTaskMetadata();  // реальный объект
-            _taskMock.Setup(x => x.JobTaskMetadata).Returns(metadata);
-
-            var result = JobExecutionResult.CreateFailure("Test error", DateTime.UtcNow);
             var scope = CreateScope();
+            _task.JobTaskMetadata = new JobTaskMetadata();
+            var result = JobExecutionResult.CreateFailure("Test error", DateTime.UtcNow);
 
             // Act
             await scope.PublishStartedEventAsync(_dispatcherMock.Object);
             await scope.UpdateAfterExecutionAsync(result, _storageMock.Object);
 
             // Assert
-            metadata.TotalRunCount.Should().Be(1);
-            metadata.FailureCount.Should().Be(1);
-            metadata.ConsecutiveFailures.Should().Be(1);
-            metadata.LastError.Should().Be("Test error");
-            metadata.IsRunning.Should().BeFalse();
+            _task.JobTaskMetadata.TotalRunCount.Should().Be(1);
+            _task.JobTaskMetadata.FailureCount.Should().Be(1);
+            _task.JobTaskMetadata.ConsecutiveFailures.Should().Be(1);
+            _task.JobTaskMetadata.LastError.Should().Be("Test error");
+            _task.JobTaskMetadata.IsRunning.Should().BeFalse();
         }
 
         [Fact]
         public async Task HandleCancellationAsync_ShouldUpdateMetadataAndPublish()
         {
             // Arrange
-            var metadata = new JobTaskMetadata { IsRunning = true };
-            _taskMock.Setup(x => x.JobTaskMetadata).Returns(metadata);
-
             var scope = CreateScope();
+            _task.JobTaskMetadata = new JobTaskMetadata { IsRunning = true };
             var exception = new OperationCanceledException();
 
             // Act
             await scope.HandleCancellationAsync(exception, _storageMock.Object, _dispatcherMock.Object);
 
             // Assert
-            metadata.IsRunning.Should().BeFalse();
-            metadata.FailureCount.Should().Be(1);
-            metadata.ConsecutiveFailures.Should().Be(1);
-            metadata.LastError.Should().Be("Execution was cancelled");
-            _storageMock.Verify(x => x.UpdateAsync(_taskMock.Object, It.IsAny<CancellationToken>()), Times.Once);
-            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+            _task.JobTaskMetadata.IsRunning.Should().BeFalse();
+            _task.JobTaskMetadata.FailureCount.Should().Be(1);
+            _task.JobTaskMetadata.ConsecutiveFailures.Should().Be(1);
+            _task.JobTaskMetadata.LastError.Should().Be("Execution was cancelled");
+            _storageMock.Verify(x => x.UpdateAsync(_task, It.IsAny<CancellationToken>()), Times.Once);
+            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent<Guid>>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task HandleFailureAsync_ShouldUpdateMetadataAndPublish()
         {
             // Arrange
-            var metadata = new JobTaskMetadata { IsRunning = true };
-            _taskMock.Setup(x => x.JobTaskMetadata).Returns(metadata);
-
             var scope = CreateScope();
+            _task.JobTaskMetadata = new JobTaskMetadata { IsRunning = true };
             var exception = new InvalidOperationException("Something went wrong");
 
             // Act
             await scope.HandleFailureAsync(exception, _storageMock.Object, _dispatcherMock.Object);
 
             // Assert
-            metadata.IsRunning.Should().BeFalse();
-            metadata.FailureCount.Should().Be(1);
-            metadata.ConsecutiveFailures.Should().Be(1);
-            metadata.LastError.Should().Be("Something went wrong");
-            _storageMock.Verify(x => x.UpdateAsync(_taskMock.Object, It.IsAny<CancellationToken>()), Times.Once);
-            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent>(), It.IsAny<CancellationToken>()), Times.Once);
+            _task.JobTaskMetadata.IsRunning.Should().BeFalse();
+            _task.JobTaskMetadata.FailureCount.Should().Be(1);
+            _task.JobTaskMetadata.ConsecutiveFailures.Should().Be(1);
+            _task.JobTaskMetadata.LastError.Should().Be("Something went wrong");
+            _storageMock.Verify(x => x.UpdateAsync(_task, It.IsAny<CancellationToken>()), Times.Once);
+            _dispatcherMock.Verify(x => x.PublishAsync(It.IsAny<TaskCompletedEvent<Guid>>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -229,7 +214,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
             // Act
             await scope.DecryptArgumentsAsync(_encryptionMock.Object);
 
-            // Act & Assert (не должно выбросить исключение)
+            // Act & Assert
             Func<Task> act = async () => await scope.ReencryptArgumentsAsync(_encryptionMock.Object);
             await act.Should().NotThrowAsync();
 

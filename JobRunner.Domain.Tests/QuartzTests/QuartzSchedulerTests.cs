@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using JobRunner.Core.Entities;
+using JobRunner.Core.DefaultImplementations;
 using JobRunner.Core.Entities.ValueObjects.Settings;
 using JobRunner.Core.Interfaces.Converters;
 using Moq;
@@ -12,13 +12,13 @@ namespace JobRunner.Domain.Tests.QuartzTests
     {
         private readonly Mock<IScheduler> _schedulerMock;
         private readonly Mock<IScheduleConverter> _converterMock;
-        private readonly QuartzScheduler _scheduler;
+        private readonly QuartzScheduler<JobTask, Guid> _scheduler;
 
         public QuartzSchedulerTests()
         {
             _schedulerMock = new Mock<IScheduler>();
             _converterMock = new Mock<IScheduleConverter>();
-            _scheduler = new QuartzScheduler(_schedulerMock.Object, _converterMock.Object);
+            _scheduler = new QuartzScheduler<JobTask, Guid>(_schedulerMock.Object, _converterMock.Object);
         }
 
         [Fact]
@@ -137,16 +137,21 @@ namespace JobRunner.Domain.Tests.QuartzTests
         [Fact]
         public async Task RestoreSchedulesAsync_ShouldScheduleOnlyEnabledTasks()
         {
-            var enabledTask = new Mock<IJobTask>();
-            enabledTask.Setup(x => x.Id).Returns(Guid.NewGuid());
-            enabledTask.Setup(x => x.IsEnabled).Returns(true);
-            enabledTask.Setup(x => x.ScheduleSettings).Returns(new DailySchedule());
+            var enabledTask = new JobTask
+            {
+                Id = Guid.NewGuid(),
+                IsEnabled = true,
+                ScheduleSettings = new DailySchedule()
+            };
 
-            var disabledTask = new Mock<IJobTask>();
-            disabledTask.Setup(x => x.Id).Returns(Guid.NewGuid());
-            disabledTask.Setup(x => x.IsEnabled).Returns(false);
+            var disabledTask = new JobTask
+            {
+                Id = Guid.NewGuid(),
+                IsEnabled = false,
+                ScheduleSettings = new DailySchedule()
+            };
 
-            var tasks = new[] { enabledTask.Object, disabledTask.Object };
+            var tasks = new[] { enabledTask, disabledTask };
 
             _converterMock.Setup(x => x.Convert(It.IsAny<DailySchedule>())).Returns("0 0 9 * * ?");
 
