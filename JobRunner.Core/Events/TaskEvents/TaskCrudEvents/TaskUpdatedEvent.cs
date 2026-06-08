@@ -7,12 +7,13 @@ namespace JobRunner.Core.Events.TaskEvents.TaskCrudEvents
     /// Событие, возникающее при обновлении существующей задачи.
     /// Содержит информацию о том, какие поля были изменены.
     /// </summary>
-    public class TaskUpdatedEvent : ITaskUpdatedEvent
+    public class TaskUpdatedEvent<TID> : ITaskUpdatedEvent<TID>
+                                        where TID : IEquatable<TID>
     {
         /// <summary>
         /// Уникальный идентификатор обновлённой задачи
         /// </summary>
-        public Guid TaskId { get; set; }
+        public TID TaskId { get; set; }
 
         /// <summary>
         /// Наименование обновлённой задачи

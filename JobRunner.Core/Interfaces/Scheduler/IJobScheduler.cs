@@ -10,8 +10,8 @@ namespace JobRunner.Core.Interfaces.Scheduler
     /// <summary>
     /// Сборник методов планировщика заданий (операции с памятью и выполнением)
     /// </summary>
-    /// <typeparam name="T">Тип задачи, реализующий IJobTask</typeparam>
-    public interface IJobScheduler
+    /// <typeparam name="TId">Тип идентификатора задачи</typeparam>
+    public interface IJobScheduler<TId> where TId : IEquatable<TId>
     {
         #region Планировщик (жизненный цикл)
         /// <summary>
@@ -43,7 +43,7 @@ namespace JobRunner.Core.Interfaces.Scheduler
         /// </summary>
         /// <param name="taskId"></param>
         /// <returns></returns>
-        Task<bool> RunNowAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<bool> RunNowAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Перезапуск задачи (остановить и запустить заново)
@@ -55,7 +55,7 @@ namespace JobRunner.Core.Interfaces.Scheduler
         /// 2. Сбрасывает состояние задачи (LastError, IsRunning)
         /// 3. Запускает задачу заново
         /// </remarks>
-        Task<bool> RestartAsync(Guid taskId, int delay = 100, CancellationToken cancellationToken = default);
+        Task<bool> RestartAsync(TId taskId, int delay = 100, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Приостановка выполнения задачи по расписанию
@@ -66,7 +66,7 @@ namespace JobRunner.Core.Interfaces.Scheduler
         /// Задача остаётся в системе, но не будет запускаться по расписанию.
         /// Может быть возобновлена методом ResumeAsync.
         /// </remarks>
-        Task<bool> PauseAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<bool> PauseAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Остановка выполняющейся задачи (принудительное завершение)
@@ -77,7 +77,7 @@ namespace JobRunner.Core.Interfaces.Scheduler
         /// Принудительно завершает процесс, связанный с задачей.
         /// Состояние задачи обновляется, ошибка фиксируется в LastError.
         /// </remarks>
-        Task<bool> StopAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<bool> StopAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Возобновление выполнения задачи по расписанию
@@ -88,24 +88,35 @@ namespace JobRunner.Core.Interfaces.Scheduler
         /// Восстанавливает выполнение ранее приостановленной задачи.
         /// Расписание сохраняется и начинает отсчитываться заново.
         /// </remarks>
-        Task<bool> ResumeAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<bool> ResumeAsync(TId taskId, CancellationToken cancellationToken = default);
         #endregion
 
         #region Управление расписанием
         /// <summary>
         /// Зарегистрировать задачу в планировщике
         /// </summary>
-        Task ScheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default);
+        /// <param name="taskId"></param>
+        /// <param name="schedule"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task ScheduleAsync(TId taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Удалить задачу из планировщика
         /// </summary>
-        Task UnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default);
+        /// <param name="taskId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task UnscheduleAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Обновить расписание задачи
         /// </summary>
-        Task RescheduleAsync(Guid taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default);
+        /// <param name="taskId"></param>
+        /// <param name="schedule"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task RescheduleAsync(TId taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Перерегистрировать все задачи из БД в Quartz (восстановление после перезапуска)
@@ -113,7 +124,7 @@ namespace JobRunner.Core.Interfaces.Scheduler
         /// <param name="tasks"></param>
         /// <param name="ct"></param>
         /// <returns></returns>
-        Task RestoreSchedulesAsync(IEnumerable<IJobTask> tasks, CancellationToken ct = default);
+        Task RestoreSchedulesAsync(IEnumerable<IJobTask<TId>> tasks, CancellationToken ct = default);
         #endregion
     }
 }

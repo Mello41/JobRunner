@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using JobRunner.Core.Interfaces.Events.TaskStatus;
+﻿using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces.Notification;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace JobRunner.Core.Events.Handlers
 {
@@ -17,16 +17,17 @@ namespace JobRunner.Core.Events.Handlers
     /// Настройки уведомлений приходят прямо в событии (через INotifiableEvent),
     /// поэтому не нужно загружать задачу из БД.
     /// </remarks>
-    public class SendNotificationHandler :
-        IDomainEventHandler<ITaskStartedEvent>,
-        IDomainEventHandler<ITaskCompletedEvent>
+    public class SendNotificationHandler<TId> :
+        IDomainEventHandler<TaskStartedEvent<TId>>,
+        IDomainEventHandler<TaskCompletedEvent<TId>>
+        where TId : IEquatable<TId>
     {
-        private readonly INotificationService _notificationService;
-        private readonly ILogger<SendNotificationHandler> _logger;
+        private readonly INotificationService<TId> _notificationService;
+        private readonly ILogger<SendNotificationHandler<TId>> _logger;
 
         public SendNotificationHandler(
-            INotificationService notificationService,
-            ILogger<SendNotificationHandler> logger)
+            INotificationService<TId> notificationService,
+            ILogger<SendNotificationHandler<TId>> logger)
         {
             _notificationService = notificationService;
             _logger = logger;
@@ -38,7 +39,7 @@ namespace JobRunner.Core.Events.Handlers
         /// <param name="event"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task HandleAsync(ITaskStartedEvent @event, CancellationToken cancellationToken)
+        public async Task HandleAsync(TaskStartedEvent<TId> @event, CancellationToken cancellationToken)
         {
             try
             {
@@ -72,7 +73,7 @@ namespace JobRunner.Core.Events.Handlers
         /// <param name="event"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task HandleAsync(ITaskCompletedEvent @event, CancellationToken cancellationToken)
+        public async Task HandleAsync(TaskCompletedEvent<TId> @event, CancellationToken cancellationToken)
         {
             try
             {
@@ -98,7 +99,7 @@ namespace JobRunner.Core.Events.Handlers
                     @event.TaskId,
                     @event.TaskName,
                     @event.Success,
-                    @event.ErrorMessage,
+                    formattedMessage,
                     @event.NotifySettings,
                     cancellationToken);
             }

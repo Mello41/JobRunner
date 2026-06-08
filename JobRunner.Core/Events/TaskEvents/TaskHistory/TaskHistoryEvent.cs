@@ -7,12 +7,12 @@ namespace JobRunner.Core.Events.TaskEvents.TaskHistory
     /// Используется для аудита, логирования, сбора метрик и анализа производительности.
     /// Подписчики могут сохранять эти данные в БД, отправлять в системы мониторинга или уведомления.
     /// </summary>
-    public class TaskHistoryEvent
+    public class TaskHistoryEvent<TId> where TId : IEquatable<TId>
     {
         /// <summary>
         /// Уникальный идентификатор задачи
         /// </summary>
-        public Guid TaskId { get; set; }
+        public TId TaskId { get; set; }
 
         /// <summary>
         /// Наименование задачи (снэпшот на момент выполнения)

@@ -1,5 +1,4 @@
-﻿using JobRunner.Core.Entities.Enums;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace JobRunner.Core.Entities.ValueObjects
 {

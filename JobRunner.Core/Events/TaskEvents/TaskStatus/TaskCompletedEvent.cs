@@ -8,12 +8,13 @@ namespace JobRunner.Core.Events.TaskEvents.TaskStatus
     /// Событие, возникающее при завершении выполнения задачи (успешном или с ошибкой).
     /// Содержит информацию о результате выполнения для уведомлений, аудита и анализа.
     /// </summary>
-    public class TaskCompletedEvent : ITaskCompletedEvent
+    public class TaskCompletedEvent<TID> : ITaskCompletedEvent<TID>
+                                          where TID : IEquatable<TID>
     {
         /// <summary>
         /// Уникальный идентификатор завершённой задачи
         /// </summary>
-        public Guid TaskId { get; set; }
+        public TID TaskId { get; set; }
 
         /// <summary>
         /// Наименование завершённой задачи

@@ -7,12 +7,13 @@ namespace JobRunner.Core.Events.TaskEvents.TaskCrudEvents
     /// Событие, возникающее при удалении задачи из системы.
     /// Содержит информацию об удалённой задаче для аудита и логирования.
     /// </summary>
-    public class TaskDeletedEvent : ITaskDeletedEvent
+    public class TaskDeletedEvent<TID> : ITaskDeletedEvent<TID>
+                                        where TID : IEquatable<TID>
     {
         /// <summary>
         /// Уникальный идентификатор удалённой задачи
         /// </summary>
-        public Guid TaskId { get; set; }
+        public TID TaskId { get; set; }
 
         /// <summary>
         /// Наименование удалённой задачи

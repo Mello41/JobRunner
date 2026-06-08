@@ -1,23 +1,31 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using JobRunner.Core.Events.TaskEvents.TaskStatus;
+﻿using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace JobRunner.Core.Events.Handlers
 {
     /// <summary>
     /// Логирование завершения задачи
     /// </summary>
-    public class LogTaskCompletedHandler : IDomainEventHandler<TaskCompletedEvent>
+    public class LogTaskCompletedHandler<TId> : IDomainEventHandler<TaskCompletedEvent<TId>>
+                                where TId : IEquatable<TId>
     {
-        private readonly ILogger<LogTaskCompletedHandler> _logger;
+        private readonly ILogger<LogTaskCompletedHandler<TId>> _logger;
 
-        public LogTaskCompletedHandler(ILogger<LogTaskCompletedHandler> logger)
+        public LogTaskCompletedHandler(ILogger<LogTaskCompletedHandler<TId>> logger)
         {
             _logger = logger;
         }
 
-        public Task HandleAsync(TaskCompletedEvent @event, CancellationToken cancellationToken)
+        /// <summary>
+        /// Обрабатывает событие завершения задачи и записывает результат в лог
+        /// </summary>
+        /// <param name="event">Событие завершения задачи, содержащее информацию о результате выполнения</param>
+        /// <param name="cancellationToken">Токен отмены операции</param>
+        /// <returns>Завершенная задача (Task)</returns>
+        public Task HandleAsync(TaskCompletedEvent<TId> @event, CancellationToken cancellationToken)
         {
             if (@event.Success)
             {

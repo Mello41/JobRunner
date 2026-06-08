@@ -14,12 +14,18 @@ namespace JobRunner.Core.Interfaces.Notification
     /// Каждая реализация отвечает за один способ уведомления.
     /// Регистрируются в DI как scoped или transient сервисы.
     /// </remarks>
-    public interface INotificationSender
+    public interface INotificationSender<TId> where TId : IEquatable<TId>
     {
         /// <summary>
         /// Асинхронно отправляет уведомление о выполнении задачи (с полным объектом)
         /// </summary>
-        Task SendAsync(IJobTask task, bool isSuccess, string? errorMessage = null, CancellationToken cancellationToken = default);
+        /// <param name="task"></param>
+        /// <param name="isSuccess"></param>
+        /// <param name="errorMessage"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task SendAsync(IJobTask<TId> task, bool isSuccess, 
+            string? errorMessage = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Асинхронно отправляет уведомление о выполнении задачи (по данным из события)
@@ -30,6 +36,8 @@ namespace JobRunner.Core.Interfaces.Notification
         /// <param name="errorMessage">Сообщение об ошибке</param>
         /// <param name="settings">Настройки уведомлений</param>
         /// <param name="cancellationToken">Токен отмены</param>
-        Task SendAsync(Guid taskId, string taskName, bool isSuccess, string? errorMessage, INotifySettings settings, CancellationToken cancellationToken = default);
+        Task SendAsync(TId taskId, string taskName, bool isSuccess, 
+            string? errorMessage, INotifySettings settings, 
+            CancellationToken cancellationToken = default);
     }
 }

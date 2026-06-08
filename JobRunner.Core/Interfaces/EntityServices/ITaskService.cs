@@ -11,7 +11,9 @@ namespace JobRunner.Core.Interfaces.EntityServices
     /// (операции только с БД)
     /// </summary>
     /// <typeparam name="T">Тип задачи, реализующий IJobTask</typeparam>
-    public interface ITaskService<T> : ICrudService<T, Guid> where T : class, IJobTask
+    public interface ITaskService<T, TId> : ICrudService<T, TId>
+                                    where T : class, IJobTask<TId>
+                                    where TId : IEquatable<TId>
     {
         /// <summary>
         /// Получение задачи по идентификатору процесса
@@ -27,7 +29,7 @@ namespace JobRunner.Core.Interfaces.EntityServices
         /// <param name="guid">Идентификатор процесса (основной)</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<T?> GetStatusAsync(Guid guid, CancellationToken cancellationToken = default);
+        Task<T?> GetStatusAsync(TId guid, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Очистить все аргументы задачи
@@ -35,7 +37,7 @@ namespace JobRunner.Core.Interfaces.EntityServices
         /// <param name="taskId">Идентификатор задачи</param>
         /// <param name="cancellationToken">Токен отмены</param>
         /// <returns>true — если аргументы очищены, false — задача не найдена</returns>
-        Task<bool> ClearAllArgumentsAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<bool> ClearAllArgumentsAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Обновить значение аргумента задачи
@@ -46,7 +48,7 @@ namespace JobRunner.Core.Interfaces.EntityServices
         /// <param name="isEncrypted">Зашифровано ли значение</param>
         /// <param name="cancellationToken">Токен отмены</param>
         /// <returns>true — если аргумент обновлён, false — задача или аргумент не найдены</returns>
-        Task<bool> UpdateArgumentValueAsync(Guid taskId, string key, object value,
+        Task<bool> UpdateArgumentValueAsync(TId taskId, string key, object value,
                                             bool isEncrypted = false, CancellationToken cancellationToken = default);
     }
 }

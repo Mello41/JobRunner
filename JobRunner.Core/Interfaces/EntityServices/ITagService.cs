@@ -9,22 +9,28 @@ namespace JobRunner.Core.Interfaces.EntityServices
     /// <summary>
     /// Набор методов для взаимодействия с метками
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public interface ITagService<T> : ICrudService<T, Guid> where T : class, ITag
+    /// <typeparam name="TTag">Тип метки, реализующий IJobTag&lt;TId&gt;</typeparam>
+    /// <typeparam name="TId">Тип идентификатора</typeparam>
+    public interface ITagService<TTag, TId> : ICrudService<TTag, TId>
+                                where TTag : class, IJobTag<TId>
+                                where TId : IEquatable<TId>
     {
+
         /// <summary>
         /// Установить цвет метки
         /// </summary>
         /// <param name="id">id метки</param>
         /// <param name="color">Цвет метки (#hex)</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<ITag> SetTagColor(Guid id, string color, CancellationToken cancellationToken = default);
+        Task<TTag> SetTagColor(TId id, string color, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Посчитать количество задач, у которых есть данная метка
         /// </summary>
         /// <param name="id">id метки</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<ITag> CountJobsToTag(Guid id, CancellationToken cancellationToken = default);
+        Task<int> CountJobsToTag(TId id, CancellationToken cancellationToken = default);
     }
 }

@@ -16,7 +16,7 @@ namespace JobRunner.Core.DTO
         /// <summary>
         /// ID задачи
         /// </summary>
-        public Guid TaskId { get; set; }
+        public string TaskId { get; set; }
 
         /// <summary>
         /// Название задачи
@@ -46,7 +46,8 @@ namespace JobRunner.Core.DTO
         /// <summary>
         /// Создать уведомление с сообщением по умолчанию
         /// </summary>
-        public static UiNotification FromEvent(EventType eventType, Guid taskId, string taskName, object? data = null)
+        public static UiNotification FromEvent(EventType eventType, string taskId, 
+                                            string taskName, object? data = null)
         {
             var message = GetDefaultMessage(eventType, taskName);
             var severity = GetSeverity(eventType);

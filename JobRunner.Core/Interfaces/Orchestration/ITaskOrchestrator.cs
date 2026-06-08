@@ -10,7 +10,9 @@ namespace JobRunner.Core.Interfaces.Orchestration
     /// <summary>
     /// Оркестратор задач (координация хранилища и планировщика)
     /// </summary>
-    public interface ITaskOrchestrator<T> where T : IJobTask
+    public interface ITaskOrchestrator<T, TId>
+                                where T : IJobTask<TId>
+                                where TId : IEquatable<TId>
     {
         /// <summary>
         /// Создание задачи и её регистрация в планировщике
@@ -33,7 +35,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// <param name="taskId">Уникальный идентификатор задачи</param>
         /// <returns> true — удаление успешно,
         /// false — задача не найдена </returns>
-        Task<bool> DeleteAndUnscheduleAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<bool> DeleteAndUnscheduleAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Загрузить все задачи из БД и восстановить их в планировщике
@@ -47,7 +49,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// </summary>
         /// <param name="taskId">Уникальный идентификатор задачи</param>
         /// <returns>Задача или null, если не найдена</returns>
-        Task<T?> GetTaskAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<T?> GetTaskAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Получение всех задач
@@ -63,7 +65,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// <returns>true — задача запущена, 
         /// false — задача не найдена</returns>
         /// <remarks>Вызывает IJobScheduler.RunNowAsync</remarks>
-        Task<bool> RunNowAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<bool> RunNowAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Приостановка выполнения задачи по расписанию
@@ -73,7 +75,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// false — задача не найдена</returns>
         /// <remarks>Вызывает IJobScheduler.PauseAsync. 
         /// Может быть возобновлена через ResumeAsync</remarks>
-        Task<bool> PauseAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<bool> PauseAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Возобновление выполнения задачи по расписанию
@@ -82,7 +84,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// <returns>true — задача возобновлена, 
         /// false — задача не найдена</returns>
         /// <remarks>Вызывает IJobScheduler.ResumeAsync</remarks>
-        Task<bool> ResumeAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<bool> ResumeAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Принудительная остановка выполняющейся задачи
@@ -92,12 +94,12 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// false — задача не найдена или не выполняется</returns>
         /// <remarks>Вызывает IJobScheduler.StopAsync. 
         /// Завершает процесс задачи.</remarks>
-        Task<bool> StopAsync(Guid taskId, CancellationToken cancellationToken = default);
+        Task<bool> StopAsync(TId taskId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Выполнить задачу 
         /// </summary>
-        Task<JobExecutionResult> ExecuteTaskAsync(Guid taskId, CancellationToken ct = default);
+        Task<JobExecutionResult> ExecuteTaskAsync(TId taskId, CancellationToken ct = default);
 
         /// <summary>
         /// Инициализация оркестратора при старте приложения

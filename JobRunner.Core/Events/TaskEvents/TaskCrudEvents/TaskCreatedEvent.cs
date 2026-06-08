@@ -6,12 +6,13 @@ namespace JobRunner.Core.Events.TaskEvents.TaskCrudEvents
     /// <summary>
     /// Событие: создана задача
     /// </summary>
-    public class TaskCreatedEvent : ITaskCreatedEvent
+    public class TaskCreatedEvent<TId> : ITaskCreatedEvent<TId>
+                                        where TId : IEquatable<TId>
     {
         /// <summary>
         /// Уникальный идентификатор задачи
         /// </summary>
-        public Guid TaskId { get; set; }
+        public TId TaskId { get; set; }
 
         /// <summary>
         /// Наименование задачи

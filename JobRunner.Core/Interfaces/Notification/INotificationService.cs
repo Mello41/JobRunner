@@ -9,26 +9,26 @@ namespace JobRunner.Core.Interfaces.Notification
     /// <summary>
     /// Сервис уведомлений (абстракция)
     /// </summary>
-    public interface INotificationService
+    public interface INotificationService<TID> where TID : IEquatable<TID>
     {
         /// <summary>
         /// Отправить уведомление о выполнении задачи (с полным объектом)
         /// </summary>
-        Task NotifyAsync(IJobTask task, bool isSuccess, string? errorMessage = null, CancellationToken ct = default);
+        Task NotifyAsync(IJobTask<TID> task, bool isSuccess, string? errorMessage = null, CancellationToken ct = default);
 
         /// <summary>
         /// Отправить уведомление о выполнении задачи (по данным из события)
         /// </summary>
-        Task NotifyAsync(Guid taskId, string taskName, bool isSuccess, string? errorMessage, INotifySettings? settings, CancellationToken ct = default);
+        Task NotifyAsync(TID taskId, string taskName, bool isSuccess, string? errorMessage, INotifySettings? settings, CancellationToken ct = default);
 
         /// <summary>
         /// Отправить уведомление до выполнения задачи (с полным объектом)
         /// </summary>
-        Task NotifyBeforeAsync(IJobTask task, CancellationToken ct = default);
+        Task NotifyBeforeAsync(IJobTask<TID> task, CancellationToken ct = default);
 
         /// <summary>
         /// Отправить уведомление до выполнения задачи (по данным из события)
         /// </summary>
-        Task NotifyBeforeAsync(Guid taskId, string taskName, INotifySettings? settings, CancellationToken ct = default);
+        Task NotifyBeforeAsync(TID taskId, string taskName, INotifySettings? settings, CancellationToken ct = default);
     }
 }

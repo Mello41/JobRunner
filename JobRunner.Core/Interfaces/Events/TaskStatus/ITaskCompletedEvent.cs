@@ -1,12 +1,12 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
-using System;
+﻿using System;
 
 namespace JobRunner.Core.Interfaces.Events.TaskStatus
 {
     /// <summary>
     /// Событие: задача завершена
     /// </summary>
-    public interface ITaskCompletedEvent : ITaskEventData, INotifiableEvent
+    public interface ITaskCompletedEvent<TId> : ITaskEventData<TId>, INotifiableEvent
+                                    where TId : IEquatable<TId>
     {
         bool Success { get; set; }
         string? ErrorMessage { get; set; }

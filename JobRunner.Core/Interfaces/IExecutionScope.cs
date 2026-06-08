@@ -18,13 +18,15 @@ namespace JobRunner.Core.Interfaces
     /// расшифровка → выполнение → шифрование.
     /// Реализация должна обеспечивать атомарность и защиту от утечек данных.
     /// </remarks>
-    public interface IExecutionScope 
+    public interface IExecutionScope<TTask, TId>
+                                where TTask : class, IJobTask<TId>
+                                where TId : IEquatable<TId>
     {
 
         /// <summary>
         /// Задача, которая выполняется
         /// </summary>
-        IJobTask Task { get; }
+        TTask Task { get; }
 
         /// <summary>
         /// Время старта выполнения (UTC)
@@ -44,12 +46,12 @@ namespace JobRunner.Core.Interfaces
         /// <summary>
         /// Обновляет метаданные перед выполнением
         /// </summary>
-        Task UpdateBeforeExecutionAsync(ITaskService<IJobTask> storage, CancellationToken cancellationToken = default);
+        Task UpdateBeforeExecutionAsync(ITaskService<TTask, TId> storage, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Обновляет метаданные после выполнения
         /// </summary>
-        Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<IJobTask> storage, CancellationToken cancellationToken = default);
+        Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<TTask, TId> storage, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Публикует событие завершения задачи
@@ -59,12 +61,12 @@ namespace JobRunner.Core.Interfaces
         /// <summary>
         /// Обрабатывает отмену выполнения
         /// </summary>
-        Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<IJobTask> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+        Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<TTask, TId> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Обрабатывает ошибку выполнения
         /// </summary>
-        Task HandleFailureAsync(Exception ex, ITaskService<IJobTask> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+        Task HandleFailureAsync(Exception ex, ITaskService<TTask, TId> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Повторно шифрует аргументы (вызывается автоматически при Dispose)

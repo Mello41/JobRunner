@@ -8,12 +8,13 @@ namespace JobRunner.Core.Events.TaskEvents.TaskStatus
     /// Событие, возникающее при начале выполнения задачи.
     /// Содержит информацию о запуске для уведомлений, аудита и мониторинга.
     /// </summary>
-    public class TaskStartedEvent : ITaskStartedEvent
+    public class TaskStartedEvent<TID> : ITaskStartedEvent<TID>
+                                       where TID : IEquatable<TID>
     {
         /// <summary>
         /// Уникальный идентификатор запущенной задачи
         /// </summary>
-        public Guid TaskId { get; set; }
+        public TID TaskId { get; set; }
 
         /// <summary>
         /// Наименование запущенной задачи
