@@ -1,7 +1,6 @@
 ﻿using JobRunner.Core.Entities.ValueObjects;
 using JobRunner.Core.Results;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace JobRunner.Core.Entities
@@ -9,12 +8,12 @@ namespace JobRunner.Core.Entities
     /// <summary>
     /// Интерфейс задачи (создаваемая задача в рамках программы JobRunner)
     /// </summary>
-    public interface IJobTask
+    public interface IJobTask<TId> where TId : IEquatable<TId>
     {
         /// <summary>
         /// ID задачи
         /// </summary>
-        Guid Id { get; set; }
+        TId Id { get; set; }
 
         /// <summary>
         /// Наименование задачи
