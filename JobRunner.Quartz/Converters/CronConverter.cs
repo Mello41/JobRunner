@@ -28,12 +28,38 @@ namespace JobRunner.Quartz.Converters
                 IntervalSchedule interval => ConvertInterval(interval),
                 MonthlySchedule monthly => ConvertMonthly(monthly),
                 QuarterlySchedule quarterly => ConvertQuarterly(quarterly),
-                YearlySchedule yearly => ConvertYearly(yearly),   
+                YearlySchedule yearly => ConvertYearly(yearly),
+                EveryMinutesSchedule everyMinutes => ConvertEveryMinutes(everyMinutes),
+                HourlySchedule hourly => ConvertHourly(hourly),
                 _ => throw new NotSupportedException($"Unsupported schedule type: {settings.GetType()}")
             };
         }
 
         #region Конвертация по типам в PeriodType
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="everyMinutes"></param>
+        /// <returns></returns>
+        private string ConvertEveryMinutes(EveryMinutesSchedule everyMinutes)
+        {
+            return $"0 */{everyMinutes.IntervalMinutes} * * * ?";
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hourly"></param>
+        /// <returns></returns>
+        private string ConvertHourly(HourlySchedule hourly)
+        {
+            if (hourly.HourInterval == 1)
+                return $"0 {hourly.Minute} * * * ?";
+
+            return $"0 {hourly.Minute} */{hourly.HourInterval} * * ?";
+        }
+
         /// <summary>
         /// Метод конвертации для задачи 
         /// </summary>
