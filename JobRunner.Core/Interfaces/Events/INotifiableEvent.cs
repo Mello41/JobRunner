@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 
 namespace JobRunner.Core.Interfaces.Events
 {
