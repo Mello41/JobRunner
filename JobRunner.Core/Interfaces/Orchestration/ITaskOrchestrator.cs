@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Entities;
+﻿using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Results;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ namespace JobRunner.Core.Interfaces.Orchestration
     /// <summary>
     /// Оркестратор задач (координация хранилища и планировщика)
     /// </summary>
-    public interface ITaskOrchestrator<T, TId>
+    public interface IJobTaskOrchestrator<T, TId>
                                 where T : IJobTask<TId>
                                 where TId : IEquatable<TId>
     {

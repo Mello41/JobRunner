@@ -1,7 +1,7 @@
-﻿using JobRunner.Core.Entities;
-using JobRunner.Core.Events;
-using JobRunner.Core.Interfaces.Core;
-using JobRunner.Core.Interfaces.EntityServices;
+﻿using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.Entities;
+using JobRunner.Core.Interfaces.Entities.EntityServices;
+using JobRunner.Core.Interfaces.Events.DomainEvent;
 using JobRunner.Core.Interfaces.Execution;
 using Microsoft.Extensions.Logging;
 using Quartz;
@@ -17,7 +17,7 @@ namespace JobRunner.Quartz.Adapters
                         where TTask : class, IJobTask<TId>
                         where TId : IEquatable<TId>
     {
-        private readonly ITaskService<TTask, TId> _storage;
+        private readonly IJobTaskService<TTask, TId> _storage;
         private readonly IJobExecutor<TId> _executor;
         private readonly IDomainEventDispatcher _dispatcher;
         private readonly IEncryptionService _encryption;
@@ -29,7 +29,7 @@ namespace JobRunner.Quartz.Adapters
         private static readonly ConcurrentDictionary<TId, SemaphoreSlim> _locks = new();
 
         public JobAdapter(
-            ITaskService<TTask, TId> storage,
+            IJobTaskService<TTask, TId> storage,
             IJobExecutor<TId> executor,
             IDomainEventDispatcher dispatcher,
             IEncryptionService encryption,

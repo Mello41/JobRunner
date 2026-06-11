@@ -1,6 +1,6 @@
 ﻿using JobRunner.Core.Entities.ValueObjects;
-using JobRunner.Core.Entities.ValueObjects.Settings;
 using JobRunner.Core.Interfaces.Converters;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 
 namespace JobRunner.Quartz.Converters
 {

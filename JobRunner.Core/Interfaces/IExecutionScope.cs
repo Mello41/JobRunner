@@ -1,7 +1,7 @@
-﻿using JobRunner.Core.Entities;
-using JobRunner.Core.Events;
-using JobRunner.Core.Interfaces.Core;
-using JobRunner.Core.Interfaces.EntityServices;
+﻿using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.Entities;
+using JobRunner.Core.Interfaces.Entities.EntityServices;
+using JobRunner.Core.Interfaces.Events.DomainEvent;
 using JobRunner.Core.Results;
 using System;
 using System.Threading;
@@ -46,12 +46,12 @@ namespace JobRunner.Core.Interfaces
         /// <summary>
         /// Обновляет метаданные перед выполнением
         /// </summary>
-        Task UpdateBeforeExecutionAsync(ITaskService<TTask, TId> storage, CancellationToken cancellationToken = default);
+        Task UpdateBeforeExecutionAsync(IJobTaskService<TTask, TId> storage, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Обновляет метаданные после выполнения
         /// </summary>
-        Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<TTask, TId> storage, CancellationToken cancellationToken = default);
+        Task UpdateAfterExecutionAsync(JobExecutionResult result, IJobTaskService<TTask, TId> storage, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Публикует событие завершения задачи
@@ -61,12 +61,12 @@ namespace JobRunner.Core.Interfaces
         /// <summary>
         /// Обрабатывает отмену выполнения
         /// </summary>
-        Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<TTask, TId> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+        Task HandleCancellationAsync(OperationCanceledException ex, IJobTaskService<TTask, TId> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Обрабатывает ошибку выполнения
         /// </summary>
-        Task HandleFailureAsync(Exception ex, ITaskService<TTask, TId> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
+        Task HandleFailureAsync(Exception ex, IJobTaskService<TTask, TId> storage, IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Повторно шифрует аргументы (вызывается автоматически при Dispose)

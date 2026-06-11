@@ -1,5 +1,5 @@
-﻿using JobRunner.Core.Entities;
-using JobRunner.Core.Events.TaskEvents.TaskStatus;
+﻿using JobRunner.Core.Events.TaskEvents.TaskStatus;
+using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Results;
 using System;
 using System.Threading;

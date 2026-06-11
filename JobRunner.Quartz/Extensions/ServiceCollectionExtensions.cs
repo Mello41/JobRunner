@@ -1,5 +1,5 @@
-﻿using JobRunner.Core.Entities;
-using JobRunner.Core.Interfaces.Converters;
+﻿using JobRunner.Core.Interfaces.Converters;
+using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Interfaces.Scheduler;
 using JobRunner.Quartz.Converters;
 using JobRunner.Quartz.Scheduler;

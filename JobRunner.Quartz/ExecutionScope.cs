@@ -1,10 +1,10 @@
-﻿using JobRunner.Core.Entities;
-using JobRunner.Core.Events;
-using JobRunner.Core.Events.TaskEvents.TaskHistory;
+﻿using JobRunner.Core.Events.TaskEvents.TaskHistory;
 using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces;
 using JobRunner.Core.Interfaces.Core;
-using JobRunner.Core.Interfaces.EntityServices;
+using JobRunner.Core.Interfaces.Entities;
+using JobRunner.Core.Interfaces.Entities.EntityServices;
+using JobRunner.Core.Interfaces.Events.DomainEvent;
 using JobRunner.Core.Results;
 using Microsoft.Extensions.Logging;
 
@@ -85,7 +85,7 @@ namespace JobRunner.Quartz
         /// <param name="storage"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task UpdateBeforeExecutionAsync(ITaskService<TTask, TId> storage, CancellationToken cancellationToken = default)
+        public async Task UpdateBeforeExecutionAsync(IJobTaskService<TTask, TId> storage, CancellationToken cancellationToken = default)
         {
             _task.JobTaskMetadata.IsRunning = true;
             _task.JobTaskMetadata.LastRun = StartTime;
@@ -105,7 +105,7 @@ namespace JobRunner.Quartz
         /// <param name="storage"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task UpdateAfterExecutionAsync(JobExecutionResult result, ITaskService<TTask, TId> storage, CancellationToken cancellationToken = default)
+        public async Task UpdateAfterExecutionAsync(JobExecutionResult result, IJobTaskService<TTask, TId> storage, CancellationToken cancellationToken = default)
         {
             var endTime = result.EndTime ?? DateTime.UtcNow;
             var durationMs = result.DurationMs ?? (long)(endTime - StartTime).TotalMilliseconds;
@@ -179,7 +179,7 @@ namespace JobRunner.Quartz
         /// <param name="dispatcher"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task HandleCancellationAsync(OperationCanceledException ex, ITaskService<TTask, TId> storage,
+        public async Task HandleCancellationAsync(OperationCanceledException ex, IJobTaskService<TTask, TId> storage,
             IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
         {
             _logger.LogWarning(ex, "Task {TaskName} execution was cancelled", _task.Name);
@@ -218,7 +218,7 @@ namespace JobRunner.Quartz
         /// <param name="dispatcher"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task HandleFailureAsync(Exception ex, ITaskService<TTask, TId> storage,
+        public async Task HandleFailureAsync(Exception ex, IJobTaskService<TTask, TId> storage,
             IDomainEventDispatcher dispatcher, CancellationToken cancellationToken = default)
         {
             _logger.LogError(ex, "Unexpected error executing task {TaskName}", _task.Name);
