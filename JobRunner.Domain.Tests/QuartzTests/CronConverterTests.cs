@@ -1,7 +1,7 @@
-﻿using JobRunner.Core.Entities.ValueObjects.Settings;
-using JobRunner.Quartz.Converters;
+﻿using JobRunner.Quartz.Converters;
 using FluentAssertions;
 using Moq;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 using JobRunner.Core.Entities.ValueObjects;
 
 namespace JobRunner.Domain.Tests.QuartzTests

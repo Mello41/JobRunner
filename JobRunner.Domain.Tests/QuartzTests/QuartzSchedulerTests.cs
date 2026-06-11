@@ -1,10 +1,10 @@
 ﻿using FluentAssertions;
 using JobRunner.Core.DefaultImplementations;
-using JobRunner.Core.Entities.ValueObjects.Settings;
 using JobRunner.Core.Interfaces.Converters;
 using Moq;
 using Quartz;
 using JobRunner.Quartz.Scheduler;
+using JobRunner.Core.Entities.ValueObjects;
 
 namespace JobRunner.Domain.Tests.QuartzTests
 {
@@ -12,13 +12,13 @@ namespace JobRunner.Domain.Tests.QuartzTests
     {
         private readonly Mock<IScheduler> _schedulerMock;
         private readonly Mock<IScheduleConverter> _converterMock;
-        private readonly QuartzScheduler<JobTask, Guid> _scheduler;
+        private readonly QuartzScheduler<JobTaskExample, Guid> _scheduler;
 
         public QuartzSchedulerTests()
         {
             _schedulerMock = new Mock<IScheduler>();
             _converterMock = new Mock<IScheduleConverter>();
-            _scheduler = new QuartzScheduler<JobTask, Guid>(_schedulerMock.Object, _converterMock.Object);
+            _scheduler = new QuartzScheduler<JobTaskExample, Guid>(_schedulerMock.Object, _converterMock.Object);
         }
 
         [Fact]
@@ -137,14 +137,14 @@ namespace JobRunner.Domain.Tests.QuartzTests
         [Fact]
         public async Task RestoreSchedulesAsync_ShouldScheduleOnlyEnabledTasks()
         {
-            var enabledTask = new JobTask
+            var enabledTask = new JobTaskExample
             {
                 Id = Guid.NewGuid(),
                 IsEnabled = true,
                 ScheduleSettings = new DailySchedule()
             };
 
-            var disabledTask = new JobTask
+            var disabledTask = new JobTaskExample
             {
                 Id = Guid.NewGuid(),
                 IsEnabled = false,

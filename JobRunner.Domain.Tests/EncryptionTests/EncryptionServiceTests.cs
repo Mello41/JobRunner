@@ -39,7 +39,7 @@ namespace JobRunner.Domain.Tests.EncryptionTests
         public async Task EncryptSensitiveArgumentsAsync_OnlyEncryptsMarkedArguments()
         {
             // Arrange
-            var arguments = new ScheduleArguments
+            var arguments = new ScheduleArgumentsExample
             {
                 Items = new List<ScheduleArgumentItem>
                 {
@@ -68,7 +68,7 @@ namespace JobRunner.Domain.Tests.EncryptionTests
         public async Task DecryptSensitiveArgumentsAsync_OnlyDecryptsEncryptedArguments()
         {
             // Arrange
-            var arguments = new ScheduleArguments
+            var arguments = new ScheduleArgumentsExample
             {
                 Items = new List<ScheduleArgumentItem>
                 {
@@ -98,7 +98,7 @@ namespace JobRunner.Domain.Tests.EncryptionTests
         public async Task ReencryptSensitiveArgumentsAsync_RestoresEncryptedState()
         {
             // Arrange
-            var arguments = new ScheduleArguments
+            var arguments = new ScheduleArgumentsExample
             {
                 Items = new List<ScheduleArgumentItem>
                 {
@@ -124,7 +124,7 @@ namespace JobRunner.Domain.Tests.EncryptionTests
         {
             // Arrange
             var originalValue = "super-secret-password-123!@#";
-            var arguments = new ScheduleArguments
+            var arguments = new ScheduleArgumentsExample
             {
                 Items = new List<ScheduleArgumentItem>
                 {
@@ -149,7 +149,7 @@ namespace JobRunner.Domain.Tests.EncryptionTests
         public async Task Reencrypt_WhenArgumentsNotDecrypted_ShouldStillWork()
         {
             // Arrange
-            var arguments = new ScheduleArguments
+            var arguments = new ScheduleArgumentsExample
             {
                 Items = new List<ScheduleArgumentItem>
                 {
@@ -212,7 +212,7 @@ namespace JobRunner.Domain.Tests.EncryptionTests
         public async Task EncryptSensitiveArgumentsAsync_WithEmptyCollection_ShouldNotThrow()
         {
             // Arrange
-            var arguments = new ScheduleArguments
+            var arguments = new ScheduleArgumentsExample
             {
                 Items = new List<ScheduleArgumentItem>()
             };
@@ -261,7 +261,7 @@ namespace JobRunner.Domain.Tests.EncryptionTests
         public async Task ReencryptSensitiveArgumentsAsync_WithMultipleArguments_ShouldPreserveKeys()
         {
             // Arrange
-            var arguments = new ScheduleArguments
+            var arguments = new ScheduleArgumentsExample
             {
                 Items = new List<ScheduleArgumentItem>
                 {

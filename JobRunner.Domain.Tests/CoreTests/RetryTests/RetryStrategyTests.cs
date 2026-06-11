@@ -6,11 +6,11 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
 {
     public class RetryStrategyTests
     {
-        private readonly RetrySettings _settings;
+        private readonly RetrySettingsExample _settings;
 
         public RetryStrategyTests()
         {
-            _settings = new RetrySettings()
+            _settings = new RetrySettingsExample()
                 .WithMaxAttempts(3)
                 .WithInitialDelay(5);
         }
@@ -44,7 +44,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void ExponentialBackoffStrategy_RespectsMaxDelay()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .WithMaxAttempts(5)
                 .WithInitialDelay(10)
                 .WithMaxDelaySeconds(30);
@@ -87,7 +87,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void ShouldRetry_OnTimeout_WhenRetryOnTimeoutEnabled()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .WithMaxAttempts(3)
                 .SetRetryOnTimeout(true); 
 
@@ -103,7 +103,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void ShouldRetry_OnTimeout_WhenRetryOnTimeoutDisabled()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .WithMaxAttempts(3)
                 .SetRetryOnTimeout(false); 
 
@@ -119,7 +119,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void ShouldRetry_OnSpecificError_WhenErrorMatches()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .WithMaxAttempts(3)
                 .RetryOnErrors("Connection timeout", "Database error");
 
@@ -135,7 +135,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void ShouldRetry_OnSpecificExitCode_WhenCodeMatches()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .WithMaxAttempts(3)
                 .RetryOnExitCodes(1, 100, 255);
 
@@ -151,7 +151,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void ShouldRetry_OnAnyError_WhenRetryOnAnyErrorEnabled()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .WithMaxAttempts(3)
                 .SetRetryOnAnyError(true);
 
@@ -167,7 +167,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void ShouldRetry_ReturnsFalse_WhenNoConditionsMatch()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .WithMaxAttempts(3);
 
             var strategy = new FixedDelayStrategy();
@@ -182,7 +182,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void CanAlsoUsePropertiesDirectly()
         {
-            var settings = new RetrySettings();
+            var settings = new RetrySettingsExample();
             settings.RetryOnTimeout = true;
             settings.RetryOnAnyError = false;
 

@@ -10,7 +10,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void RetrySettings_WithMaxAttempts_SetsCorrectValue()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .WithMaxAttempts(5)
                 .WithInitialDelay(10);
 
@@ -21,7 +21,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void RetrySettings_WithStrategy_ConfiguresCorrectStrategy()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .WithStrategy(RetryStrategy.ExponentialBackoff);
 
             settings.Strategy.Should().BeOfType<ExponentialBackoffStrategy>();
@@ -30,7 +30,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void RetrySettings_RetryOnSpecificErrors_AddsToCollection()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .RetryOnErrors("Connection refused", "Timeout", "Network error");
 
             settings.RetryableErrorMessages.Should().HaveCount(3);
@@ -40,7 +40,7 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
         [Fact]
         public void RetrySettings_RetryOnExitCodes_AddsToCollection()
         {
-            var settings = new RetrySettings()
+            var settings = new RetrySettingsExample()
                 .RetryOnExitCodes(1, 2, 100);
 
             settings.RetryableExitCodes.Should().HaveCount(3);

@@ -1,11 +1,10 @@
 ﻿using FluentAssertions;
 using JobRunner.Core.DefaultImplementations;
-using JobRunner.Core.Entities;
-using JobRunner.Core.Entities.ValueObjects;
-using JobRunner.Core.Events;
 using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces.Core;
-using JobRunner.Core.Interfaces.EntityServices;
+using JobRunner.Core.Interfaces.Entities.EntityServices;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Events.DomainEvent;
 using JobRunner.Core.Results;
 using JobRunner.Quartz;
 using Microsoft.Extensions.Logging;
@@ -18,28 +17,28 @@ namespace JobRunner.Domain.Tests.QuartzTests
         private readonly Mock<ILogger> _loggerMock;
         private readonly Mock<IEncryptionService> _encryptionMock;
         private readonly Mock<IDomainEventDispatcher> _dispatcherMock;
-        private readonly Mock<ITaskService<JobTask, Guid>> _storageMock;
-        private readonly JobTask _task;
+        private readonly Mock<IJobTaskService<JobTaskExample, Guid>> _storageMock;
+        private readonly JobTaskExample _task;
 
         public ExecutionScopeTests()
         {
             _loggerMock = new Mock<ILogger>();
             _encryptionMock = new Mock<IEncryptionService>();
             _dispatcherMock = new Mock<IDomainEventDispatcher>();
-            _storageMock = new Mock<ITaskService<JobTask, Guid>>();
-            _task = new JobTask
+            _storageMock = new Mock<IJobTaskService<JobTaskExample, Guid>>();
+            _task = new JobTaskExample
             {
                 Id = Guid.NewGuid(),
                 Name = "Test Task",
-                ScheduleArguments = new ScheduleArguments(),
-                JobTaskMetadata = new JobTaskMetadata(),
-                NotifySettings = new NotifySettings()
+                ScheduleArguments = new ScheduleArgumentsExample(),
+                JobTaskMetadata = new JobTaskMetadataExample(),
+               // NotifySettings = new NotifySettingsExample()
             };
         }
 
-        private ExecutionScope<JobTask, Guid> CreateScope()
+        private ExecutionScope<JobTaskExample, Guid> CreateScope()
         {
-            return new ExecutionScope<JobTask, Guid>(_task, _loggerMock.Object, _dispatcherMock.Object);
+            return new ExecutionScope<JobTaskExample, Guid>(_task, _loggerMock.Object, _dispatcherMock.Object);
         }
 
         [Fact]
@@ -128,7 +127,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
         {
             // Arrange
             var scope = CreateScope();
-            _task.JobTaskMetadata = new JobTaskMetadata();
+            _task.JobTaskMetadata = new JobTaskMetadataExample();
             var result = JobExecutionResult.CreateSuccess(12345, DateTime.UtcNow);
 
             // Act
@@ -147,7 +146,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
         {
             // Arrange
             var scope = CreateScope();
-            _task.JobTaskMetadata = new JobTaskMetadata();
+            _task.JobTaskMetadata = new JobTaskMetadataExample();
             var result = JobExecutionResult.CreateFailure("Test error", DateTime.UtcNow);
 
             // Act
@@ -167,7 +166,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
         {
             // Arrange
             var scope = CreateScope();
-            _task.JobTaskMetadata = new JobTaskMetadata { IsRunning = true };
+            _task.JobTaskMetadata = new JobTaskMetadataExample { IsRunning = true };
             var exception = new OperationCanceledException();
 
             // Act
@@ -187,7 +186,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
         {
             // Arrange
             var scope = CreateScope();
-            _task.JobTaskMetadata = new JobTaskMetadata { IsRunning = true };
+            _task.JobTaskMetadata = new JobTaskMetadataExample { IsRunning = true };
             var exception = new InvalidOperationException("Something went wrong");
 
             // Act
