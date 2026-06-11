@@ -1,5 +1,5 @@
 ﻿using JobRunner.Core.DTO;
-using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 using JobRunner.Core.Platform;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,7 +10,7 @@ namespace JobRunner.Core.DefaultImplementations
     /// <summary>
     /// Расширяемый набор аргументов задачи
     /// </summary>
-    public class ScheduleArguments : IScheduleArguments
+    public class ScheduleArgumentsExample : IScheduleArguments
     {
         /// <summary>
         /// Список аргументов задачи
@@ -20,7 +20,7 @@ namespace JobRunner.Core.DefaultImplementations
 
         private readonly ICommandLineEscaper _escaper;
 
-        public ScheduleArguments()
+        public ScheduleArgumentsExample()
         {
             _escaper = PlatformDetector.CreateEscaper();
         }

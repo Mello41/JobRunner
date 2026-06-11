@@ -1,9 +1,9 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 using System;
 
 namespace JobRunner.Core.DefaultImplementations
 {
-    public class JobTaskMetadata : IJobTaskMetadata
+    public class JobTaskMetadataExample : IJobTaskMetadata
     {
         public long? TaskPID { get; set; }
         public DateTime? LastRun { get; set; }

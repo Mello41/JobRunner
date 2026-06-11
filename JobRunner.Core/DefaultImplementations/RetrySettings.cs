@@ -1,6 +1,7 @@
 ﻿using JobRunner.Core.DefaultImplementations.Strategies;
 using JobRunner.Core.Entities.Enums;
-using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.Retry;
 using System.Collections.Generic;
 
 namespace JobRunner.Core.DefaultImplementations
@@ -8,7 +9,7 @@ namespace JobRunner.Core.DefaultImplementations
     /// <summary>
     /// Настройки политики повторных попыток с Fluent API
     /// </summary>
-    public class RetrySettings : IRetrySettings
+    public class RetrySettingsExample : IRetrySettings
     {
         private readonly List<string> _retryableErrorMessages = new();
         private readonly List<int> _retryableExitCodes = new();
@@ -47,7 +48,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Устанавливает максимальное количество попыток
         /// </summary>
-        public RetrySettings WithMaxAttempts(int attempts)
+        public RetrySettingsExample WithMaxAttempts(int attempts)
         {
             MaxAttempts = attempts;
             return this;
@@ -56,7 +57,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Устанавливает стратегию повторов по типу
         /// </summary>
-        public RetrySettings WithStrategy(RetryStrategy strategyType)
+        public RetrySettingsExample WithStrategy(RetryStrategy strategyType)
         {
             Strategy = RetryStrategyFactory.Create(strategyType);
             return this;
@@ -65,7 +66,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Устанавливает кастомную стратегию повторов
         /// </summary>
-        public RetrySettings WithStrategy(IRetryStrategy strategy)
+        public RetrySettingsExample WithStrategy(IRetryStrategy strategy)
         {
             Strategy = strategy;
             return this;
@@ -74,7 +75,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Устанавливает начальную задержку (в секундах)
         /// </summary>
-        public RetrySettings WithInitialDelay(int seconds)
+        public RetrySettingsExample WithInitialDelay(int seconds)
         {
             InitialDelaySeconds = seconds;
             return this;
@@ -83,7 +84,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Устанавливает максимальную задержку (в секундах)
         /// </summary>
-        public RetrySettings WithMaxDelaySeconds(int seconds)
+        public RetrySettingsExample WithMaxDelaySeconds(int seconds)
         {
             MaxDelaySeconds = seconds;
             return this;
@@ -92,7 +93,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Устанавливает флаг повтора при таймауте (Fluent API)
         /// </summary>
-        public RetrySettings SetRetryOnTimeout(bool retryOnTimeout)
+        public RetrySettingsExample SetRetryOnTimeout(bool retryOnTimeout)
         {
             RetryOnTimeout = retryOnTimeout;
             return this;
@@ -101,7 +102,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Устанавливает флаг повтора при любой ошибке (Fluent API)
         /// </summary>
-        public RetrySettings SetRetryOnAnyError(bool retryOnAnyError)
+        public RetrySettingsExample SetRetryOnAnyError(bool retryOnAnyError)
         {
             RetryOnAnyError = retryOnAnyError;
             return this;
@@ -110,7 +111,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Добавляет сообщения об ошибках для повтора
         /// </summary>
-        public RetrySettings RetryOnErrors(params string[] errors)
+        public RetrySettingsExample RetryOnErrors(params string[] errors)
         {
             _retryableErrorMessages.AddRange(errors);
             return this;
@@ -119,7 +120,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Добавляет коды выхода для повтора
         /// </summary>
-        public RetrySettings RetryOnExitCodes(params int[] codes)
+        public RetrySettingsExample RetryOnExitCodes(params int[] codes)
         {
             _retryableExitCodes.AddRange(codes);
             return this;
