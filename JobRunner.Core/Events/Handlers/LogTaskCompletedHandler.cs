@@ -1,4 +1,5 @@
 ﻿using JobRunner.Core.Events.TaskEvents.TaskStatus;
+using JobRunner.Core.Interfaces.Events.DomainEvent;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;

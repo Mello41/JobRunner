@@ -1,5 +1,5 @@
 ﻿using JobRunner.Core.DTO;
-using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 using System.Threading;
 using System.Threading.Tasks;
 

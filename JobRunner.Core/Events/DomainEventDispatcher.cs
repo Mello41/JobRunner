@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JobRunner.Core.Interfaces.Events.DomainEvent;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JobRunner.Core.Events
