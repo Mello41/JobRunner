@@ -8,7 +8,6 @@ namespace JobRunner.Core.DTO.Pages
     /// </summary>
     public class PagedResult<T>
     {
-
         public IReadOnlyList<T> Items { get; }
         public int TotalCount { get; }
         public int Page { get; }
