@@ -1,9 +1,13 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 
 namespace JobRunner.Core.Interfaces.Converters
 {
     /// <summary>
-    /// 
+    /// Конвертирует IScheduleSettings в строку для планировщика
+    /// ключевой компонент для интеграции JobRunner с 
+    /// Quartz.NET. или другой библиотекой
+    /// Без него планировщик не сможет понять, 
+    /// когда запускать задачи
     /// </summary>
     public interface IScheduleConverter
     {
