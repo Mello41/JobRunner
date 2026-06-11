@@ -1,4 +1,5 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.Retry;
 using System;
 
 namespace JobRunner.Core.DefaultImplementations.Strategies

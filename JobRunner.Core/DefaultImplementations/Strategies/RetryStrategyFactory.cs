@@ -1,5 +1,5 @@
 ﻿using JobRunner.Core.Entities.Enums;
-using JobRunner.Core.Entities.ValueObjects;
+using JobRunner.Core.Interfaces.Entities.Retry;
 
 namespace JobRunner.Core.DefaultImplementations.Strategies
 {
