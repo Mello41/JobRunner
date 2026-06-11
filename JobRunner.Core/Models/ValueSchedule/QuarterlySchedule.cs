@@ -1,7 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace JobRunner.Core.Entities.ValueObjects.Settings
+namespace JobRunner.Core.Entities.ValueObjects
 {
     /// <summary>
     /// Расписание "Каждый квартал"

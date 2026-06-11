@@ -1,6 +1,7 @@
-﻿using System.ComponentModel;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using System.ComponentModel;
 
-namespace JobRunner.Core.Entities.ValueObjects.Settings
+namespace JobRunner.Core.Entities.ValueObjects
 {
     /// <summary>
     /// Расписание для ежедневного выполнения

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace JobRunner.Core.Entities.ValueObjects.Settings
+namespace JobRunner.Core.Entities.ValueObjects
 {
     /// <summary>
     /// Расписание для еженедельного выполнения задачи

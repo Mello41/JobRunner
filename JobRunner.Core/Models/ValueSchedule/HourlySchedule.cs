@@ -1,34 +1,47 @@
-﻿using System;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace JobRunner.Core.Entities.ValueObjects.Settings
+namespace JobRunner.Core.Entities.ValueObjects
 {
     /// <summary>
-    /// Расписание для выполнения с фиксированным интервалом в минутах
+    /// Расписание для ежечасного выполнения задачи
     /// </summary>
-    public sealed record EveryMinutesSchedule : IScheduleSettings
+    public sealed record HourlySchedule : IScheduleSettings
     {
-        private int _intervalMinutes = 5;
+        private int _hourInterval = 1;
+        private int _minute = 0;
 
         /// <summary>
-        /// Интервал в минутах (1-59)
+        /// Интервал в часах (1-23)
         /// </summary>
-        [DisplayName("Интервал (минут)")]
-        [Description("Периодичность выполнения задачи в минутах")]
-        [Range(1, 59, ErrorMessage = "Интервал должен быть от 1 до 59 минут")]
-        public int IntervalMinutes
+        [DisplayName("Интервал (часов)")]
+        [Description("Периодичность выполнения задачи в часах")]
+        [Range(1, 23, ErrorMessage = "Интервал должен быть от 1 до 23 часов")]
+        public int HourInterval
         {
-            get => _intervalMinutes;
-            set => _intervalMinutes = Clamp(value, 1, 59);
+            get => _hourInterval;
+            set => _hourInterval = Clamp(value, 1, 23);
+        }
+
+        /// <summary>
+        /// Минуты запуска (0-59)
+        /// </summary>
+        [DisplayName("Минуты")]
+        [Description("Минуты, в которые будет запускаться задача")]
+        [Range(0, 59, ErrorMessage = "Минуты должны быть от 0 до 59")]
+        public int Minute
+        {
+            get => _minute;
+            set => _minute = Clamp(value, 0, 59);
         }
 
         /// <summary>
         /// Опциональное время первого запуска
-        /// Если не указано - начинается с момента создания/старта
         /// </summary>
         [DisplayName("Время первого запуска")]
-        [Description("Опциональное время первого запуска. Если не указано - начинается с текущего момента")]
+        [Description("Опциональное время первого запуска")]
         public DateTime? StartAt { get; set; }
 
         /// <summary>
@@ -43,14 +56,17 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
         /// </summary>
         public string GetDescription()
         {
-            var interval = IntervalMinutes switch
+            var interval = HourInterval switch
             {
-                1 => "каждую минуту",
-                2 => "каждые 2 минуты",
-                3 => "каждые 3 минуты",
-                4 => "каждые 4 минуты",
-                _ => $"каждые {IntervalMinutes} минут"
+                1 => "каждый час",
+                2 => "каждые 2 часа",
+                3 => "каждые 3 часа",
+                _ => $"каждые {HourInterval} часов"
             };
+
+            var minutePart = Minute == 0
+                ? "в 00 минут"
+                : $"в {Minute:00} минут";
 
             var startPart = StartAt.HasValue
                 ? $", начиная с {StartAt.Value:HH:mm:ss}"
@@ -60,7 +76,7 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
                 ? $", до {EndAt.Value:HH:mm:ss}"
                 : string.Empty;
 
-            return $"{interval}{startPart}{endPart}";
+            return $"{interval} {minutePart}{startPart}{endPart}";
         }
 
         /// <summary>
@@ -68,7 +84,10 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
         /// </summary>
         public bool IsValid()
         {
-            if (IntervalMinutes < 1 || IntervalMinutes > 59)
+            if (HourInterval < 1 || HourInterval > 23)
+                return false;
+
+            if (Minute < 0 || Minute > 59)
                 return false;
 
             if (StartAt.HasValue && EndAt.HasValue && StartAt.Value >= EndAt.Value)
@@ -95,13 +114,20 @@ namespace JobRunner.Core.Entities.ValueObjects.Settings
             }
             else
             {
-                var minutesSinceStart = (int)(fromTime - (StartAt ?? DateTime.MinValue)).TotalMinutes;
-                var minutesToNext = IntervalMinutes - (minutesSinceStart % IntervalMinutes);
-                nextRun = fromTime.AddMinutes(minutesToNext);
-            }
+                // Округляем до часа с учетом минут
+                var baseHour = new DateTime(fromTime.Year, fromTime.Month, fromTime.Day,
+                                           fromTime.Hour, Minute, 0);
 
-            nextRun = new DateTime(nextRun.Year, nextRun.Month, nextRun.Day,
-                                   nextRun.Hour, nextRun.Minute, 0, 0);
+                if (fromTime <= baseHour)
+                {
+                    nextRun = baseHour;
+                }
+                else
+                {
+                    var hoursToAdd = HourInterval - ((fromTime.Hour - baseHour.Hour) % HourInterval);
+                    nextRun = baseHour.AddHours(hoursToAdd);
+                }
+            }
 
             if (EndAt.HasValue && nextRun >= EndAt.Value)
                 return null;
