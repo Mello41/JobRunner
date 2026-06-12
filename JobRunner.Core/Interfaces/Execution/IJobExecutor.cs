@@ -22,6 +22,7 @@ namespace JobRunner.Core.Interfaces.Execution
         /// <param name="task">Задача для выполнения</param>
         /// <param name="ct">Токен отмены</param>
         /// <returns>Результат выполнения</returns>
-        Task<JobExecutionResult> ExecuteAsync(IJobTask<TId> task, CancellationToken ct = default);
+        Task<JobExecutionResult> ExecuteAsync(IJobTask<TId> task, 
+                                        CancellationToken ct = default);
     }
 }

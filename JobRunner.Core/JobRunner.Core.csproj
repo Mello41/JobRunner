@@ -34,4 +34,8 @@
     <PackageReference Include="System.Text.Json" Version="6.0.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Utils\Platform\" />
+  </ItemGroup>
+
 </Project>

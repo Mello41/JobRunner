@@ -1,6 +1,7 @@
 ﻿using JobRunner.Core.DTO;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
-using JobRunner.Core.Platform;
+using JobRunner.Core.Interfaces.Platform.CommandLine;
+using JobRunner.Core.Utils.Platform;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
