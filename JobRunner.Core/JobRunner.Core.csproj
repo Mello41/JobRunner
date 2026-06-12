@@ -6,7 +6,7 @@
 	<Nullable>enable</Nullable>
 	
 	<PackageId>JobRunner.Core</PackageId>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
     <Authors>Mello41</Authors>
     <Description>Core domain models and interfaces for JobRunner. Contains IJobTask, 
 	IScheduleSettings, INotifySettings, CRUD interfaces and domain events.</Description>
