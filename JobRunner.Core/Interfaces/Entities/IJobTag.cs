@@ -31,5 +31,15 @@ namespace JobRunner.Core.Interfaces.Entities
         /// Можно ли группировать по этой метке
         /// </summary>
         bool CanGrouping {  get; set; }
+
+        /// <summary>
+        /// Можно ли запускать все задачи этой метки одной командой
+        /// </summary>
+        bool AllowGroupRun { get; set; }
+
+        /// <summary>
+        /// Можно ли приостанавливать все задачи этой метки
+        /// </summary>
+        bool AllowGroupPause { get; set; }
     }
 }

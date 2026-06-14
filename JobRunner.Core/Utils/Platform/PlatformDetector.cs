@@ -1,5 +1,5 @@
-﻿using JobRunner.Core.Interfaces.Platform;
-using JobRunner.Core.Interfaces.Platform.CommandLine;
+﻿using JobRunner.Core.Interfaces.Detectors.Platform.CommandLine;
+using JobRunner.Core.Interfaces.Platform;
 using System.Runtime.InteropServices;
 
 namespace JobRunner.Core.Utils.Platform

@@ -1,8 +1,8 @@
-﻿using JobRunner.Core.Interfaces.Platform.ProcessExecution;
+﻿using JobRunner.Core.Interfaces.Detectors.Platform.ProcessExecution;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace JobRunner.Core.Interfaces.Platform
+namespace JobRunner.Core.Interfaces.Detectors.Platform
 {
     /// <summary>
     /// Платформонезависимый исполнитель процессов

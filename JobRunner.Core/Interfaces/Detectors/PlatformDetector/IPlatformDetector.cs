@@ -1,6 +1,6 @@
-﻿using JobRunner.Core.Interfaces.Platform.CommandLine;
+﻿using JobRunner.Core.Interfaces.Detectors.Platform.CommandLine;
 
-namespace JobRunner.Core.Interfaces.Platform
+namespace JobRunner.Core.Interfaces.Detectors.Platform
 {
     /// <summary>
     /// Интерфейс для определения операционной системы

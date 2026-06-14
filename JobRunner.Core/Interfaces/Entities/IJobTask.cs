@@ -1,4 +1,5 @@
-﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+﻿using JobRunner.Core.DTO.TargetPlatform;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 using JobRunner.Core.Results;
 using System;
 using System.Collections.Immutable;
@@ -15,6 +16,7 @@ namespace JobRunner.Core.Interfaces.Entities
         /// </summary>
         TId Id { get; set; }
 
+        #region Базовые свойства
         /// <summary>
         /// Наименование задачи
         /// </summary>
@@ -50,12 +52,9 @@ namespace JobRunner.Core.Interfaces.Entities
         /// Если задача выполняется дольше указанного времени, она принудительно завершается
         /// </summary>
         int? TimeoutSeconds { get; set; }
+        #endregion
 
-        /// <summary>
-        /// Настройки уведомлений задачи
-        /// </summary>
-        INotifySettings NotifySettings { get; set; }
-
+        #region Параллельное выполнение
         /// <summary>
         /// Параллельное выполнение?
         /// IsAsyncExecution = true -->	Не ждать завершения процесса
@@ -69,6 +68,13 @@ namespace JobRunner.Core.Interfaces.Entities
         /// AllowConcurrentExecution = false --> Запретить несколько экземпляров
         /// </summary>
         bool AllowConcurrentExecution { get; set; }
+        #endregion
+
+        #region Настройки выполнения задачи
+        /// <summary>
+        /// Настройки уведомлений задачи
+        /// </summary>
+        INotifySettings NotifySettings { get; set; }
 
         /// <summary>
         /// Настройки периодичности
@@ -86,9 +92,22 @@ namespace JobRunner.Core.Interfaces.Entities
         IJobTaskMetadata JobTaskMetadata { get; set; }
 
         /// <summary>
-        /// 
+        /// Настройки перезапуска задачи
         /// </summary>
         IRetrySettings RetrySettings { get; set; }
+
+        /// <summary>
+        /// Настройки группировки задачи (порядок выполнения, 
+        /// запуск нескольких задач одновременно)
+        /// </summary>
+        IGroupingSettings GroupingSettings { get; set; }
+
+        /// <summary>
+        /// Где выполнять задачу 
+        /// (локально на сервере или удалённо на узле)
+        /// </summary>
+        ExecutionTarget ExecutionTarget { get; set; }
+        #endregion
 
         /// <summary>
         /// Метки (задаются пользователем)
@@ -96,9 +115,11 @@ namespace JobRunner.Core.Interfaces.Entities
         ImmutableHashSet<TId> Tags { get; set; }
 
         /// <summary>
-        /// Проверяет бизнес-инварианты модели (не зависит от пользовательского ввода)
+        /// Проверяет бизнес-инварианты модели 
+        /// (не зависит от пользовательского ввода)
         /// </summary>
-        /// <returns>Коллекция ошибок или null, если всё корректно</returns>
+        /// <returns>Коллекция ошибок или null, 
+        /// если всё корректно</returns>
         DomainValidationResult Validate();
     }
 }

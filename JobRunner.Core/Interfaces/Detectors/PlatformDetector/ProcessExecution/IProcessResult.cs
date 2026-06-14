@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JobRunner.Core.Interfaces.Platform.ProcessExecution
+namespace JobRunner.Core.Interfaces.Detectors.Platform.ProcessExecution
 {
     /// <summary>
     /// Результат выполнения процесса

@@ -109,5 +109,12 @@ namespace JobRunner.Core.Interfaces.Orchestration
         /// и восстанавливает расписания.
         /// </remarks>
         Task InitializeAsync(CancellationToken ct = default);
+
+        /// <summary>
+        /// Проверить и восстановить "зависшие" задачи (IsRunning = true, но процесс не жив)
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns>Количество восстановленных задач</returns>
+        Task<int> RecoverStuckTasksAsync(CancellationToken cancellationToken = default);
     }
 }

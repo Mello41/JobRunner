@@ -1,4 +1,5 @@
-﻿using JobRunner.Core.Interfaces.Core;
+﻿using JobRunner.Core.DTO.Grouping;
+using JobRunner.Core.Interfaces.Core;
 using JobRunner.Core.Interfaces.Entities;
 using System;
 using System.Threading;
@@ -32,5 +33,32 @@ namespace JobRunner.Core.Interfaces.Entities.EntityServices
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<int> CountJobsToTag(TId id, CancellationToken cancellationToken = default);
+
+        #region Группировка задач по меткам
+        /// <summary>
+        /// Приостановить ВСЕ задачи с данной меткой
+        /// </summary>
+        Task<int> PauseAllByTagAsync(TId tagId, CancellationToken ct = default);
+
+        /// <summary>
+        /// Возобновить ВСЕ задачи с данной меткой
+        /// </summary>
+        Task<int> ResumeAllByTagAsync(TId tagId, CancellationToken ct = default);
+
+        /// <summary>
+        /// Запустить ВСЕ задачи с данной меткой сейчас
+        /// </summary>
+        Task<int> RunAllByTagAsync(TId tagId, CancellationToken ct = default);
+
+        /// <summary>
+        /// Получить сводку по группе (статистика)
+        /// </summary>
+        Task<TagGroupSummary> GetGroupSummaryAsync(TId tagId, CancellationToken ct = default);
+
+        /// <summary>
+        /// Применить настройки ко всем задачам группы
+        /// </summary>
+        Task<int> ApplySettingsToGroupAsync(TId tagId, GroupSettingsPatch patch, CancellationToken ct = default);
+        #endregion
     }
 }
