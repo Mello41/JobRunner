@@ -13,5 +13,7 @@ namespace JobRunner.Core.DefaultImplementations
         public string? Color { get; set; } = "#888888";
         public bool CanGrouping { get; set; }
         public string Description { get; set; }
+        public bool AllowGroupRun { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool AllowGroupPause { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

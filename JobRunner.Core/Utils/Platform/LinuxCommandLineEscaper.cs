@@ -1,5 +1,4 @@
 ﻿using JobRunner.Core.Interfaces.Detectors.Platform.CommandLine;
-using JobRunner.Core.Interfaces.Platform;
 using System;
 using System.Linq;
 

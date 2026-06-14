@@ -1,4 +1,5 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
+﻿using JobRunner.Core.DTO.TargetPlatform;
+using JobRunner.Core.Entities.ValueObjects;
 using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 using JobRunner.Core.Results;
@@ -40,6 +41,8 @@ namespace JobRunner.Core.DefaultImplementations
         /// Метки (задаются пользователем)
         /// </summary>
         public ImmutableHashSet<Guid> Tags { get; set; } = new Guid[0].ToImmutableHashSet<Guid>();
+        public IGroupingSettings GroupingSettings { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public ExecutionTarget ExecutionTarget { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public DomainValidationResult Validate()
         {
