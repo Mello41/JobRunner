@@ -13,41 +13,85 @@ dotnet add package JobRunner.Core
 
 ## Модели
 
-IJobTask --> Модель задачи
-	IScheduleSettings --> Типы расписаний
-	INotifySettings --> Настройки уведомлений
-	IJobTaskMetadata --> Метаданные выполнения задачи
-	IScheduleArguments --> Аргументы командной строки
+IJobTask<TId> - основная модель задачи
+	IScheduleSettings - настройки расписания (DailySchedule, WeeklySchedule и др.)
+	INotifySettings - настройки уведомлений
+	IJobTaskMetadata - метаданные выполнения (статистика, PID, IsRunning)
+	IScheduleArguments - аргументы командной строки (с поддержкой шифрования)
+	IRetrySettings - настройки повторных попыток при ошибке
+	IGroupingSettings - настройки группового выполнения задач
+	ExecutionTarget - где выполнять задачу (сервер / удалённый узел)
+	
+Метки и группировка
+	IJobTag<TId> - метка для группировки задач
+	AllowGroupRun - разрешить запуск всех задач метки одной командой
+	AllowGroupPause - разрешить приостановку всех задач метки
+	
+Распределённое выполнение (Target System)
+	ExecutionTarget - цель выполнения (сервер / конкретный узел / любой узел)
+	ExecutionMode - режим: Server, SpecificNode, AnyNode, RoundRobin
+	IJobNodeRegistry<TId> - реестр узлов-исполнителей
+	NodeInfo / NodeRegistration - информация об узле
+	NodeStatus - статус узла (Online, Offline, Busy, Maintenance)
 	
 ## Операции с сущностями
 
-ICrudService<T, in TKey> --> CRUD интерфейс для сущностей
-	ITaskService<T> --> специфичные операции с задачей
-	ITagService<T> --> специфичные операции с метками
+ICrudService<T, TKey> - CRUD интерфейс для любых сущностей
+	IJobTaskService<T, TId> - специфичные операции с задачами (GetByPIDAsync и др.)
+	IJobTagService<TTag, TId> - специфичные операции с метками (SetColor, CountJobsToTag)
+	
+Групповые операции (IJobTagService)
+	PauseAllByTagAsync - приостановить все задачи метки
+	ResumeAllByTagAsync - возобновить все задачи метки
+	RunAllByTagAsync - запустить все задачи метки сейчас
+	GetGroupSummaryAsync - получить сводку по группе (статистика)
+	ApplySettingsToGroupAsync - применить настройки ко всем задачам группы
+	
+Режимы группового выполнения (GroupExecutionMode)
+	Parallel - все задачи параллельно
+	Sequential - одна задача за другой
+	Pipeline - конвейер (результат передаётся следующей задаче)
+	RoundRobin - распределение по разным узлам
 
 ## Интерфейсы сервисов
 
-IJobExecutor --> Исполнитель задач
-IJobScheduler --> Планировщик
-IEncryptionService --> Шифрование аргументов
-INotificationService --> Сервис уведомлений
-IDomainEventDispatcher --> Диспетчер доменных событий
+Сервисы (интерфейсы)
+IJobExecutor<TId> - исполнитель задачи (запуск внешнего процесса)
+IJobScheduler<TId> - планировщик (регистрация, запуск, пауза, остановка)
+IEncryptionService - шифрование чувствительных аргументов
+INotificationService<TId> - сервис уведомлений (Email, Telegram, Webhook)
+IUiNotificationService - сервис уведомлений UI (SignalR, EventAggregator)
+IDomainEventDispatcher - диспетчер доменных событий
+IPlatformDetector - определение ОС (Windows / Linux / macOS)
+IPlatformFactory - фабрика платформозависимых сервисов
+IProcessRunner - кросс-платформенный запуск процессов
+ICommandLineEscaper - экранирование аргументов командной строки
+IUnitOfWork - атомарное сохранение изменений (всё или ничего)
 
-IExecutionScope --> Управление жизненным циклом задачи (расшифровка → выполнение → шифрование)
+## Управление жизненным циклом задачи
 
-## Результаты
+IExecutionScope<TTask, TId> - инкапсулирует состояние выполнения задачи
+	(расшифровка → выполнение → шифрование)
 
-JobExecutionResult --> Результат выполнения задачи
-DomainValidationResult --> Результат валидации доменной модели
+## Результаты операций
 
-## Типы расписаний (PeriodType.cs)
+JobExecutionResult - результат выполнения задачи (Success, ExitCode, stdout/stderr)
+DomainValidationResult - результат валидации доменной модели
+PagedRequest / PagedResult - пагинация и фильтрация (безопасная, без Expression)
 
-OnceSchedule --> Однократное выполнение
-DailySchedule --> Ежедневное выполнение
-WeeklySchedule --> Еженедельное выполнение
-IntervalSchedule --> Периодическое выполнение с интервалом
-MonthlySchedule --> Ежемесячное выполнение
-YearlySchedule --> Ежегодное выполнение 
+## Типы расписаний (PeriodType.cs и реализации IScheduleSettings)
+
+OnceSchedule - однократное выполнение
+DailySchedule - ежедневное выполнение
+WeeklySchedule - еженедельное выполнение
+MonthlySchedule - ежемесячное выполнение
+YearlySchedule - ежегодное выполнение
+EveryMinutesSchedule - с интервалом в минутах
+HourlySchedule - с интервалом в часах
+QuarterlySchedule - ежеквартальное выполнение
+IntervalSchedule - периодическое (кастомизируемое, в разработке)
+
+## Перечисления
 
 ## Статусы (EventType.cs)
 
@@ -74,6 +118,27 @@ Webhook --> HTTP-вызов на указанный URL
 Monitoring --> Sentry, OpenTelemetry
 Telegram --> Telegram уведомление (сообщение)
 
+## Уровень важности (NotificationSeverity)
+
+Info, 
+Success, 
+Warning, 
+Error
+
+## Стратегии повторов (RetryStrategy)
+
+None, 
+FixedDelay, 
+ExponentialBackoff, 
+Incremental
+
+## Состояние сущности в UoW (EntityState)
+Detached, 
+Added, 
+Modified, 
+Deleted, 
+Unchanged
+
 ## Уровень важности уведомлений (NotificationSeverity.cs)
 
 Info --> Информационное сообщение (низкая важность)
@@ -90,5 +155,18 @@ Error --> Критическая ошибка (требует немедленн
 для построения нового проекта. Минимальный набор того, что нужно будет реализовать:
 
 - Конвертацию пользовательского формата настроек задачи под логику вашей библиотеки
-- Настройку `ExecutionScope` для управления жизненным циклом
-- Шифрование/дешифровка аргументов
+- Настройку ExecutionScope для управления жизненным циклом (расшифровка → выполнение → шифрование)
+- Шифрование/дешифрование аргументов через IEncryptionService
+- Регистрацию задач в вашем планировщике через IJobScheduler
+- Хранение задач через ICrudService (EF Core / Dapper / ADO.NET)
+- Отправку уведомлений через INotificationService
+- Детекцию платформы через IPlatformDetector (если нужен кросс-платформенный запуск)
+- Реестр узлов через IJobNodeRegistry (если нужно распределённое выполнение)
+- Unit of Work через IUnitOfWork (если нужна атомарность)
+
+## Зависимости
+
+Библиотека не имеет внешних зависимостей (кроме .NET стандартных сборок)
+
+Microsoft.Extensions.DependencyInjection - используется только в DomainEventDispatcher
+(можно заменить на любую другую реализацию DI или убрать, реализовав свой диспетчер)
