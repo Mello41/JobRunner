@@ -1,8 +1,8 @@
 ﻿using JobRunner.Core.Interfaces.Core;
 using JobRunner.Core.Interfaces.Entities;
-using JobRunner.Core.Interfaces.Entities.EntityServices;
 using JobRunner.Core.Interfaces.Events.DomainEvent;
 using JobRunner.Core.Interfaces.Execution;
+using JobRunner.Core.Interfaces.Services.EntityServices;
 using Microsoft.Extensions.Logging;
 using Quartz;
 using System.Collections.Concurrent;

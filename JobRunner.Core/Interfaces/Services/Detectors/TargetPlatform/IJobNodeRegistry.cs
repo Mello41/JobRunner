@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace JobRunner.Core.Interfaces.Detectors.TargetPlatform
+namespace JobRunner.Core.Interfaces.Services.Detectors.TargetPlatform
 {
     /// <summary>
     /// Реестр узлов (клиентов), которые могут выполнять задачи удалённо

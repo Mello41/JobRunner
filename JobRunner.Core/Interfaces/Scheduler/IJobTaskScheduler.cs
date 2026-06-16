@@ -11,7 +11,7 @@ namespace JobRunner.Core.Interfaces.Scheduler
     /// Сборник методов планировщика заданий (операции с памятью и выполнением)
     /// </summary>
     /// <typeparam name="TId">Тип идентификатора задачи</typeparam>
-    public interface IJobScheduler<TId> where TId : IEquatable<TId>
+    public interface IJobTaskScheduler<TId> where TId : IEquatable<TId>
     {
         #region Планировщик (жизненный цикл)
         /// <summary>

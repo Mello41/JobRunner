@@ -1,6 +1,6 @@
 ﻿using JobRunner.Core.DTO;
-using JobRunner.Core.Interfaces.Detectors.Platform.CommandLine;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Services.Detectors.PlatformDetector.CommandLine;
 using JobRunner.Core.Utils.Platform;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

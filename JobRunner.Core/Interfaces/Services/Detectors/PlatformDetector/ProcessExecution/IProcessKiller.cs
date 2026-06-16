@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace JobRunner.Core.Interfaces.Detectors.Platform.ProcessExecution
+namespace JobRunner.Core.Interfaces.Services.Detectors.PlatformDetector.ProcessExecution
 {
     /// <summary>
     /// Платформозависимая стратегия убийства процессов

@@ -12,8 +12,8 @@ namespace JobRunner.Core.Interfaces.Events.DomainEvent
         /// Публикует событие всем зарегистрированным обработчикам
         /// </summary>
         /// <typeparam name="TEvent">Тип события (должен быть классом)</typeparam>
-        /// <param name="event">Событие для публикации</param>
+        /// <param name="evt">Событие для публикации</param>
         /// <param name="cancellationToken">Токен отмены</param>
-        Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default) where TEvent : class;
+        Task PublishAsync<TEvent>(TEvent @evt, CancellationToken cancellationToken = default) where TEvent : class;
     }
 }

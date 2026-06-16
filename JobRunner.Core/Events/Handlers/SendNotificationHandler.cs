@@ -37,76 +37,80 @@ namespace JobRunner.Core.Events.Handlers
         /// <summary>
         /// Обработка события "Задача запущена" → уведомление ДО выполнения
         /// </summary>
-        /// <param name="event"></param>
+        /// <param name="evt"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task HandleAsync(TaskStartedEvent<TId> @event, CancellationToken cancellationToken)
+        public async Task HandleAsync(TaskStartedEvent<TId> @evt, CancellationToken cancellationToken)
         {
             try
             {
-                if (@event.NotifySettings?.NotifyBefore != true)
+                if (@evt.NotifySettings?.NotifyBefore != true)
                 {
                     _logger.LogDebug(
                         "Before-notification skipped for task {TaskId} (NotifyBefore=false or null)",
-                        @event.TaskId);
+                        @evt.TaskId);
                     return;
                 }
 
                 _logger.LogInformation(
                     "Sending before-notification for task {TaskName} (Id: {TaskId})",
-                    @event.TaskName, @event.TaskId);
+                    @evt.TaskName, @evt.TaskId);
 
                 await _notificationService.NotifyBeforeAsync(
-                    @event.TaskId,
-                    @event.TaskName,
-                    @event.NotifySettings,
+                    @evt.TaskId,
+                    @evt.TaskName,
+                    @evt.NotifySettings,
                     cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send before-notification for task {TaskId}", @event.TaskId);
+                _logger.LogError(ex, "Failed to send " +
+                    "before-notification for task " +
+                    "{TaskId}", @evt.TaskId);
             }
         }
 
         /// <summary>
         /// Обработка события "Задача завершена" → уведомление ПОСЛЕ выполнения
         /// </summary>
-        /// <param name="event"></param>
+        /// <param name="evt"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task HandleAsync(TaskCompletedEvent<TId> @event, CancellationToken cancellationToken)
+        public async Task HandleAsync(TaskCompletedEvent<TId> @evt, CancellationToken cancellationToken)
         {
             try
             {
-                if (@event.NotifySettings?.NotifyAfter != true)
+                if (@evt.NotifySettings?.NotifyAfter != true)
                 {
                     _logger.LogDebug(
                         "After-notification skipped for task {TaskId} (NotifyAfter=false or null)",
-                        @event.TaskId);
+                        @evt.TaskId);
                     return;
                 }
 
-                var status = @event.Success ? "successfully" : "with error";
+                var status = @evt.Success ? "successfully" : "with error";
                 _logger.LogInformation(
                     "Sending after-notification for task {TaskName} (Id: {TaskId}) completed {Status}",
-                    @event.TaskName, @event.TaskId, status);
+                    @evt.TaskName, @evt.TaskId, status);
 
-                var formattedMessage = @event.NotifySettings?.FormatMessage(
-                    @event.TaskName,
-                    @event.Success,
-                    @event.ErrorMessage) ?? GetDefaultMessage(@event.TaskName, @event.Success, @event.ErrorMessage);
+                var formattedMessage = @evt.NotifySettings?.FormatMessage(
+                    @evt.TaskName,
+                    @evt.Success,
+                    @evt.ErrorMessage) ?? GetDefaultMessage(@evt.TaskName, @evt.Success, @evt.ErrorMessage);
 
                 await _notificationService.NotifyAsync(
-                    @event.TaskId,
-                    @event.TaskName,
-                    @event.Success,
+                    @evt.TaskId,
+                    @evt.TaskName,
+                    @evt.Success,
                     formattedMessage,
-                    @event.NotifySettings,
+                    @evt.NotifySettings,
                     cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send after-notification for task {TaskId}", @event.TaskId);
+                _logger.LogError(ex, "Failed to send " +
+                    "after-notification for task " +
+                    "{TaskId}", @evt.TaskId);
             }
         }
 

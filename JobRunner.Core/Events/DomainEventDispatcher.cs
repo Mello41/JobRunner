@@ -18,14 +18,14 @@ namespace JobRunner.Core.Events
             _serviceProvider = serviceProvider;
         }
 
-        public async Task PublishAsync<TEvent>(TEvent @event, CancellationToken cancellationToken = default)
+        public async Task PublishAsync<TEvent>(TEvent @evt, CancellationToken cancellationToken = default)
             where TEvent : class
         {
             var handlers = _serviceProvider.GetServices<IDomainEventHandler<TEvent>>();
 
             foreach (var handler in handlers)
             {
-                await handler.HandleAsync(@event, cancellationToken);
+                await handler.HandleAsync(@evt, cancellationToken);
             }
         }
     }

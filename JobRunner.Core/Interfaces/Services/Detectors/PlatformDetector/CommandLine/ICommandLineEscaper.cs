@@ -1,4 +1,4 @@
-﻿namespace JobRunner.Core.Interfaces.Detectors.Platform.CommandLine
+﻿namespace JobRunner.Core.Interfaces.Services.Detectors.PlatformDetector.CommandLine
 {
     /// <summary>
     /// Интерфейс для экранирования аргументов командной строки

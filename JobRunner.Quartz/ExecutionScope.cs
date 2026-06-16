@@ -3,8 +3,8 @@ using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces;
 using JobRunner.Core.Interfaces.Core;
 using JobRunner.Core.Interfaces.Entities;
-using JobRunner.Core.Interfaces.Entities.EntityServices;
 using JobRunner.Core.Interfaces.Events.DomainEvent;
+using JobRunner.Core.Interfaces.Services.EntityServices;
 using JobRunner.Core.Results;
 using Microsoft.Extensions.Logging;
 

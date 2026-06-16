@@ -36,16 +36,16 @@ namespace JobRunner.Core.Events.Handlers.UiHandlers
         /// <summary>
         /// Обрабатывает событие создания задачи и отправляет уведомление в UI
         /// </summary>
-        /// <param name="event">Событие создания задачи</param>
+        /// <param name="evt">Событие создания задачи</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns></returns>
-        public async Task HandleAsync(ITaskCreatedEvent<TId> @event, CancellationToken cancellationToken)
+        public async Task HandleAsync(ITaskCreatedEvent<TId> @evt, CancellationToken cancellationToken)
         {
             var notification = UiNotification.FromEvent(
                 EventType.TaskCreated,
-                @event.TaskId?.ToString() ?? string.Empty,
-                @event.TaskName,
-                new { @event.CreatedAt, @event.IsEnabled, @event.ScheduleDescription });
+                @evt.TaskId?.ToString() ?? string.Empty,
+                @evt.TaskName,
+                new { @evt.CreatedAt, @evt.IsEnabled, @evt.ScheduleDescription });
 
             await _uiNotification.NotifyAsync(notification, cancellationToken);
         }
@@ -53,16 +53,16 @@ namespace JobRunner.Core.Events.Handlers.UiHandlers
         /// <summary>
         /// Обрабатывает событие обновления задачи и отправляет уведомление в UI
         /// </summary>
-        /// <param name="event">Событие обновления задачи</param>
+        /// <param name="evt">Событие обновления задачи</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns></returns>
-        public async Task HandleAsync(ITaskUpdatedEvent<TId> @event, CancellationToken cancellationToken)
+        public async Task HandleAsync(ITaskUpdatedEvent<TId> @evt, CancellationToken cancellationToken)
         {
             var notification = UiNotification.FromEvent(
                 EventType.TaskUpdated,
-                @event.TaskId?.ToString() ?? string.Empty,
-                @event.TaskName,
-                new { @event.UpdatedAt, @event.ChangedFields });
+                @evt.TaskId?.ToString() ?? string.Empty,
+                @evt.TaskName,
+                new { @evt.UpdatedAt, @evt.ChangedFields });
 
             await _uiNotification.NotifyAsync(notification, cancellationToken);
         }
@@ -70,15 +70,15 @@ namespace JobRunner.Core.Events.Handlers.UiHandlers
         /// <summary>
         /// Обрабатывает событие удаления задачи и отправляет уведомление в UI
         /// </summary>
-        /// <param name="event">Событие удаления задачи</param>
+        /// <param name="evt">Событие удаления задачи</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns></returns>
-        public async Task HandleAsync(ITaskDeletedEvent<TId> @event, CancellationToken cancellationToken)
+        public async Task HandleAsync(ITaskDeletedEvent<TId> @evt, CancellationToken cancellationToken)
         {
             var notification = UiNotification.FromEvent(
                 EventType.TaskDeleted,
-                @event.TaskId?.ToString() ?? string.Empty,
-                @event.TaskName);
+                @evt.TaskId?.ToString() ?? string.Empty,
+                @evt.TaskName);
 
             await _uiNotification.NotifyAsync(notification, cancellationToken);
         }
@@ -86,16 +86,16 @@ namespace JobRunner.Core.Events.Handlers.UiHandlers
         /// <summary>
         /// Обрабатывает событие запуска задачи и отправляет уведомление в UI
         /// </summary>
-        /// <param name="event">Событие запуска задачи</param>
+        /// <param name="evt">Событие запуска задачи</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns></returns>
-        public async Task HandleAsync(ITaskStartedEvent<TId> @event, CancellationToken cancellationToken)
+        public async Task HandleAsync(ITaskStartedEvent<TId> @evt, CancellationToken cancellationToken)
         {
             var notification = UiNotification.FromEvent(
                 EventType.TaskStarted,
-                @event.TaskId?.ToString() ?? string.Empty,
-                @event.TaskName,
-                new { @event.StartTime, @event.ProcessId, @event.ExecutionPath });
+                @evt.TaskId?.ToString() ?? string.Empty,
+                @evt.TaskName,
+                new { @evt.StartTime, @evt.ProcessId, @evt.ExecutionPath });
 
             await _uiNotification.NotifyAsync(notification, cancellationToken);
         }
@@ -104,18 +104,18 @@ namespace JobRunner.Core.Events.Handlers.UiHandlers
         /// Обрабатывает событие завершения задачи и отправляет уведомление в UI.
         /// Тип уведомления зависит от успешности выполнения: TaskCompleted или TaskFailed
         /// </summary>
-        /// <param name="event">Событие завершения задачи</param>
+        /// <param name="evt">Событие завершения задачи</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns></returns>
-        public async Task HandleAsync(ITaskCompletedEvent<TId> @event, CancellationToken cancellationToken)
+        public async Task HandleAsync(ITaskCompletedEvent<TId> @evt, CancellationToken cancellationToken)
         {
-            var eventType = @event.Success ? EventType.TaskCompleted : EventType.TaskFailed;
+            var eventType = @evt.Success ? EventType.TaskCompleted : EventType.TaskFailed;
 
             var notification = UiNotification.FromEvent(
                 eventType,
-                @event.TaskId?.ToString() ?? string.Empty,
-                @event.TaskName,
-                new { @event.Success, @event.DurationMs, @event.ErrorMessage, @event.CompletionTime });
+                @evt.TaskId?.ToString() ?? string.Empty,
+                @evt.TaskName,
+                new { @evt.Success, @evt.DurationMs, @evt.ErrorMessage, @evt.CompletionTime });
 
             await _uiNotification.NotifyAsync(notification, cancellationToken);
         }

@@ -1,9 +1,10 @@
 ﻿using JobRunner.Core.Interfaces.Core;
+using JobRunner.Core.Interfaces.Entities;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace JobRunner.Core.Interfaces.Entities.EntityServices
+namespace JobRunner.Core.Interfaces.Services.EntityServices
 {
     /// <summary>
     /// Набор методов для работы с задачей JobTask --> БД

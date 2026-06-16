@@ -12,9 +12,9 @@ namespace JobRunner.Core.Interfaces.Events.DomainEvent
         /// <summary>
         /// Обрабатывает событие
         /// </summary>
-        /// <param name="event">Событие для обработки</param>
+        /// <param name="evt">Событие для обработки</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns></returns>
-        Task HandleAsync(TEvent @event, CancellationToken cancellationToken = default);
+        Task HandleAsync(TEvent @evt, CancellationToken cancellationToken = default);
     }
 }

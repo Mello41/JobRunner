@@ -23,22 +23,22 @@ namespace JobRunner.Core.Events.Handlers
         /// <summary>
         /// Обрабатывает событие завершения задачи и записывает результат в лог
         /// </summary>
-        /// <param name="event">Событие завершения задачи, содержащее информацию о результате выполнения</param>
+        /// <param name="evt">Событие завершения задачи, содержащее информацию о результате выполнения</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns>Завершенная задача (Task)</returns>
-        public Task HandleAsync(TaskCompletedEvent<TId> @event, CancellationToken cancellationToken)
+        public Task HandleAsync(TaskCompletedEvent<TId> @evt, CancellationToken cancellationToken)
         {
-            if (@event.Success)
+            if (@evt.Success)
             {
                 _logger.LogInformation(
                     "Task {TaskName} (Id: {TaskId}) completed successfully in {DurationMs} ms",
-                    @event.TaskName, @event.TaskId, @event.DurationMs);
+                    @evt.TaskName, @evt.TaskId, @evt.DurationMs);
             }
             else
             {
                 _logger.LogError(
                     "Task {TaskName} (Id: {TaskId}) failed: {ErrorMessage}",
-                    @event.TaskName, @event.TaskId, @event.ErrorMessage);
+                    @evt.TaskName, @evt.TaskId, @evt.ErrorMessage);
             }
 
             return Task.CompletedTask;
