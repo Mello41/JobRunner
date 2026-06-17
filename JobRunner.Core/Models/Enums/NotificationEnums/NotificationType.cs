@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace JobRunner.Core.Entities.Enums
+namespace JobRunner.Core.Models.Enums.NotificationEnums
 {
     /// <summary>
     /// Тип оповещения (внутри программы)

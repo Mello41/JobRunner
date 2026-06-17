@@ -1,5 +1,7 @@
 ﻿using JobRunner.Core.DTO.TargetPlatform;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using JobRunner.Core.Results;
 using System;
 using System.Collections.Immutable;
@@ -9,6 +11,7 @@ namespace JobRunner.Core.Interfaces.Entities
     /// <summary>
     /// Интерфейс задачи (создаваемая задача в рамках программы JobRunner)
     /// </summary>
+    /// <typeparam name="TId"></typeparam>
     public interface IJobTask<TId> where TId : IEquatable<TId>
     {
         /// <summary>
@@ -74,7 +77,7 @@ namespace JobRunner.Core.Interfaces.Entities
         /// <summary>
         /// Настройки уведомлений задачи
         /// </summary>
-        INotifySettings NotifySettings { get; set; }
+        INotifySettings<TId> NotifySettings { get; set; }
 
         /// <summary>
         /// Настройки периодичности

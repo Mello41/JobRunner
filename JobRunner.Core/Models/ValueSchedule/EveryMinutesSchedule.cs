@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;

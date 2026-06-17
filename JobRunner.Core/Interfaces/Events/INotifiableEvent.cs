@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
 
 namespace JobRunner.Core.Interfaces.Events
 {
@@ -10,6 +10,6 @@ namespace JobRunner.Core.Interfaces.Events
         /// <summary>
         /// Настройки уведомлений у задачи
         /// </summary>
-        INotifySettings? NotifySettings { get; set; }
+        INotifySettings<TID>? NotifySettings { get; set; }
     }
 }

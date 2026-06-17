@@ -1,4 +1,6 @@
 ﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using System;
 using System.Collections.Generic;
 
@@ -43,7 +45,7 @@ namespace JobRunner.Core.Interfaces.Entities.Export
         /// <summary>
         /// Настройки уведомлений
         /// </summary>
-        INotifySettings NotifySettings { get; set; }
+        INotifySettings<TId> NotifySettings { get; set; }
 
         /// <summary>
         /// Аргументы командной строки

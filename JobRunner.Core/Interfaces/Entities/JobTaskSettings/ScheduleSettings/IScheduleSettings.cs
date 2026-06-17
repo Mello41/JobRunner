@@ -1,4 +1,4 @@
-﻿namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings
+﻿namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings
 {
     /// <summary>
     /// Маркерный интерфейс для всех типов расписаний

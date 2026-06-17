@@ -1,6 +1,6 @@
-﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
-using System;
+﻿using System;
 using JobRunner.Core.Interfaces.Events.TaskStatus;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
 
 namespace JobRunner.Core.Events.TaskEvents.TaskStatus
 {

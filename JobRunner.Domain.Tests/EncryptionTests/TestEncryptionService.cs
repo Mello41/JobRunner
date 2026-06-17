@@ -1,6 +1,6 @@
 ﻿using JobRunner.Core.DTO;
 using JobRunner.Core.Interfaces.Core;
-using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using System.Text;
 
 namespace JobRunner.Domain.Tests.EncryptionTests

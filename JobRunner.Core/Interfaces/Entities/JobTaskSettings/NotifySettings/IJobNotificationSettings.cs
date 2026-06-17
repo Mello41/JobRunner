@@ -1,9 +1,8 @@
-﻿using JobRunner.Core.Entities.Enums;
-using JobRunner.Core.Models.Enums;
+﻿using JobRunner.Core.Models.Enums.NotificationEnums;
 using System;
 using System.Collections.Generic;
 
-namespace JobRunner.Core.Interfaces.Services.EntityServices
+namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
 {
     /// <summary>
     /// Настройки уведомлений для конкретного состояния задачи

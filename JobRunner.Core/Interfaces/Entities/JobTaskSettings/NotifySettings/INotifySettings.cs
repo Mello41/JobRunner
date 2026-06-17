@@ -1,13 +1,14 @@
-﻿using JobRunner.Core.Entities.Enums;
+﻿using JobRunner.Core.Models.Enums.NotificationEnums;
 using System;
 using System.Collections.Generic;
 
-namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings
+namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
 {
     /// <summary>
     /// Интерфейс настроек уведомления задачи
     /// </summary>
-    public interface INotifySettings
+    /// <typeparam name="TUserId"></typeparam>
+    public interface INotifySettings<TUserId> where TUserId : IEquatable<TUserId>
     {
         #region уведомления до
         /// <summary>
@@ -21,7 +22,7 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings
         TimeSpan NotifyBeforeTime { get; set; }
         #endregion
 
-        #region уведомления сразу
+        #region уведомления при старте
         /// <summary>
         /// Уведомлять сразу после старта
         /// </summary>
@@ -55,20 +56,41 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings
         /// </summary>
         List<NotificationType> NotificationMethods { get; set; }
 
+        #region Получатели (пользователи)
         /// <summary>
-        /// Email для уведомлений (если выбран Email)
+        /// Список получателей (пользователей)
         /// </summary>
-        string? NotificationEmail { get; set; }
+        List<INotificationRecipient<TUserId>> Recipients { get; set; }
 
         /// <summary>
-        /// Telegram chat ID (если выбран Telegram)
+        /// Добавить получателя
         /// </summary>
-        string? TelegramChatId { get; set; }
+        /// <param name="userId"></param>
+        /// <param name="methods"></param>
+        void AddRecipient(TUserId userId, List<NotificationType>? methods = null);
 
         /// <summary>
-        /// Webhook URL (если выбран Webhook)
+        /// Удалить получателя
         /// </summary>
-        string? WebhookUrl { get; set; }
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        bool RemoveRecipient(TUserId userId);
+
+        /// <summary>
+        /// Получить всех получателей для конкретного способа уведомления
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        List<TUserId> GetRecipientsForMethod(NotificationType method);
+
+        /// <summary>
+        /// Получить контактные данные получателя
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        string? GetContactForRecipient(TUserId userId, NotificationType method);
+        #endregion
 
         /// <summary>
         /// Форматирует сообщение уведомления с подстановкой параметров

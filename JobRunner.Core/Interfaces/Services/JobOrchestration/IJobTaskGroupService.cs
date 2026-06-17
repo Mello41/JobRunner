@@ -1,6 +1,6 @@
 ﻿using JobRunner.Core.DTO.Grouping;
 using JobRunner.Core.Interfaces.Entities;
-using JobRunner.Core.Models.Enums;
+using JobRunner.Core.Models.Enums.ExecutionEnums;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -114,7 +114,7 @@ namespace JobRunner.Core.Interfaces.Services.JobOrchestration
         /// </summary>
         Task<GroupExecutionResult> ExecuteGroupAsync(
             TId tagId,
-            GroupExecutionMode mode,
+            ExecutionGroupMode mode,
             CancellationToken ct = default);
 
         #endregion

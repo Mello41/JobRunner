@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace JobRunner.Core.Models.Enums
+namespace JobRunner.Core.Models.Enums.UOWEnums
 {
     /// <summary>
     /// Состояние сущности в Unit of Work

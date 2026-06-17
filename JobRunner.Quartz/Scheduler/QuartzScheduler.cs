@@ -1,6 +1,6 @@
 ﻿using JobRunner.Core.Interfaces.Converters;
 using JobRunner.Core.Interfaces.Entities;
-using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using JobRunner.Core.Interfaces.Scheduler;
 using JobRunner.Quartz.Adapters;
 using JobRunner.Quartz.Extensions;

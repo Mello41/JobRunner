@@ -1,5 +1,5 @@
 ﻿using JobRunner.Core.Interfaces.Entities;
-using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using System;
 using System.Collections.Generic;
 using System.Threading;

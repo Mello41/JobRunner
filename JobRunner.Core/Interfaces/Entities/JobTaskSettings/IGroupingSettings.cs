@@ -1,4 +1,5 @@
-﻿using JobRunner.Core.Models.Enums;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
+using JobRunner.Core.Models.Enums.ExecutionEnums;
 
 namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings
 {
@@ -19,7 +20,7 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings
         /// <summary>
         /// Режим выполнения задач в группе
         /// </summary>
-        GroupExecutionMode ExecutionMode { get; set; }
+        ExecutionGroupMode ExecutionMode { get; set; }
 
         /// <summary>
         /// Задержка между задачами в группе (секунды)

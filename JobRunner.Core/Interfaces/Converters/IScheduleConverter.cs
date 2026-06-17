@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 
 namespace JobRunner.Core.Interfaces.Converters
 {

@@ -1,6 +1,8 @@
 ﻿using JobRunner.Core.Entities.ValueObjects;
 using JobRunner.Core.Interfaces.Entities.Export;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using System;
 using System.Collections.Generic;
 
@@ -15,7 +17,7 @@ namespace JobRunner.Core.DefaultImplementations
 
         public IJobTaskBasicInfo<TId> BasicInfo { get; set; } = new JobTaskBasicInfoExample<TId>();
         public IScheduleSettings ScheduleSettings { get; set; } = new DailySchedule();
-        public INotifySettings NotifySettings { get; set; } //= new NotifySettingsExample();
+        public INotifySettings<TId> NotifySettings { get; set; } //= new NotifySettingsExample();
         public IScheduleArguments ScheduleArguments { get; set; } = new ScheduleArgumentsExample();
         public IRetrySettings RetrySettings { get; set; } = new RetrySettingsExample();
         public List<TId> Tags { get; set; } = new();

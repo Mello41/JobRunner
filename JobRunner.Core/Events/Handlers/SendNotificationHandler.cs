@@ -1,6 +1,7 @@
 ﻿using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces.Events.DomainEvent;
 using JobRunner.Core.Interfaces.Notification;
+using JobRunner.Core.Interfaces.Services.EntityServices;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
@@ -23,11 +24,11 @@ namespace JobRunner.Core.Events.Handlers
         IDomainEventHandler<TaskCompletedEvent<TId>>
         where TId : IEquatable<TId>
     {
-        private readonly INotificationService<TId> _notificationService;
+        private readonly IJobNotificationService<TId> _notificationService;
         private readonly ILogger<SendNotificationHandler<TId>> _logger;
 
         public SendNotificationHandler(
-            INotificationService<TId> notificationService,
+            IJobNotificationService<TId> notificationService,
             ILogger<SendNotificationHandler<TId>> logger)
         {
             _notificationService = notificationService;

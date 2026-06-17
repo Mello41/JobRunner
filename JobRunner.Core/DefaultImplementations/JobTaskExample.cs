@@ -2,6 +2,8 @@
 using JobRunner.Core.Entities.ValueObjects;
 using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using JobRunner.Core.Results;
 using System;
 using System.Collections.Generic;
@@ -28,7 +30,7 @@ namespace JobRunner.Core.DefaultImplementations
         public int? TimeoutSeconds { get; set; }
         #endregion
 
-        public INotifySettings NotifySettings { get; set; } // = new NotifySettingsExample();
+        public INotifySettings<Guid> NotifySettings { get; set; }  = new NotifySettingsExample<Guid>();
         public IScheduleSettings ScheduleSettings { get; set; }  = new DailySchedule();
         public IScheduleArguments ScheduleArguments { get; set; } = new ScheduleArgumentsExample();
         public IJobTaskMetadata JobTaskMetadata { get; set; } = new JobTaskMetadataExample();

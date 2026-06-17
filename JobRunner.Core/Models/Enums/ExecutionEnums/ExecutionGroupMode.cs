@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace JobRunner.Core.Models.Enums
+namespace JobRunner.Core.Models.Enums.ExecutionEnums
 {
     /// <summary>
     /// Режим выполнения задач в группе
     /// </summary>
-    public enum GroupExecutionMode
+    public enum ExecutionGroupMode
     {
         /// <summary>
         /// Параллельное выполнение (все задачи запускаются одновременно)

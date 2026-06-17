@@ -1,5 +1,6 @@
 ﻿using JobRunner.Core.Interfaces.Entities;
 using System;
+using System.Collections.Generic;
 
 namespace JobRunner.Core.DefaultImplementations
 {
@@ -15,5 +16,6 @@ namespace JobRunner.Core.DefaultImplementations
         public string Description { get; set; }
         public bool AllowGroupRun { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public bool AllowGroupPause { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public SortedSet<Guid>? OrderedTaskIds { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }

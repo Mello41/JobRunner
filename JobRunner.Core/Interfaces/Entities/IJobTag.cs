@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace JobRunner.Core.Interfaces.Entities
 {
@@ -41,5 +42,10 @@ namespace JobRunner.Core.Interfaces.Entities
         /// Можно ли приостанавливать все задачи этой метки
         /// </summary>
         bool AllowGroupPause { get; set; }
+
+        /// <summary>
+        /// Задачи в метке с порядком. Использует SortedSet с кастомным компаратором.
+        /// </summary>
+        SortedSet<TId>? OrderedTaskIds { get; set; }
     }
 }

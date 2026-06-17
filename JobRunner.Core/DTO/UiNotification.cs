@@ -1,4 +1,5 @@
 ﻿using JobRunner.Core.Entities.Enums;
+using JobRunner.Core.Models.Enums.NotificationEnums;
 using System;
 
 namespace JobRunner.Core.DTO

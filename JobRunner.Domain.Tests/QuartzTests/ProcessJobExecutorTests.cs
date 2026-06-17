@@ -2,7 +2,7 @@
 using JobRunner.Core.DefaultImplementations;
 using JobRunner.Core.DTO;
 using JobRunner.Core.Interfaces.Entities;
-using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
 using JobRunner.Core.Utils.Platform;
 using JobRunner.Quartz;
 using Microsoft.Extensions.Logging;

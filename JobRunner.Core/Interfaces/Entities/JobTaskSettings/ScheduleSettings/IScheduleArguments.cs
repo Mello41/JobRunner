@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings
+namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings
 {
     /// <summary>
     /// Интерфейс расширяемого набора аргументов задачи

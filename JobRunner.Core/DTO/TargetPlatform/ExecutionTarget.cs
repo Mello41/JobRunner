@@ -1,4 +1,5 @@
 ﻿using JobRunner.Core.Models.Enums;
+using JobRunner.Core.Models.Enums.ExecutionEnums;
 
 namespace JobRunner.Core.DTO.TargetPlatform
 {
@@ -10,7 +11,7 @@ namespace JobRunner.Core.DTO.TargetPlatform
         /// <summary>
         /// Режим выполнения
         /// </summary>
-        public ExecutionMode Mode { get; set; } = ExecutionMode.Server;
+        public ExecutionTargetMode Mode { get; set; } = ExecutionTargetMode.Server;
 
         /// <summary>
         /// ID узла (для Mode = SpecificNode)
@@ -35,7 +36,7 @@ namespace JobRunner.Core.DTO.TargetPlatform
         /// <summary>
         /// Создать целевой узел для выполнения на сервере
         /// </summary>
-        public static ExecutionTarget Server() => new() { Mode = ExecutionMode.Server };
+        public static ExecutionTarget Server() => new() { Mode = ExecutionTargetMode.Server };
 
         /// <summary>
         /// Создать целевой узел для выполнения на конкретном узле
@@ -44,7 +45,7 @@ namespace JobRunner.Core.DTO.TargetPlatform
         /// <returns></returns>
         public static ExecutionTarget SpecificNode(string nodeId) => new()
         {
-            Mode = ExecutionMode.SpecificNode,
+            Mode = ExecutionTargetMode.SpecificNode,
             NodeId = nodeId
         };
 
@@ -55,7 +56,7 @@ namespace JobRunner.Core.DTO.TargetPlatform
         /// <returns></returns>
         public static ExecutionTarget AnyNodeInGroup(string group) => new()
         {
-            Mode = ExecutionMode.AnyNode,
+            Mode = ExecutionTargetMode.AnyNode,
             NodeGroup = group
         };
     }

@@ -1,5 +1,5 @@
 ﻿using JobRunner.Core.Interfaces.Entities;
-using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,7 +37,7 @@ namespace JobRunner.Core.Interfaces.Notification
         /// <param name="settings">Настройки уведомлений</param>
         /// <param name="cancellationToken">Токен отмены</param>
         Task SendAsync(TId taskId, string taskName, bool isSuccess, 
-            string? errorMessage, INotifySettings settings, 
+            string? errorMessage, INotifySettings<TId> settings, 
             CancellationToken cancellationToken = default);
     }
 }

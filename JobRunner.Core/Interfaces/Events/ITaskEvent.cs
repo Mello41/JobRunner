@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
 using System;
 
 namespace JobRunner.Core.Interfaces.Events

@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
 using JobRunner.Core.Interfaces.Events.TaskStatus;
 using System;
 
@@ -40,6 +40,6 @@ namespace JobRunner.Core.Events.TaskEvents.TaskStatus
         /// <summary>
         /// Настройки уведомлений задачи, используемые для отправки оповещений о начале выполнения
         /// </summary>
-        public INotifySettings NotifySettings { get; set; }
+        public INotifySettings<TID> NotifySettings { get; set; }
     }
 }

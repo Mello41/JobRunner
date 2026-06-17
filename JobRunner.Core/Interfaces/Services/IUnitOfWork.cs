@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using JobRunner.Core.Models.Enums;
+using JobRunner.Core.Models.Enums.UOWEnums;
 
 namespace JobRunner.Core.Interfaces.Core
 {
