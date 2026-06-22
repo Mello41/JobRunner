@@ -1,7 +1,7 @@
-﻿using JobRunner.Core.Events.TaskEvents.TaskStatus;
+﻿using JobRunner.Core.DTO.Results;
+using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Interfaces.Execution;
-using JobRunner.Core.Results;
 using JobRunner.Core.Utils.Platform;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;

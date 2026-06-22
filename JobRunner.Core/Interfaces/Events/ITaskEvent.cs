@@ -10,6 +10,6 @@ namespace JobRunner.Core.Interfaces.Events
     {
         TID TaskId { get; set; }
         string TaskName { get; set; }
-        INotifySettings NotifySettings { get; set; }
+        INotifySettings<TID> NotifySettings { get; set; }
     }
 }

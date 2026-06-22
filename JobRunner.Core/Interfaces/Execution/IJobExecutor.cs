@@ -1,6 +1,6 @@
-﻿using JobRunner.Core.Events.TaskEvents.TaskStatus;
+﻿using JobRunner.Core.DTO.Results;
+using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces.Entities;
-using JobRunner.Core.Results;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

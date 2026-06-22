@@ -1,12 +1,12 @@
 ﻿using FluentAssertions;
 using JobRunner.Core.DefaultImplementations;
+using JobRunner.Core.DTO.Results;
 using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces.Core;
 using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Interfaces.Events.DomainEvent;
 using JobRunner.Core.Interfaces.Execution;
 using JobRunner.Core.Interfaces.Services.EntityServices;
-using JobRunner.Core.Results;
 using JobRunner.Quartz.Adapters;
 using Microsoft.Extensions.Logging;
 using Moq;

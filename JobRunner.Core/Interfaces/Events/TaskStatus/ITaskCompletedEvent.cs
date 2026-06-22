@@ -5,7 +5,8 @@ namespace JobRunner.Core.Interfaces.Events.TaskStatus
     /// <summary>
     /// Событие: задача завершена
     /// </summary>
-    public interface ITaskCompletedEvent<TId> : ITaskEventData<TId>, INotifiableEvent
+    public interface ITaskCompletedEvent<TId> : ITaskEventData<TId>, 
+                                                INotifiableEvent<TId>
                                     where TId : IEquatable<TId>
     {
         bool Success { get; set; }

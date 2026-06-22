@@ -8,8 +8,8 @@ namespace JobRunner.Core.Interfaces.Entities.JobsTotag
     /// <typeparam name="TTagId"></typeparam>
     /// <typeparam name="TTaskId"></typeparam>
     public interface IJobTagTask<TTagId, TTaskId>
-        where TTagId : IEquatable<TTagId>
-        where TTaskId : IEquatable<TTaskId>
+                            where TTagId : IEquatable<TTagId>
+                            where TTaskId : IEquatable<TTaskId>
     {
         /// <summary>
         /// ID метки

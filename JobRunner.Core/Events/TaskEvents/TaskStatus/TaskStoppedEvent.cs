@@ -8,13 +8,13 @@ namespace JobRunner.Core.Events.TaskEvents.TaskStatus
     /// Событие, возникающее при принудительной остановке задачи
     /// </summary>
     public class TaskStoppedEvent<TID> : ITaskStoppedEvent<TID>
-        where TID : IEquatable<TID>
+                    where TID : IEquatable<TID>
     {
         public TID TaskId { get; set; }
         public string TaskName { get; set; } = string.Empty;
         public DateTime StoppedAt { get; set; }
         public string StoppedBy { get; set; } = string.Empty;
         public string Reason { get; set; } = string.Empty;
-        public INotifySettings NotifySettings { get; set; }
+        public INotifySettings<TID> NotifySettings { get; set; }
     }
 }

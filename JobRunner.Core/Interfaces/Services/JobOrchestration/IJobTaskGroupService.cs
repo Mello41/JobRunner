@@ -1,5 +1,7 @@
 ﻿using JobRunner.Core.DTO.Grouping;
+using JobRunner.Core.DTO.Results;
 using JobRunner.Core.Interfaces.Entities;
+using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings.GroupSettings;
 using JobRunner.Core.Models.Enums.ExecutionEnums;
 using System;
 using System.Collections.Generic;
@@ -120,22 +122,135 @@ namespace JobRunner.Core.Interfaces.Services.JobOrchestration
         #endregion
 
         #region Проверки и валидация
-
         /// <summary>
         /// Проверить, есть ли у задачи указанная метка
         /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="tagId"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
         Task<bool> TaskHasTagAsync(TId taskId, TId tagId, CancellationToken ct = default);
 
         /// <summary>
         /// Проверить, можно ли выполнить группу (нет циклических зависимостей)
         /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
         Task<bool> ValidateGroupAsync(TId tagId, CancellationToken ct = default);
+        #endregion
+
+        #region Потоки (ограничения)
+        /// <summary>
+        /// Установить порядок выполнения задачи в группе
+        /// </summary>
+        Task<bool> SetTaskOrderInGroupAsync(
+            TId tagId,
+            TId taskId,
+            int order,
+            CancellationToken ct = default);
 
         /// <summary>
         /// Получить порядок выполнения задач в группе
         /// </summary>
-        Task<IReadOnlyList<TTask>> GetGroupExecutionOrderAsync(TId tagId, CancellationToken ct = default);
+        Task<Dictionary<TId, int>> GetTaskOrdersInGroupAsync(
+            TId tagId,
+            CancellationToken ct = default);
+        #endregion
 
+        #region Действия с группами
+        /// <summary>
+        /// Получить настройки уведомлений для группы
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<IGroupNotifySettings<TId>?> GetGroupNotifySettingsAsync(
+            TId tagId,
+            CancellationToken ct = default);
+
+        /// <summary>
+        /// Установить настройки уведомлений для группы
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="settings"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<bool> SetGroupNotifySettingsAsync(
+            TId tagId,
+            IGroupNotifySettings<TId> settings,
+            CancellationToken ct = default);
+
+        /// <summary>
+        /// Проверить, можно ли выполнить группу (с учётом зависимостей)
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<bool> CanExecuteGroupAsync(
+            TId tagId,
+            CancellationToken ct = default);
+
+        /// <summary>
+        /// Получить задачи в порядке выполнения (с учётом приоритетов)
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<IReadOnlyList<TTask>> GetGroupExecutionOrderAsync(
+            TId tagId,
+            CancellationToken ct = default);
+
+        /// <summary>
+        /// Установить приоритет задачи в группе
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="taskId"></param>
+        /// <param name="priority"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<bool> SetTaskPriorityAsync(
+            TId tagId,
+            TId taskId,
+            int priority,
+            CancellationToken ct = default);
+
+        /// <summary>
+        /// Выполнить группу с учётом зависимостей между задачами.
+        /// Если задача не выполнилась - остальные не запускаются (если StopGroupOnFirstFailure = true).
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<GroupExecutionResult> ExecuteGroupWithDependenciesAsync(
+            TId tagId,
+            CancellationToken ct = default);
+
+        /// <summary>
+        /// Изменить порядок задачи в группе (переместить вверх/вниз)
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="taskId"></param>
+        /// <param name="moveUp"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<bool> ReorderTaskInGroupAsync(
+            TId tagId,
+            TId taskId,
+            bool moveUp,
+            CancellationToken ct = default);
+
+        /// <summary>
+        /// Установить точный порядок задач в группе
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="orderedTaskIds"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<bool> SetTaskOrderInGroupAsync(
+            TId tagId,
+            List<TId> orderedTaskIds,
+            CancellationToken ct = default);
         #endregion
     }
 }

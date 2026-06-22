@@ -1,5 +1,5 @@
-﻿using JobRunner.Core.Interfaces.Events.TaskHistory;
-using JobRunner.Core.Results;
+﻿using JobRunner.Core.DTO.Results;
+using JobRunner.Core.Interfaces.Events.TaskHistory;
 using System;
 
 namespace JobRunner.Core.Events.TaskEvents.TaskHistory

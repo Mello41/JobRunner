@@ -1,10 +1,10 @@
-﻿using JobRunner.Core.DTO.TargetPlatform;
+﻿using JobRunner.Core.DTO.Results;
+using JobRunner.Core.DTO.TargetPlatform;
 using JobRunner.Core.Entities.ValueObjects;
 using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
-using JobRunner.Core.Results;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -45,6 +45,7 @@ namespace JobRunner.Core.DefaultImplementations
         public ImmutableHashSet<Guid> Tags { get; set; } = new Guid[0].ToImmutableHashSet<Guid>();
         public IGroupingSettings GroupingSettings { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ExecutionTarget ExecutionTarget { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public bool CanGrouping { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public DomainValidationResult Validate()
         {

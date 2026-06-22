@@ -1,7 +1,8 @@
-﻿using System;
+﻿using JobRunner.Core.DTO.Grouping;
+using System;
 using System.Collections.Generic;
 
-namespace JobRunner.Core.DTO.Grouping
+namespace JobRunner.Core.DTO.Results
 {
     /// <summary>
     /// Результат выполнения группы задач

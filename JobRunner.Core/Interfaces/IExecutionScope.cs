@@ -1,8 +1,8 @@
-﻿using JobRunner.Core.Interfaces.Core;
+﻿using JobRunner.Core.DTO.Results;
+using JobRunner.Core.Interfaces.Core;
 using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Interfaces.Events.DomainEvent;
 using JobRunner.Core.Interfaces.Services.EntityServices;
-using JobRunner.Core.Results;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

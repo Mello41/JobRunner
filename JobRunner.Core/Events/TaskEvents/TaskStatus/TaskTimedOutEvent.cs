@@ -15,6 +15,6 @@ namespace JobRunner.Core.Events.TaskEvents.TaskStatus
         public DateTime TimeoutAt { get; set; }
         public int TimeoutSeconds { get; set; }
         public long ElapsedMs { get; set; }
-        public INotifySettings NotifySettings { get; set; }
+        public INotifySettings<TID> NotifySettings { get; set; }
     }
 }

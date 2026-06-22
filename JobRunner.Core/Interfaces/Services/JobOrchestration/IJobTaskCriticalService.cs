@@ -1,4 +1,5 @@
-﻿using JobRunner.Core.Interfaces.Services.Detectors.JobTaskDetector;
+﻿using JobRunner.Core.DTO.Grouping;
+using JobRunner.Core.Interfaces.Services.Detectors.JobTaskDetector;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,10 +21,19 @@ namespace JobRunner.Core.Interfaces.Services.JobOrchestration
         Task<int> RecoverStuckTasksAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 
+        /// Выполнить "потерянные задачи"
         /// </summary>
         /// <param name="ct"></param>
         /// <returns></returns>
         Task<int> ExecuteMissedSchedulesAsync(CancellationToken ct = default);
+
+        /// <summary>
+        /// Проверить группу на циклические зависимости и другие проблемы
+        /// </summary>
+        /// <param name="tagId"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<GroupValidationResult<TId>> ValidateGroupAsync(TId tagId,
+                                            CancellationToken ct = default);
     }
 }

@@ -124,7 +124,6 @@ namespace JobRunner.Quartz.Scheduler
         {
             var cronExpression = _converter.Convert(schedule);
 
-            // ✅ Валидация через расширение
             cronExpression.ValidateCron();
 
             var job = JobBuilder.Create<JobAdapter<TTask, TId>>()

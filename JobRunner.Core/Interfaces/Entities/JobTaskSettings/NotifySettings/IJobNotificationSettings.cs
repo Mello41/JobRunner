@@ -8,7 +8,7 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
     /// Настройки уведомлений для конкретного состояния задачи
     /// </summary>
     /// <typeparam name="TId">Тип идентификатора задачи</typeparam>
-    public interface IJobNotificationSettings<TId> where TId : IEquatable<TId>
+    public interface IJobStatusNotificationSettings<TId> where TId : IEquatable<TId>
     {
         /// <summary>
         /// ID задачи

@@ -1,8 +1,8 @@
-﻿using JobRunner.Core.DTO.TargetPlatform;
+﻿using JobRunner.Core.DTO.Results;
+using JobRunner.Core.DTO.TargetPlatform;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
-using JobRunner.Core.Results;
 using System;
 using System.Collections.Immutable;
 
@@ -57,6 +57,15 @@ namespace JobRunner.Core.Interfaces.Entities
         int? TimeoutSeconds { get; set; }
         #endregion
 
+        #region Разрешения
+
+        #region Группировка задачи
+        /// <summary>
+        /// Можно ли включать задачу в группы (метки)
+        /// </summary>
+        bool CanGrouping { get; set; }
+        #endregion
+
         #region Параллельное выполнение
         /// <summary>
         /// Параллельное выполнение?
@@ -71,6 +80,8 @@ namespace JobRunner.Core.Interfaces.Entities
         /// AllowConcurrentExecution = false --> Запретить несколько экземпляров
         /// </summary>
         bool AllowConcurrentExecution { get; set; }
+        #endregion
+
         #endregion
 
         #region Настройки выполнения задачи
@@ -98,12 +109,6 @@ namespace JobRunner.Core.Interfaces.Entities
         /// Настройки перезапуска задачи
         /// </summary>
         IRetrySettings RetrySettings { get; set; }
-
-        /// <summary>
-        /// Настройки группировки задачи (порядок выполнения, 
-        /// запуск нескольких задач одновременно)
-        /// </summary>
-        IGroupingSettings GroupingSettings { get; set; }
 
         /// <summary>
         /// Где выполнять задачу 

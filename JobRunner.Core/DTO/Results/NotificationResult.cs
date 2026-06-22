@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JobRunner.Core.Results
+namespace JobRunner.Core.DTO.Results
 {
     /// <summary>
     /// Результат отправки уведомления

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace JobRunner.Core.Results
+namespace JobRunner.Core.DTO.Results
 {
     public class DomainValidationResult
     {

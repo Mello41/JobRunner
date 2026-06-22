@@ -1,5 +1,5 @@
-﻿using JobRunner.Core.Interfaces.Entities;
-using JobRunner.Core.Results;
+﻿using JobRunner.Core.DTO.Results;
+using JobRunner.Core.Interfaces.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading;

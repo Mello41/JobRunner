@@ -1,20 +1,20 @@
-﻿using JobRunner.Core.Events.TaskEvents.TaskHistory;
+﻿using JobRunner.Core.DTO.Results;
+using JobRunner.Core.Events.TaskEvents.TaskHistory;
 using JobRunner.Core.Events.TaskEvents.TaskStatus;
 using JobRunner.Core.Interfaces;
 using JobRunner.Core.Interfaces.Core;
 using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Interfaces.Events.DomainEvent;
 using JobRunner.Core.Interfaces.Services.EntityServices;
-using JobRunner.Core.Results;
 using Microsoft.Extensions.Logging;
 
 namespace JobRunner.Quartz
 {
-    /// <summary>
     /// Реализация IExecutionScope для Quartz с поддержкой любого типа, реализующего IJobTask.
     /// Инкапсулирует состояние выполнения задачи и управляет жизненным циклом: расшифровка аргументов,
     /// публикация событий, обновление метаданных, повторное шифрование.
-    /// </summary>
+    /// <typeparam name="TTask"></typeparam>
+    /// <typeparam name="TId"></typeparam>
     public class ExecutionScope<TTask, TId> : IExecutionScope<TTask, TId>
                                         where TTask : class, IJobTask<TId>
                                         where TId : IEquatable<TId>

@@ -72,7 +72,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
             taskMock.Setup(t => t.IsAsyncExecution).Returns(isAsyncExecution);
             taskMock.Setup(t => t.IsEnabled).Returns(isEnabled);
             taskMock.Setup(t => t.ScheduleArguments).Returns(scheduleArgs);
-            taskMock.Setup(t => t.NotifySettings).Returns((INotifySettings?)null);
+            taskMock.Setup(t => t.NotifySettings).Returns((INotifySettings<Guid>?)null);
 
             return taskMock.Object;
         }

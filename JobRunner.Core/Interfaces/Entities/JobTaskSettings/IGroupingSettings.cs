@@ -1,10 +1,11 @@
 ﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using JobRunner.Core.Models.Enums.ExecutionEnums;
+using JobRunner.Core.Models.Enums.RetryStrategies;
 
 namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings
 {
     /// <summary>
-    /// Настройки группового выполнения задач
+    /// Настройки группового выполнения задач в метке
     /// </summary>
     /// <remarks>
     /// Реализуется IJobTag для поддержки групповых операций
@@ -65,5 +66,15 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings
         /// раньше выполняется)
         /// </summary>
         int GroupPriority { get; set; }
+
+        /// <summary>
+        /// Стратегия обработки ошибок в группе
+        /// </summary>
+        GroupFailureStrategy FailureStrategy { get; set; }
+
+        /// <summary>
+        /// Таймаут между задачами в группе (максимальное время ожидания)
+        /// </summary>
+        int? TaskTimeoutSeconds { get; set; }
     }
 }

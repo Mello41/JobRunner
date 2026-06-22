@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
+using System;
 using System.Collections.Generic;
 
 namespace JobRunner.Core.Interfaces.Entities
@@ -6,6 +7,7 @@ namespace JobRunner.Core.Interfaces.Entities
     /// <summary>
     /// Интерфейс метки (категории) задачи
     /// </summary>
+    /// <typeparam name="TId"></typeparam>
     public interface IJobTag<TId> where TId : IEquatable<TId>
     {
         /// <summary>
@@ -21,7 +23,7 @@ namespace JobRunner.Core.Interfaces.Entities
         /// <summary>
         /// Описание метки
         /// </summary>
-        string Description { get; set; }
+        string? Description { get; set; }
 
         /// <summary>
         /// Цвет метки в формате HEX ("#4CAF50")
@@ -47,5 +49,10 @@ namespace JobRunner.Core.Interfaces.Entities
         /// Задачи в метке с порядком. Использует SortedSet с кастомным компаратором.
         /// </summary>
         SortedSet<TId>? OrderedTaskIds { get; set; }
+
+        /// <summary>
+        /// Настройки группового выполнения задач в метке
+        /// </summary>
+        IGroupingSettings GroupingSettings { get; set; }
     }
 }

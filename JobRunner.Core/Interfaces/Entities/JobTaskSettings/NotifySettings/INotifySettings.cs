@@ -10,6 +10,11 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
     /// <typeparam name="TUserId"></typeparam>
     public interface INotifySettings<TUserId> where TUserId : IEquatable<TUserId>
     {
+        /// <summary>
+        /// Разрешение на уведомления
+        /// </summary>
+        bool EnableNotifications { get; set; }
+
         #region уведомления до
         /// <summary>
         /// Уведомлять до выполнения

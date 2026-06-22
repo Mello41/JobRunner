@@ -15,6 +15,6 @@ namespace JobRunner.Core.Events.TaskEvents.TaskStatus
         public string ErrorMessage { get; set; } = string.Empty;
         public DateTime FailureTime { get; set; }
         public string StackTrace { get; set; } = string.Empty;
-        public INotifySettings NotifySettings { get; set; }
+        public INotifySettings<TID> NotifySettings { get; set; }
     }
 }
