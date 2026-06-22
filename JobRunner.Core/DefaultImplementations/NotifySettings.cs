@@ -61,6 +61,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// Список получателей (пользователей)
         /// </summary>
         public List<INotificationRecipient<TUserId>> Recipients { get; set; } = new();
+        public bool EnableNotifications { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         /// <summary>
         /// Добавить получателя
