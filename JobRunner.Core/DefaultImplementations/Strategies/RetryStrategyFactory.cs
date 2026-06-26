@@ -8,14 +8,14 @@ namespace JobRunner.Core.DefaultImplementations.Strategies
     /// </summary>
     public static class RetryStrategyFactory
     {
-        public static IRetryStrategy Create(RetryStrategy strategyType)
+        public static IRetryPolicy Create(RetryStrategyTypes strategyType)
         {
             return strategyType switch
             {
-                RetryStrategy.None => new NoRetryStrategy(),
-                RetryStrategy.FixedDelay => new FixedDelayStrategy(),
-                RetryStrategy.ExponentialBackoff => new ExponentialBackoffStrategy(),
-                RetryStrategy.Incremental => new IncrementalStrategy(),
+                RetryStrategyTypes.None => new NoRetryStrategy(),
+                RetryStrategyTypes.FixedDelay => new FixedDelayStrategy(),
+                RetryStrategyTypes.ExponentialBackoff => new ExponentialBackoffStrategy(),
+                RetryStrategyTypes.Incremental => new IncrementalStrategy(),
                 _ => new FixedDelayStrategy()
             };
         }

@@ -19,5 +19,6 @@ namespace JobRunner.Core.DefaultImplementations
         public bool AllowGroupPause { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public SortedSet<Guid>? OrderedTaskIds { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public IGroupingSettings GroupingSettings { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public IRetrySettings RetrySettings { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }
