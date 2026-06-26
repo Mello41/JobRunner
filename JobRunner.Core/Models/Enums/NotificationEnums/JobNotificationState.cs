@@ -7,6 +7,30 @@ namespace JobRunner.Core.Models.Enums.NotificationEnums
     /// </summary>
     public enum JobNotificationState
     {
+        #region До
+        [Display(Name = "Перед созданием")]
+        BeforeCreated = -100,
+
+        [Display(Name = "Перед запуском")]
+        BeforeStarted = -99,
+
+        [Display(Name = "Перед завершением")]
+        BeforeCompleted = -98,
+
+        [Display(Name = "Перед остановкой")]
+        BeforeStopped = -97,
+
+        [Display(Name = "Перед паузой")]
+        BeforePaused = -96,
+
+        [Display(Name = "Перед возобновлением")]
+        BeforeResumed = -95,
+
+        [Display(Name = "Перед пропуском")]
+        BeforeSkipped = -94,
+        #endregion
+
+        #region После 
         [Display(Name = "При создании")]
         OnCreated = 0,
 
@@ -30,5 +54,6 @@ namespace JobRunner.Core.Models.Enums.NotificationEnums
 
         [Display(Name = "При пропуске")]
         OnSkipped = 7
+        #endregion
     }
 }
