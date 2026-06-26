@@ -46,7 +46,7 @@ namespace JobRunner.Core.Interfaces.Entities
         bool AllowGroupPause { get; set; }
 
         /// <summary>
-        /// Задачи в метке с порядком. Использует SortedSet с кастомным компаратором.
+        /// Задачи в метке с порядком
         /// </summary>
         SortedSet<TId>? OrderedTaskIds { get; set; }
 
@@ -54,5 +54,11 @@ namespace JobRunner.Core.Interfaces.Entities
         /// Настройки группового выполнения задач в метке
         /// </summary>
         IGroupingSettings GroupingSettings { get; set; }
+
+        /// <summary>
+        /// Настройки перезапуска задач в группе (целиком)
+        /// это сложно будет сделать, но вполне возможно
+        /// </summary>
+        IRetrySettings RetrySettings { get; set; }
     }
 }
