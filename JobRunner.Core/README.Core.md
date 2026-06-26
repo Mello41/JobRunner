@@ -59,7 +59,7 @@ ICrudService<T, TKey> - CRUD интерфейс для любых сущност
 IJobExecutor<TId> - исполнитель задачи (запуск внешнего процесса)
 IJobScheduler<TId> - планировщик (регистрация, запуск, пауза, остановка)
 IEncryptionService - шифрование чувствительных аргументов
-INotificationService<TId> - сервис уведомлений (Email, Telegram, Webhook)
+INotificationService<TId> - сервис уведомлений (Email, Telegram, Webhook - по каждому статусу)
 IUiNotificationService - сервис уведомлений UI (SignalR, EventAggregator)
 IDomainEventDispatcher - диспетчер доменных событий
 IPlatformDetector - определение ОС (Windows / Linux / macOS)
@@ -170,3 +170,12 @@ Error --> Критическая ошибка (требует немедленн
 
 Microsoft.Extensions.DependencyInjection - используется только в DomainEventDispatcher
 (можно заменить на любую другую реализацию DI или убрать, реализовав свой диспетчер)
+
+## последние изменения (26.06.26 v.1.3.0)
+
+1. поддержка логики уведомлений: много состояний задачи --> много способов 
+	+ разное время + разная важность--> много получателей;
+2. поддержка настроек перезапуска у группы (метки)
+3. изменение методов IJobNotificationService - поддержка отправки уведомлений 
+	по каждому статусу с уникальными настройками уведомлений;
+4. переименование RetryStrategy (смысловое разграничение Enum и интерфейса IRetryStrategy)
