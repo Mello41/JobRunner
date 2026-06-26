@@ -16,11 +16,11 @@ namespace JobRunner.Core.DefaultImplementations
 
         public int MaxAttempts { get; set; } = 1;
 
-        private IRetryStrategy _strategy = new NoRetryStrategy();
-        public IRetryStrategy Strategy
+        private IRetryPolicy _retryPolicy = new NoRetryStrategy();
+        public IRetryPolicy RetryPolicy
         {
-            get => _strategy;
-            set => _strategy = value ?? new NoRetryStrategy();
+            get => _retryPolicy;
+            set => _retryPolicy = value ?? new NoRetryStrategy();
         }
 
         public int InitialDelaySeconds { get; set; } = 5;
@@ -57,18 +57,18 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Устанавливает стратегию повторов по типу
         /// </summary>
-        public RetrySettingsExample WithStrategy(RetryStrategy strategyType)
+        public RetrySettingsExample WithStrategy(RetryStrategyTypes strategyType)
         {
-            Strategy = RetryStrategyFactory.Create(strategyType);
+            RetryPolicy = RetryStrategyFactory.Create(strategyType);
             return this;
         }
 
         /// <summary>
         /// Устанавливает кастомную стратегию повторов
         /// </summary>
-        public RetrySettingsExample WithStrategy(IRetryStrategy strategy)
+        public RetrySettingsExample WithStrategy(IRetryPolicy retryPolicy)
         {
-            Strategy = strategy;
+            RetryPolicy = retryPolicy;
             return this;
         }
 

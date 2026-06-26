@@ -6,7 +6,7 @@ namespace JobRunner.Core.DefaultImplementations.Strategies
     /// <summary>
     /// Без повторных попыток
     /// </summary>
-    public class NoRetryStrategy : IRetryStrategy
+    public class NoRetryStrategy : IRetryPolicy
     {
         public string Name => "No retry";
 

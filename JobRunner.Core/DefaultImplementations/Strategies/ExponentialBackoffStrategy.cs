@@ -7,7 +7,7 @@ namespace JobRunner.Core.DefaultImplementations.Strategies
     /// <summary>
     /// Стратегия с экспоненциальной задержкой
     /// </summary>
-    public class ExponentialBackoffStrategy : IRetryStrategy
+    public class ExponentialBackoffStrategy : IRetryPolicy
     {
         public string Name => "Exponential backoff";
 
