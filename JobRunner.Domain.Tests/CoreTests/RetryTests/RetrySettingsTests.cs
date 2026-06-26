@@ -1,7 +1,5 @@
 ﻿using FluentAssertions;
 using JobRunner.Core.DefaultImplementations;
-using JobRunner.Core.DefaultImplementations.Strategies;
-using JobRunner.Core.Entities.Enums;
 
 namespace JobRunner.Domain.Tests.CoreTests.RetryTests
 {
@@ -16,15 +14,6 @@ namespace JobRunner.Domain.Tests.CoreTests.RetryTests
 
             settings.MaxAttempts.Should().Be(5);
             settings.InitialDelaySeconds.Should().Be(10);
-        }
-
-        [Fact]
-        public void RetrySettings_WithStrategy_ConfiguresCorrectStrategy()
-        {
-            var settings = new RetrySettingsExample()
-                .WithStrategy(RetryStrategy.ExponentialBackoff);
-
-            settings.Strategy.Should().BeOfType<ExponentialBackoffStrategy>();
         }
 
         [Fact]

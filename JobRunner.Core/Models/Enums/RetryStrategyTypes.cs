@@ -5,7 +5,7 @@ namespace JobRunner.Core.Entities.Enums
     /// <summary>
     /// Стратегии расчета задержки между повторными попытками выполнения задачи
     /// </summary>
-    public enum RetryStrategy 
+    public enum RetryStrategyTypes
     {
         /// <summary>
         /// Без повторных попыток
