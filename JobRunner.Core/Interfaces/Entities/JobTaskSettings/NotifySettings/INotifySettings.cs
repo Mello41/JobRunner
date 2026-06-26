@@ -11,99 +11,61 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
     public interface INotifySettings<TUserId> where TUserId : IEquatable<TUserId>
     {
         /// <summary>
-        /// Разрешение на уведомления
+        /// Разрешение на уведомления (глобальный выключатель)
         /// </summary>
         bool EnableNotifications { get; set; }
 
-        #region уведомления до
         /// <summary>
-        /// Уведомлять до выполнения
+        /// Настройки уведомлений по статусам задачи.
+        /// Ключ — состояние задачи (JobNotificationState),
+        /// Значение — настройки для этого состояния
         /// </summary>
-        bool NotifyBefore { get; set; }
+        Dictionary<JobNotificationState, IJobStatusNotificationSettings> StatusSettings { get; set; }
+
+        #region Методы
+        /// <summary>
+        /// Получить или создать настройки для указанного статуса
+        /// </summary>
+        /// <param name="state">Состояние задачи</param>
+        /// <returns>Настройки уведомлений для данного статуса</returns>
+        IJobStatusNotificationSettings GetOrCreateStatusSettings(JobNotificationState state);
 
         /// <summary>
-        /// За сколько времени до выполнения уведомить
+        /// Получить настройки для указанного статуса
         /// </summary>
-        TimeSpan NotifyBeforeTime { get; set; }
+        /// <param name="state">Состояние задачи</param>
+        /// <returns>Настройки уведомлений или null, если статус не найден</returns>
+        IJobStatusNotificationSettings? GetStatusSettings(JobNotificationState state);
+
+        /// <summary>
+        /// Добавить получателя к указанному статусу
+        /// </summary>
+        /// <param name="state">Состояние задачи</param>
+        /// <param name="recipient">Получатель уведомлений</param>
+        void AddRecipientToStatus(JobNotificationState state, INotificationRecipient<long> recipient);
+
+        /// <summary>
+        /// Удалить получателя из указанного статуса
+        /// </summary>
+        /// <param name="state">Состояние задачи</param>
+        /// <param name="recipientId">Идентификатор получателя</param>
+        /// <returns>true, если получатель был найден и удален</returns>
+        bool RemoveRecipientFromStatus(JobNotificationState state, string recipientId);
+
+        /// <summary>
+        /// Получить всех получателей для указанного статуса
+        /// </summary>
+        /// <param name="state">Состояние задачи</param>
+        /// <returns>Список получателей для данного статуса</returns>
+        List<INotificationRecipient<long>> GetRecipientsForStatus(JobNotificationState state);
+
+        /// <summary>
+        /// Получить получателей для указанного статуса по способу уведомления
+        /// </summary>
+        /// <param name="state">Состояние задачи</param>
+        /// <param name="method">Способ уведомления</param>
+        /// <returns>Список получателей, у которых есть указанный способ связи</returns>
+        List<INotificationRecipient<long>> GetRecipientsForStatusAndMethod(JobNotificationState state, NotificationType method);
         #endregion
-
-        #region уведомления при старте
-        /// <summary>
-        /// Уведомлять сразу после старта
-        /// </summary>
-        bool NotifyOnStarted { get; set; }
-
-        /// <summary>
-        /// За сколько времени до выполнения уведомить
-        /// </summary>
-        TimeSpan NotifyOnStartedTime { get; set; }
-        #endregion
-
-        #region уведомления после
-        /// <summary>
-        /// Уведомлять после выполнения
-        /// </summary>
-        bool NotifyAfter { get; set; }
-
-        /// <summary>
-        /// За сколько времени до выполнения уведомить
-        /// </summary>
-        TimeSpan NotifyAfterTime { get; set; }
-        #endregion
-
-        /// <summary>
-        /// Текст уведомления
-        /// </summary>
-        string NotificationMessage { get; set; }
-
-        /// <summary>
-        /// Способы уведомления (можно несколько)
-        /// </summary>
-        List<NotificationType> NotificationMethods { get; set; }
-
-        #region Получатели (пользователи)
-        /// <summary>
-        /// Список получателей (пользователей)
-        /// </summary>
-        List<INotificationRecipient<TUserId>> Recipients { get; set; }
-
-        /// <summary>
-        /// Добавить получателя
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="methods"></param>
-        void AddRecipient(TUserId userId, List<NotificationType>? methods = null);
-
-        /// <summary>
-        /// Удалить получателя
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        bool RemoveRecipient(TUserId userId);
-
-        /// <summary>
-        /// Получить всех получателей для конкретного способа уведомления
-        /// </summary>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        List<TUserId> GetRecipientsForMethod(NotificationType method);
-
-        /// <summary>
-        /// Получить контактные данные получателя
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        string? GetContactForRecipient(TUserId userId, NotificationType method);
-        #endregion
-
-        /// <summary>
-        /// Форматирует сообщение уведомления с подстановкой параметров
-        /// </summary>
-        /// <param name="taskName">Имя задачи</param>
-        /// <param name="isSuccess">Успех или ошибка</param>
-        /// <param name="errorMessage">Сообщение об ошибке (опционально)</param>
-        /// <returns>Отформатированное сообщение</returns>
-        string FormatMessage(string taskName, bool isSuccess, string? errorMessage = null);
     }
 }

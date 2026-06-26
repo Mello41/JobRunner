@@ -11,34 +11,64 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
     public interface INotificationRecipient<TUserId> where TUserId : IEquatable<TUserId>
     {
         /// <summary>
-        /// ID получателя (уникальный в рамках задачи)
+        /// id в программе (удобно работать с long/guid и тд)
         /// </summary>
         string Id { get; set; }
 
         /// <summary>
-        /// ID пользователя (ссылка на UserModel)
+        /// любой id (на всякий)
         /// </summary>
         TUserId UserId { get; set; }
 
         /// <summary>
-        /// Имя пользователя (кэш для отображения)
+        /// 
         /// </summary>
         string? UserName { get; set; }
 
         /// <summary>
-        /// Какие способы уведомления использовать для этого пользователя
-        /// Если null — используются все доступные способы
-        /// </summary>
-        List<NotificationType>? Methods { get; set; }
-
-        /// <summary>
-        /// Включен ли получатель
+        /// 
         /// </summary>
         bool IsEnabled { get; set; }
 
         /// <summary>
-        /// Дополнительные настройки для этого получателя
+        /// Контакты
+        /// </summary>
+        INotificationRecipientContact Contacts { get; set; }
+
+        /// <summary>
+        /// Метаданные
         /// </summary>
         Dictionary<string, object>? Metadata { get; set; }
+
+        #region Методы для работы с контактами
+        /// <summary>
+        /// Получить данные (контакты) для уведомлений
+        /// (по NotificationType)
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        string? GetContact(NotificationType method);
+
+        /// <summary>
+        /// получить конкретные типы уведомлений у получателя 
+        /// (которые он заполнил)
+        /// </summary>
+        /// <returns></returns>
+        List<NotificationType> GetAvailableMethods();
+
+        /// <summary>
+        /// имеет ли пользователь контакт
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        bool HasContact(NotificationType method);
+
+        /// <summary>
+        /// имеет ли пользователь контакт (хоть какой либо)
+        /// </summary>
+        /// <returns></returns>
+        bool HasAnyContact();
+
+        #endregion
     }
 }
