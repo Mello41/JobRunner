@@ -7,7 +7,7 @@ namespace JobRunner.Core.DefaultImplementations.Strategies
     /// <summary>
     /// Линейная задержка (attempt * initial)
     /// </summary>
-    public class IncrementalStrategy : IRetryPolicy
+    public class IncrementalStrategy : IRetryPolicyStrategy
     {
         public string Name => "Incremental";
 

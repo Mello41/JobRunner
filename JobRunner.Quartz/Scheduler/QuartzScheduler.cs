@@ -4,6 +4,7 @@ using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using JobRunner.Core.Interfaces.Scheduler;
 using JobRunner.Quartz.Adapters;
 using JobRunner.Quartz.Extensions;
+using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Impl.Matchers;
 
@@ -20,11 +21,18 @@ namespace JobRunner.Quartz.Scheduler
     {
         private readonly IScheduler _scheduler;
         private readonly IScheduleConverter _converter;
+        private readonly IJobAdapterFactory<TTask, TId> _jobFactory;
+        private readonly ILogger<QuartzScheduler<TTask, TId>> _logger;
 
-        public QuartzScheduler(IScheduler scheduler, IScheduleConverter converter)
+        public QuartzScheduler(IScheduler scheduler, 
+                               IScheduleConverter converter,
+                               IJobAdapterFactory<TTask, TId> jobFactory,
+                               ILogger<QuartzScheduler<TTask, TId>> logger)
         {
             _scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
-            _converter = converter;
+            _converter = converter ?? throw new ArgumentNullException(nameof(converter));
+            _jobFactory = jobFactory ?? throw new ArgumentNullException(nameof(jobFactory));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -49,6 +57,8 @@ namespace JobRunner.Quartz.Scheduler
                 await _scheduler.Shutdown(cancellationToken);
         }
 
+        #region задачи
+
         /// <summary>
         /// Немедленный запуск задачи вне зависимости от расписания
         /// </summary>
@@ -60,7 +70,6 @@ namespace JobRunner.Quartz.Scheduler
             await _scheduler.TriggerJob(new JobKey(taskId.ToString()), cancellationToken);
             return true;
         }
-
 
         /// <summary>
         /// Приостанавливает выполнение задачи по расписанию
@@ -113,20 +122,28 @@ namespace JobRunner.Quartz.Scheduler
             await Task.Delay(delay, cancellationToken);
             return await RunNowAsync(taskId, cancellationToken);
         }
+        #endregion
 
         #region Управление расписанием
-
         /// <summary>
         /// Регистрация задачи в планировщике (вызывается оркестратором)
         /// </summary>
-        /// <exception cref="InvalidOperationException">Когда Cron выражение пустое или невалидное</exception>
+        /// <param name="taskId"></param>
+        /// <param name="schedule"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">
+        /// Когда Cron выражение пустое или невалидное
+        /// </exception>
         public async Task ScheduleAsync(TId taskId, IScheduleSettings schedule, CancellationToken cancellationToken = default)
         {
             var cronExpression = _converter.Convert(schedule);
-
             cronExpression.ValidateCron();
 
-            var job = JobBuilder.Create<JobAdapter<TTask, TId>>()
+            var jobType = _jobFactory.GetJobType();
+
+            var job = JobBuilder
+                .Create(jobType)  
                 .WithIdentity(taskId.ToString())
                 .UsingJobData("TaskId", taskId.ToString())
                 .StoreDurably()

@@ -7,7 +7,7 @@ namespace JobRunner.Core.DefaultImplementations.Strategies
     /// <summary>
     /// Фиксированная задержка
     /// </summary>
-    public class FixedDelayStrategy : IRetryPolicy
+    public class FixedDelayStrategy : IRetryPolicyStrategy
     {
         public string Name => "Fixed delay";
 

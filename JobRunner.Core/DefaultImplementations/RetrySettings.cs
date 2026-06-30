@@ -16,8 +16,8 @@ namespace JobRunner.Core.DefaultImplementations
 
         public int MaxAttempts { get; set; } = 1;
 
-        private IRetryPolicy _retryPolicy = new NoRetryStrategy();
-        public IRetryPolicy RetryPolicy
+        private IRetryPolicyStrategy _retryPolicy = new NoRetryStrategy();
+        public IRetryPolicyStrategy RetryPolicy
         {
             get => _retryPolicy;
             set => _retryPolicy = value ?? new NoRetryStrategy();
@@ -66,7 +66,7 @@ namespace JobRunner.Core.DefaultImplementations
         /// <summary>
         /// Устанавливает кастомную стратегию повторов
         /// </summary>
-        public RetrySettingsExample WithStrategy(IRetryPolicy retryPolicy)
+        public RetrySettingsExample WithStrategy(IRetryPolicyStrategy retryPolicy)
         {
             RetryPolicy = retryPolicy;
             return this;

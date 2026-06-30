@@ -8,7 +8,7 @@ namespace JobRunner.Core.DefaultImplementations.Strategies
     /// </summary>
     public static class RetryStrategyFactory
     {
-        public static IRetryPolicy Create(RetryStrategyTypes strategyType)
+        public static IRetryPolicyStrategy Create(RetryStrategyTypes strategyType)
         {
             return strategyType switch
             {

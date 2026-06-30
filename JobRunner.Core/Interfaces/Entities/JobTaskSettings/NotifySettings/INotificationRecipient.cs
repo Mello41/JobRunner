@@ -7,26 +7,26 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
     /// <summary>
     /// Получатель уведомления (ссылка на пользователя)
     /// </summary>
-    /// <typeparam name="TUserId">Тип идентификатора пользователя</typeparam>
-    public interface INotificationRecipient<TUserId> where TUserId : IEquatable<TUserId>
+    /// <typeparam name="TId">Тип идентификатора получателя</typeparam>
+    public interface INotificationRecipient<TId> where TId : IEquatable<TId>
     {
         /// <summary>
-        /// id в программе (удобно работать с long/guid и тд)
+        /// Внутренний идентификатор получателя (первичный ключ)
         /// </summary>
-        string Id { get; set; }
+        TId Id { get; set; }
 
         /// <summary>
-        /// любой id (на всякий)
+        /// Идентификатор пользователя, которому принадлежит получатель
         /// </summary>
-        TUserId UserId { get; set; }
+        TId UserId { get; set; }
 
         /// <summary>
-        /// 
+        /// Имя пользователя
         /// </summary>
         string? UserName { get; set; }
 
         /// <summary>
-        /// 
+        /// Активен ли получатель
         /// </summary>
         bool IsEnabled { get; set; }
 

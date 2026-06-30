@@ -12,6 +12,7 @@ namespace JobRunner.Quartz.Adapters
     /// <summary>
     /// паттерн Adapter, который соединяет (адаптирует)
     /// доменную модель с внешним планировщиком Quartz.NET
+    /// Так называемый "Job-класс"
     /// </summary>
     public class JobAdapter<TTask, TId> : IJob
                         where TTask : class, IJobTask<TId>

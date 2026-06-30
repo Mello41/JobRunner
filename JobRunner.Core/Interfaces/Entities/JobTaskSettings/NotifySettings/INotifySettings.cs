@@ -7,9 +7,14 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
     /// <summary>
     /// Интерфейс настроек уведомления задачи
     /// </summary>
-    /// <typeparam name="TUserId"></typeparam>
-    public interface INotifySettings<TUserId> where TUserId : IEquatable<TUserId>
+    /// <typeparam name="TId">Тип идентификатора задачи</typeparam>
+    public interface INotifySettings<TId> where TId : IEquatable<TId>
     {
+        /// <summary>
+        /// Уникальный идентификатор задачи
+        /// </summary>
+        TId JobTaskId { get; set; }
+
         /// <summary>
         /// Разрешение на уведомления (глобальный выключатель)
         /// </summary>
@@ -20,29 +25,31 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
         /// Ключ — состояние задачи (JobNotificationState),
         /// Значение — настройки для этого состояния
         /// </summary>
-        Dictionary<JobNotificationState, IJobStatusNotificationSettings> StatusSettings { get; set; }
+        Dictionary<JobNotificationState, 
+            IJobStatusNotificationSettings<TId>> StatusSettings { get; set; }
 
         #region Методы
+
         /// <summary>
         /// Получить или создать настройки для указанного статуса
         /// </summary>
         /// <param name="state">Состояние задачи</param>
         /// <returns>Настройки уведомлений для данного статуса</returns>
-        IJobStatusNotificationSettings GetOrCreateStatusSettings(JobNotificationState state);
+        IJobStatusNotificationSettings<TId> GetOrCreateStatusSettings(JobNotificationState state);
 
         /// <summary>
         /// Получить настройки для указанного статуса
         /// </summary>
         /// <param name="state">Состояние задачи</param>
         /// <returns>Настройки уведомлений или null, если статус не найден</returns>
-        IJobStatusNotificationSettings? GetStatusSettings(JobNotificationState state);
+        IJobStatusNotificationSettings<TId>? GetStatusSettings(JobNotificationState state);
 
         /// <summary>
         /// Добавить получателя к указанному статусу
         /// </summary>
         /// <param name="state">Состояние задачи</param>
         /// <param name="recipient">Получатель уведомлений</param>
-        void AddRecipientToStatus(JobNotificationState state, INotificationRecipient<long> recipient);
+        void AddRecipientToStatus(JobNotificationState state, INotificationRecipient<TId> recipient);
 
         /// <summary>
         /// Удалить получателя из указанного статуса
@@ -57,7 +64,7 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
         /// </summary>
         /// <param name="state">Состояние задачи</param>
         /// <returns>Список получателей для данного статуса</returns>
-        List<INotificationRecipient<long>> GetRecipientsForStatus(JobNotificationState state);
+        List<INotificationRecipient<TId>> GetRecipientsForStatus(JobNotificationState state);
 
         /// <summary>
         /// Получить получателей для указанного статуса по способу уведомления
@@ -65,7 +72,10 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
         /// <param name="state">Состояние задачи</param>
         /// <param name="method">Способ уведомления</param>
         /// <returns>Список получателей, у которых есть указанный способ связи</returns>
-        List<INotificationRecipient<long>> GetRecipientsForStatusAndMethod(JobNotificationState state, NotificationType method);
+        List<INotificationRecipient<TId>> GetRecipientsForStatusAndMethod(
+                                                JobNotificationState state,
+                                                NotificationType method);
+
         #endregion
     }
 }

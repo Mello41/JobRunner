@@ -6,7 +6,7 @@ namespace JobRunner.Core.Interfaces.Entities.Retry
     /// Стратегия повторных попыток — 
     /// реализует алгоритмы расчета задержек и определения необходимости повтора
     /// </summary>
-    public interface IRetryPolicy
+    public interface IRetryPolicyStrategy
     {
         /// <summary>
         /// Название стратегии (для логирования и UI)

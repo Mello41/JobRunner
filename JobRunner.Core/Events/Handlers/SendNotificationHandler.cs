@@ -15,14 +15,14 @@ namespace JobRunner.Core.Events.Handlers
     /// </summary>
     /// <typeparam name="TId"></typeparam>
     public class SendNotificationHandler<TId> :
-                IDomainEventHandler<TaskStartedEvent<TId>>,
-                IDomainEventHandler<TaskCompletedEvent<TId>>,
-                IDomainEventHandler<TaskFailedEvent<TId>>,
-                IDomainEventHandler<TaskStoppedEvent<TId>>,
-                IDomainEventHandler<TaskPausedEvent<TId>>,
-                IDomainEventHandler<TaskResumedEvent<TId>>,
-                IDomainEventHandler<TaskSkippedEvent<TId>>
-                where TId : IEquatable<TId>
+                                            IDomainEventHandler<TaskStartedEvent<TId>>,
+                                            IDomainEventHandler<TaskCompletedEvent<TId>>,
+                                            IDomainEventHandler<TaskFailedEvent<TId>>,
+                                            IDomainEventHandler<TaskStoppedEvent<TId>>,
+                                            IDomainEventHandler<TaskPausedEvent<TId>>,
+                                            IDomainEventHandler<TaskResumedEvent<TId>>,
+                                            IDomainEventHandler<TaskSkippedEvent<TId>>
+                                        where TId : IEquatable<TId> 
     {
         private readonly IJobNotificationService<TId> _notificationService;
         private readonly ILogger<SendNotificationHandler<TId>> _logger;
@@ -79,51 +79,56 @@ namespace JobRunner.Core.Events.Handlers
         /// <summary>
         /// Обработка уведомления для конкретного статуса
         /// </summary>
+        /// <param name="evt"></param>
+        /// <param name="status"></param>
+        /// <param name="cancellationToken"></param>
+        /// <param name="isSuccess"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
         private async Task HandleNotificationForStatus(
-            object evt,
-            JobNotificationState status,
-            CancellationToken cancellationToken,
-            bool? isSuccess = null,
-            string? errorMessage = null)
+                object evt,
+                JobNotificationState status,
+                CancellationToken cancellationToken,
+                bool? isSuccess = null,
+                string? errorMessage = null)
         {
-            // Извлекаем общие данные из события через рефлексию или паттерн
-            // Так как все события имеют TaskId, TaskName, NotifySettings
             var taskId = GetTaskId(evt);
             var taskName = GetTaskName(evt);
             var settings = GetNotifySettings(evt);
 
             try
             {
-                // Проверяем, включены ли уведомления глобально
                 if (settings?.EnableNotifications != true)
                 {
                     _logger.LogDebug("Notifications disabled globally for task {TaskId}", taskId);
                     return;
                 }
 
-                // Получаем настройки для конкретного статуса
                 var statusSettings = settings.GetStatusSettings(status);
 
-                // Проверяем, включены ли уведомления для этого статуса
-                if (statusSettings == null || !statusSettings.IsEnabled)
+                if (statusSettings == null)
+                {
+                    _logger.LogDebug("Status settings not found for status {Status} in task {TaskId}", status, taskId);
+                    return;
+                }
+
+                if (!statusSettings.IsEnabled)
                 {
                     _logger.LogDebug("Notifications for status {Status} disabled for task {TaskId}", status, taskId);
                     return;
                 }
 
-                // Проверяем, есть ли получатели
                 if (statusSettings.Recipients == null || statusSettings.Recipients.Count == 0)
                 {
                     _logger.LogDebug("No recipients for status {Status} in task {TaskId}", status, taskId);
                     return;
                 }
 
-                _logger.LogInformation("Sending notification for task {TaskName} (Id: {TaskId}) with status {Status}", taskName, taskId, status);
+                _logger.LogInformation("Sending notification for task {TaskName} (Id: {TaskId}) with status {Status}",
+                    taskName, taskId, status);
 
-                // Формируем сообщение используя метод из настроек
                 var message = FormatMessageFromSettings(statusSettings, taskName, status, isSuccess, errorMessage);
 
-                // Отправляем уведомления — используем сервис, который уже знает, как работать с настройками
                 await _notificationService.NotifyForStatusAsync(
                     taskId,
                     taskName,
@@ -146,12 +151,17 @@ namespace JobRunner.Core.Events.Handlers
         /// <summary>
         /// Форматирование сообщения с использованием настроек
         /// </summary>
-        private string FormatMessageFromSettings(
-            IJobStatusNotificationSettings settings,
-            string taskName,
-            JobNotificationState status,
-            bool? isSuccess,
-            string? errorMessage)
+        /// <param name="settings"></param>
+        /// <param name="taskName"></param>
+        /// <param name="status"></param>
+        /// <param name="isSuccess"></param>
+        /// <param name="errorMessage"></param>
+        /// <returns></returns>
+        private string FormatMessageFromSettings(IJobStatusNotificationSettings<TId> settings,
+                                                 string taskName,
+                                                 JobNotificationState status,
+                                                 bool? isSuccess,
+                                                 string? errorMessage)
         {
             var template = settings.MessageTemplate;
 

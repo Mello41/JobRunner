@@ -5,13 +5,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace JobRunner.Core.Interfaces.Services.EntityServices
+namespace JobRunner.Core.Interfaces.Services.EntityServices.JobTaskSettingsServices
 {
     /// <summary>
     /// Сервис для управления настройками и аргументами задачи
     /// </summary>
     /// <typeparam name="TId">Тип идентификатора задачи</typeparam>
-    public interface IScheduleSettingsService<TId> 
+    public interface IJobScheduleSettingsService<TId> 
                         where TId : IEquatable<TId>
     {
         /// <summary>

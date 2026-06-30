@@ -16,7 +16,7 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings
         /// <summary>
         /// Стратегия расчета задержки между повторными попытками
         /// </summary>
-        IRetryPolicy RetryPolicy { get; set; }
+        IRetryPolicyStrategy RetryPolicy { get; set; }
 
         /// <summary>
         /// Начальная задержка перед первой повторной попыткой (в секундах)

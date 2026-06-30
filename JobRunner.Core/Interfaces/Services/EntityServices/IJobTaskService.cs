@@ -11,6 +11,7 @@ namespace JobRunner.Core.Interfaces.Services.EntityServices
     /// (операции только с БД)
     /// </summary>
     /// <typeparam name="T">Тип задачи, реализующий IJobTask</typeparam>
+    /// <typeparam name="TId"></typeparam>
     public interface IJobTaskService<T, TId> : ICrudService<T, TId>
                                     where T : class, IJobTask<TId>
                                     where TId : IEquatable<TId>

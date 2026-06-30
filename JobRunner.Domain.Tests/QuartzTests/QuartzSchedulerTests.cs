@@ -1,10 +1,12 @@
 ﻿using FluentAssertions;
 using JobRunner.Core.DefaultImplementations;
+using JobRunner.Core.Entities.ValueObjects;
 using JobRunner.Core.Interfaces.Converters;
+using JobRunner.Core.Interfaces.Scheduler;
+using JobRunner.Quartz.Scheduler;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Quartz;
-using JobRunner.Quartz.Scheduler;
-using JobRunner.Core.Entities.ValueObjects;
 
 namespace JobRunner.Domain.Tests.QuartzTests
 {
@@ -12,13 +14,22 @@ namespace JobRunner.Domain.Tests.QuartzTests
     {
         private readonly Mock<IScheduler> _schedulerMock;
         private readonly Mock<IScheduleConverter> _converterMock;
+        private readonly Mock<IJobAdapterFactory<JobTaskExample, Guid>> _jobFactoryMock;
+        private readonly Mock<ILogger<QuartzScheduler<JobTaskExample, Guid>>> _loggerMock;
         private readonly QuartzScheduler<JobTaskExample, Guid> _scheduler;
 
         public QuartzSchedulerTests()
         {
             _schedulerMock = new Mock<IScheduler>();
             _converterMock = new Mock<IScheduleConverter>();
-            _scheduler = new QuartzScheduler<JobTaskExample, Guid>(_schedulerMock.Object, _converterMock.Object);
+            _jobFactoryMock = new Mock<IJobAdapterFactory<JobTaskExample, Guid>>();
+            _loggerMock = new Mock<ILogger<QuartzScheduler<JobTaskExample, Guid>>>();
+
+            _scheduler = new QuartzScheduler<JobTaskExample, Guid>(
+                _schedulerMock.Object,
+                _converterMock.Object,
+                _jobFactoryMock.Object,
+                _loggerMock.Object);
         }
 
         [Fact]

@@ -31,11 +31,6 @@ namespace JobRunner.Core.Interfaces.Entities
         string Description { get; set; }
 
         /// <summary>
-        /// Путь к исполняемому файлу задачи
-        /// </summary>
-        string ExecutionPath { get; set; }
-
-        /// <summary>
         /// Дата начала выполнения задачи
         /// </summary>
         DateTime StartRun { get; set; }
@@ -58,6 +53,25 @@ namespace JobRunner.Core.Interfaces.Entities
         #endregion
 
         #region Разрешения
+
+        #region Свойства выполнения
+
+        /// <summary>
+        /// Использовать кастомную реализацию?
+        /// </summary>
+        bool UseCustomExecution { get; set; }
+
+        /// <summary>
+        /// Универсальный путь метода (файл или сборка)
+        /// </summary>
+        string ExecutionPath { get; set; }
+
+        /// <summary>
+        /// Имя метода для кастомной реализации (если UseCustomExecution = true)
+        /// </summary>
+        string MethodName { get; set; }
+
+        #endregion
 
         #region Группировка задачи
         /// <summary>
@@ -86,9 +100,9 @@ namespace JobRunner.Core.Interfaces.Entities
 
         #region Настройки выполнения задачи
         /// <summary>
-        /// Настройки уведомлений задачи
+        /// Настройки уведомлений задачи (id сущности)
         /// </summary>
-        INotifySettings<TId> NotifySettings { get; set; }
+        TId NotifySettingsId { get; set; }
 
         /// <summary>
         /// Настройки периодичности

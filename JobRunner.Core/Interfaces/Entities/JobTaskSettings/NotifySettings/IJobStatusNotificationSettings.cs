@@ -7,8 +7,15 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
     /// <summary>
     /// Настройки уведомлений для конкретного состояния задачи
     /// </summary>
-    public interface IJobStatusNotificationSettings
+    /// <typeparam name="TId"></typeparam>
+    public interface IJobStatusNotificationSettings<TId>
+                                            where TId : IEquatable<TId>
     {
+        /// <summary>
+        /// ID родительских настроек
+        /// </summary>
+        TId NotifySettingsId { get; set; }
+
         /// <summary>
         /// Состояние задачи, к которому относятся данные 
         /// настройки (чтобы не потеряться)
@@ -40,7 +47,7 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
         /// <summary>
         /// Список получателей для данного состояния
         /// </summary>
-        List<INotificationRecipient<long>> Recipients { get; set; }
+        List<INotificationRecipient<TId>> Recipients { get; set; }
 
         #region Методы
 
@@ -48,7 +55,7 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
         /// Добавить получателя к данному состоянию
         /// </summary>
         /// <param name="recipient">Получатель уведомления</param>
-        void AddRecipient(INotificationRecipient<long> recipient);
+        void AddRecipient(INotificationRecipient<TId> recipient);
 
         /// <summary>
         /// Удалить получателя по идентификатору
@@ -62,7 +69,7 @@ namespace JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings
         /// </summary>
         /// <param name="method">Способ уведомления (Email, Telegram, Webhook)</param>
         /// <returns>Список получателей, у которых есть указанный способ связи</returns>
-        List<INotificationRecipient<long>> GetRecipientsByMethod(NotificationType method);
+        List<INotificationRecipient<TId>> GetRecipientsByMethod(NotificationType method);
 
         /// <summary>
         /// Очистить всех получателей для данного состояния

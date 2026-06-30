@@ -26,7 +26,6 @@ namespace JobRunner.Quartz.Extensions
                 {
                     q.AddJobListener<JobLoggingListener>();
                 }
-
                 configureQuartz?.Invoke(q);
             });
 
