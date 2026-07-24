@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel;
 
-namespace JobRunner.Core.Entities.ValueObjects
+namespace JobRunner.Core.Models.ValueSchedule
 {
     /// <summary>
     /// Расписание для однократного 

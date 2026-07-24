@@ -23,13 +23,9 @@ namespace JobRunner.Core.Interfaces.Services.EntityServices
         /// <param name="isSuccess">Успешность выполнения (для OnCompleted/OnFailed)</param>
         /// <param name="errorMessage">Сообщение об ошибке</param>
         /// <param name="ct">Токен отмены</param>
-        Task NotifyForStatusAsync(TID taskId,
-                                  string taskName,
-                                  JobNotificationState status,
-                                  INotifySettings<TID> settings,
-                                  bool? isSuccess = null,
-                                  string? errorMessage = null,
-                                  CancellationToken ct = default);
+        Task NotifyForStatusAsync(TID taskId, string taskName, JobNotificationState status,
+                                  INotifySettings<TID> settings, bool? isSuccess = null,
+                                  string? errorMessage = null, CancellationToken ct = default);
 
         #region Дополнительные методы
 
@@ -41,8 +37,7 @@ namespace JobRunner.Core.Interfaces.Services.EntityServices
         /// <param name="status">Статус для теста</param>
         /// <param name="settings">Настройки уведомлений</param>
         /// <param name="ct">Токен отмены</param>
-        Task SendTestNotificationAsync(TID taskId,
-                                       string taskName,
+        Task SendTestNotificationAsync(TID taskId, string taskName,
                                        JobNotificationState status,
                                        INotifySettings<TID> settings,
                                        CancellationToken ct = default);
@@ -87,6 +82,9 @@ namespace JobRunner.Core.Interfaces.Services.EntityServices
         /// <returns>true, если получатель поддерживает указанный способ</returns>
         bool CanNotifyRecipient(INotificationRecipient<TID> recipient, NotificationType method);
 
+        #endregion
+
+        #region Отправка уведомлений
         /// <summary>
         /// Отправить уведомления всем получателям для указанного статуса
         /// (с проверкой всех способов связи)
@@ -99,14 +97,34 @@ namespace JobRunner.Core.Interfaces.Services.EntityServices
         /// <param name="errorMessage"></param>
         /// <param name="ct"></param>
         /// <returns></returns>
-        Task NotifyAllForStatusAsync(TID taskId,
-                                     string taskName,
-                                     JobNotificationState status,
-                                     INotifySettings<TID>? settings,
-                                     bool? isSuccess = null,
-                                     string? errorMessage = null,
-                                     CancellationToken ct = default);
+        Task NotifyAllForStatusAsync(TID taskId, string taskName, JobNotificationState status, 
+                                     INotifySettings<TID>? settings, bool? isSuccess = null,
+                                     string? errorMessage = null, CancellationToken ct = default);
 
+        /// <summary>
+        /// Отправить уведомление конкретному получателю
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="taskName"></param>
+        /// <param name="message"></param>
+        /// <param name="recipient"></param>
+        /// <param name="status"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task SendToRecipientAsync(long taskId, string taskName,
+                                  string message, INotificationRecipient<long> recipient,
+                                  JobNotificationState status, CancellationToken ct = default);
+
+        /// <summary>
+        /// Отправить тестовое Email уведомление
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="subject"></param>
+        /// <param name="message"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task SendTestEmailAsync(string email, string? subject = null,
+                                string? message = null, CancellationToken ct = default);
         #endregion
     }
 }

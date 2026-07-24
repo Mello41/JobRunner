@@ -284,8 +284,7 @@ namespace JobRunner.Quartz
                     TaskName = task.Name,
                     StartTime = startTime,
                     ProcessId = processId,
-                    ExecutionPath = task.ExecutionPath,
-                    NotifySettings = task.NotifySettings
+                    ExecutionPath = task.ExecutionPath
                 };
                 await TaskStarted.Invoke(evt);
             }
@@ -309,8 +308,7 @@ namespace JobRunner.Quartz
                     Success = result.Success,
                     ErrorMessage = result.ErrorMessage,
                     CompletionTime = DateTime.UtcNow,
-                    DurationMs = result.DurationMs,
-                    NotifySettings = task.NotifySettings
+                    DurationMs = result.DurationMs
                 };
                 await TaskCompleted.Invoke(evt);
             }

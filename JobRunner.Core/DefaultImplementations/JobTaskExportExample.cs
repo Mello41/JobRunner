@@ -1,8 +1,8 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
-using JobRunner.Core.Interfaces.Entities.Export;
+﻿using JobRunner.Core.Interfaces.Entities.Export;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
+using JobRunner.Core.Models.ValueSchedule;
 using System;
 using System.Collections.Generic;
 

@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.DTO;
+﻿using JobRunner.Core.DTO.ScheduleDTO;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 

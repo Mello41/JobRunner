@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace JobRunner.Core.Entities.ValueObjects
+namespace JobRunner.Core.Models.ValueSchedule
 {
     /// <summary>
     /// Расписание для еженедельного выполнения задачи

@@ -10,6 +10,9 @@ namespace JobRunner.Core.Entities.Enums
         [Display(Name = "Однократно")]
         Once,
 
+        [Display(Name = "Список однократных выполнений")]
+        OnceList,
+
         [Display(Name = "Каждую минуту")]
         EveryMinutes,
 

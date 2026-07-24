@@ -1,8 +1,8 @@
-﻿using JobRunner.Quartz.Converters;
-using FluentAssertions;
-using Moq;
-using JobRunner.Core.Entities.ValueObjects;
+﻿using FluentAssertions;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
+using JobRunner.Core.Models.ValueSchedule;
+using JobRunner.Quartz.Converters;
+using Moq;
 
 namespace JobRunner.Domain.Tests.QuartzTests
 {
@@ -104,7 +104,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
         [Fact]
         public void Convert_QuarterlySchedule_Q1_ReturnsCorrectCron()
         {
-            var schedule = new QuarterlySchedule { StartMonth = 1, Day = 1, Hour = 9, Minute = 0 };
+            var schedule = new QuarterlySchedule { Quarter = 1, Day = 1, Hour = 9, Minute = 0 };
 
             var result = _converter.Convert(schedule);
 
@@ -114,7 +114,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
         [Fact]
         public void Convert_QuarterlySchedule_Q2_ReturnsCorrectCron()
         {
-            var schedule = new QuarterlySchedule { StartMonth = 4, Day = 1, Hour = 10, Minute = 30 };
+            var schedule = new QuarterlySchedule { Quarter = 2, Day = 1, Hour = 10, Minute = 30 };
 
             var result = _converter.Convert(schedule);
 
@@ -124,7 +124,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
         [Fact]
         public void Convert_QuarterlySchedule_Q3_ReturnsCorrectCron()
         {
-            var schedule = new QuarterlySchedule { StartMonth = 7, Day = 15, Hour = 14, Minute = 0 };
+            var schedule = new QuarterlySchedule { Quarter = 3, Day = 15, Hour = 14, Minute = 0 };
 
             var result = _converter.Convert(schedule);
 
@@ -134,7 +134,7 @@ namespace JobRunner.Domain.Tests.QuartzTests
         [Fact]
         public void Convert_QuarterlySchedule_Q4_ReturnsCorrectCron()
         {
-            var schedule = new QuarterlySchedule { StartMonth = 10, Day = 31, Hour = 23, Minute = 59 };
+            var schedule = new QuarterlySchedule { Quarter = 4, Day = 31, Hour = 23, Minute = 59 };
 
             var result = _converter.Convert(schedule);
 

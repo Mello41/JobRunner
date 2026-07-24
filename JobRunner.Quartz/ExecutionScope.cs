@@ -70,8 +70,7 @@ namespace JobRunner.Quartz
                 TaskId = _task.Id,
                 TaskName = _task.Name,
                 StartTime = StartTime,
-                ExecutionPath = _task.ExecutionPath,
-                NotifySettings = _task.NotifySettings
+                ExecutionPath = _task.ExecutionPath
             }, cancellationToken);
 
             _logger.LogInformation("Task {TaskName} started at {StartTime}", _task.Name, StartTime);
@@ -163,8 +162,7 @@ namespace JobRunner.Quartz
                 Success = result.Success,
                 ErrorMessage = result.ErrorMessage,
                 CompletionTime = endTime,
-                DurationMs = durationMs,
-                NotifySettings = _task.NotifySettings
+                DurationMs = durationMs
             }, cancellationToken);
         }
 
@@ -199,8 +197,7 @@ namespace JobRunner.Quartz
                 Success = false,
                 ErrorMessage = "Execution was cancelled",
                 CompletionTime = DateTime.UtcNow,
-                DurationMs = 0,
-                NotifySettings = _task.NotifySettings
+                DurationMs = 0
             }, cancellationToken);
 
             var emptyResult = new JobExecutionResult { Success = false, ErrorMessage = "Execution was cancelled" };
@@ -238,8 +235,7 @@ namespace JobRunner.Quartz
                 Success = false,
                 ErrorMessage = ex.Message,
                 CompletionTime = DateTime.UtcNow,
-                DurationMs = 0,
-                NotifySettings = _task.NotifySettings
+                DurationMs = 0
             }, cancellationToken);
 
             var emptyResult = new JobExecutionResult { Success = false, ErrorMessage = ex.Message };

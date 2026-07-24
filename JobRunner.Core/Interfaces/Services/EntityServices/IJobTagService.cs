@@ -2,6 +2,7 @@
 using JobRunner.Core.Interfaces.Core;
 using JobRunner.Core.Interfaces.Entities;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,5 +33,13 @@ namespace JobRunner.Core.Interfaces.Services.EntityServices
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<int> CountJobsToTag(TId id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Получить метки по задаче
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task<IEnumerable<TTag>> GetTagsForTaskAsync(TId taskId, CancellationToken ct = default);
     }
 }

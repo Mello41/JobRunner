@@ -1,4 +1,4 @@
-﻿using JobRunner.Core.DTO;
+﻿using JobRunner.Core.DTO.ScheduleDTO;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
 using JobRunner.Core.Interfaces.Services.Detectors.PlatformDetector.CommandLine;
 using JobRunner.Core.Utils.Platform;

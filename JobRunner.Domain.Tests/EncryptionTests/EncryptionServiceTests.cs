@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using JobRunner.Core.DefaultImplementations;
-using JobRunner.Core.DTO;
+using JobRunner.Core.DTO.ScheduleDTO;
 using JobRunner.Core.Interfaces.Core;
 
 namespace JobRunner.Domain.Tests.EncryptionTests

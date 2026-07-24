@@ -1,6 +1,6 @@
-﻿using JobRunner.Core.Entities.ValueObjects;
-using JobRunner.Core.Interfaces.Converters;
+﻿using JobRunner.Core.Interfaces.Converters;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings.ScheduleSettings;
+using JobRunner.Core.Models.ValueSchedule;
 
 namespace JobRunner.Quartz.Converters
 {
@@ -23,6 +23,8 @@ namespace JobRunner.Quartz.Converters
             return settings switch
             {
                 OnceSchedule once => ConvertOnce(once),
+                OnceListSchedule onceList => ConvertOnceList(onceList),
+
                 DailySchedule daily => ConvertDaily(daily),
                 WeeklySchedule weekly => ConvertWeekly(weekly),
                 IntervalSchedule interval => ConvertInterval(interval),
@@ -45,6 +47,21 @@ namespace JobRunner.Quartz.Converters
         private string ConvertEveryMinutes(EveryMinutesSchedule everyMinutes)
         {
             return $"0 */{everyMinutes.IntervalMinutes} * * * ?";
+        }
+
+        /// <summary>
+        /// Конвертация списка однократных выполнений
+        /// </summary>
+        private string ConvertOnceList(OnceListSchedule onceList)
+        {
+            if (onceList.Dates == null || onceList.Dates.Count == 0)
+                throw new InvalidOperationException("OnceListSchedule has no dates");
+
+            var nextDate = onceList.GetNextRunTime(DateTime.Now);
+            if (!nextDate.HasValue)
+                throw new InvalidOperationException("No future dates in OnceListSchedule");
+
+            return $"{nextDate.Value.Minute} {nextDate.Value.Hour} {nextDate.Value.Day} {nextDate.Value.Month} ? {nextDate.Value.Year}";
         }
 
         /// <summary>
@@ -102,7 +119,8 @@ namespace JobRunner.Quartz.Converters
         /// <returns></returns>
         private string ConvertQuarterly(QuarterlySchedule quarterly)
         {
-            var months = GetQuarterMonths(quarterly.StartMonth);
+            var quarterNumber = quarterly.Quarter;
+            var months = GetQuarterMonths(quarterNumber);
             return $"0 {quarterly.Minute} {quarterly.Hour} {quarterly.Day} {months} ?";
         }
 
@@ -124,19 +142,20 @@ namespace JobRunner.Quartz.Converters
         #endregion
 
         /// <summary>
-        /// Вспомогательный метод для ConvertQuarterly
+        /// Вспомогательный метод для ConvertQuarterly - 
+        /// Возвращает месяцы для квартала по его номеру
         /// </summary>
-        /// <param name="startMonth"></param>
+        /// <param name="quarterNumber"></param>
         /// <returns></returns>
-        private string GetQuarterMonths(int startMonth)
+        private string GetQuarterMonths(int quarterNumber)
         {
-            return startMonth switch
+            return quarterNumber switch
             {
                 1 => "1,2,3",     // Q1: январь, февраль, март
-                4 => "4,5,6",     // Q2: апрель, май, июнь
-                7 => "7,8,9",     // Q3: июль, август, сентябрь
-                10 => "10,11,12", // Q4: октябрь, ноябрь, декабрь
-                _ => "1,4,7,10"   // по умолчанию все кварталы
+                2 => "4,5,6",     // Q2: апрель, май, июнь
+                3 => "7,8,9",     // Q3: июль, август, сентябрь
+                4 => "10,11,12",  // Q4: октябрь, ноябрь, декабрь
+                _ => "1,4,7,10"   // fallback (старое поведение)
             };
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace JobRunner.Core.DTO
+namespace JobRunner.Core.DTO.ScheduleDTO
 {
     /// <summary>
     /// Отдельный аргумент задачи --> List<ScheduleArgumentItem> --> ScheduleArguments

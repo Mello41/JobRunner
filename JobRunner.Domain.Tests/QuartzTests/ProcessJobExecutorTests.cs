@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using JobRunner.Core.DefaultImplementations;
 using JobRunner.Core.DTO;
+using JobRunner.Core.DTO.ScheduleDTO;
 using JobRunner.Core.Interfaces.Entities;
 using JobRunner.Core.Interfaces.Entities.JobTaskSettings.NotifySettings;
 using JobRunner.Core.Utils.Platform;
@@ -72,7 +73,6 @@ namespace JobRunner.Domain.Tests.QuartzTests
             taskMock.Setup(t => t.IsAsyncExecution).Returns(isAsyncExecution);
             taskMock.Setup(t => t.IsEnabled).Returns(isEnabled);
             taskMock.Setup(t => t.ScheduleArguments).Returns(scheduleArgs);
-            taskMock.Setup(t => t.NotifySettings).Returns((INotifySettings<Guid>?)null);
 
             return taskMock.Object;
         }

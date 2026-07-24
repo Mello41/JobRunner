@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace JobRunner.Core.Entities.ValueObjects
+namespace JobRunner.Core.Models.ValueSchedule
 {
     /// <summary>
     /// Расписание для выполнения с фиксированным интервалом в минутах

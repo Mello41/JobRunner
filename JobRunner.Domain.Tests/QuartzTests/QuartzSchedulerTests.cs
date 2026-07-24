@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
 using JobRunner.Core.DefaultImplementations;
-using JobRunner.Core.Entities.ValueObjects;
 using JobRunner.Core.Interfaces.Converters;
 using JobRunner.Core.Interfaces.Scheduler;
+using JobRunner.Core.Models.ValueSchedule;
 using JobRunner.Quartz.Scheduler;
 using Microsoft.Extensions.Logging;
 using Moq;

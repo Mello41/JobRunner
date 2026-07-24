@@ -2,69 +2,73 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace JobRunner.Core.Entities.ValueObjects
+namespace JobRunner.Core.Models.ValueSchedule
 {
     /// <summary>
     /// Расписание "Каждый квартал"
+    /// Quarter = 1, 2, 3, 4
     /// </summary>
     public sealed record QuarterlySchedule : IScheduleSettings
     {
-        [Display(Name = "Месяц начала квартала")]
-        public int StartMonth { get; set; } = 1; 
+        [Display(Name = "Номер квартала")]
+        [Range(1, 4, ErrorMessage = "Номер квартала должен быть от 1 до 4")]
+        public int Quarter { get; set; } = 1;  // ← было StartMonth
 
         [Display(Name = "День месяца")]
+        [Range(1, 31, ErrorMessage = "День должен быть от 1 до 31")]
         public int Day { get; set; } = 1;
 
         [Display(Name = "Час")]
+        [Range(0, 23, ErrorMessage = "Час должен быть от 0 до 23")]
         public int Hour { get; set; } = 9;
 
         [Display(Name = "Минута")]
+        [Range(0, 59, ErrorMessage = "Минута должна быть от 0 до 59")]
         public int Minute { get; set; } = 0;
 
-        /// <summary>
-        /// Возвращает человеко-читаемое описание расписания задачи
-        /// </summary>
         public string GetDescription()
         {
             var sb = new StringBuilder();
+            sb.Append("Каждый квартал ");
 
-            sb.Append("Каждый квартал, ");
-
-            var quarterName = StartMonth switch
+            var quarterName = Quarter switch
             {
-                1 => "I квартал (январь-март)",
-                4 => "II квартал (апрель-июнь)",
-                7 => "III квартал (июль-сентябрь)",
-                10 => "IV квартал (октябрь-декабрь)",
-                _ => $"{StartMonth} месяц (начало квартала)"
+                1 => "(I квартал: январь-март)",
+                2 => "(II квартал: апрель-июнь)",
+                3 => "(III квартал: июль-сентябрь)",
+                4 => "(IV квартал: октябрь-декабрь)",
+                _ => $"({Quarter} квартал)"
             };
 
             sb.Append(quarterName);
-            sb.Append($", {Day:D2} числа");
-
-            if (Day == 31)
-                sb.Append(" (последний день месяца)");
-
-            sb.Append($" в {Hour:D2}:{Minute:D2}");
+            sb.Append($", {Day:D2} числа в {Hour:D2}:{Minute:D2}");
 
             return sb.ToString();
         }
 
-        /// <summary>
-        /// Проверяет, корректны ли параметры расписания
-        /// </summary>
         public bool IsValid()
         {
             if (Minute < 0 || Minute > 59) return false;
             if (Hour < 0 || Hour > 23) return false;
-
             if (Day < 1 || Day > 31) return false;
-
-            if (StartMonth != 1 && StartMonth != 4 && StartMonth != 7 && StartMonth != 10)
-                return false;
+            if (Quarter < 1 || Quarter > 4) return false;
 
             return true;
         }
 
+        /// <summary>
+        /// Получить список месяцев для квартала
+        /// </summary>
+        public int[] GetMonths()
+        {
+            return Quarter switch
+            {
+                1 => new[] { 1, 2, 3 },
+                2 => new[] { 4, 5, 6 },
+                3 => new[] { 7, 8, 9 },
+                4 => new[] { 10, 11, 12 },
+                _ => new[] { 1, 4, 7, 10 }
+            };
+        }
     }
 }
